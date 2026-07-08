@@ -1,6 +1,6 @@
-import { dark, type Theme } from '@clerk/themes'
+import { dark } from '@clerk/themes'
 
-export const clerkAppearance: Theme['appearance'] = {
+export const clerkAppearance = {
   baseTheme: dark,
   variables: {
     colorPrimary: '#4FC3F7',
