@@ -36,6 +36,31 @@ export interface BossData {
   questionsLeft: number;
 }
 
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  color: string;
+}
+
+export interface GameState {
+  score: number;
+  gap: number;
+  speed: number;
+  streak: number;
+  runFrame: number;
+  scrollOffset: number;
+  boostUntil: number;
+  penaltyUntil: number;
+  particles: Particle[];
+  screenShake: number;
+  lastTime: number;
+}
+
 export interface Badge {
   topic: Topic;
   label: string;
