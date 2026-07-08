@@ -11,6 +11,7 @@ interface Props {
   highScore: number
   onRestart: () => void
   badges?: Badge[]
+  clipBlob?: Blob | null
 }
 
 const BADGE_LABELS: Record<string, string> = {
@@ -67,6 +68,23 @@ export default function GameOverScreen({ score, highScore, onRestart, badges }: 
               ))}
             </div>
           </div>
+        )}
+
+        {clipBlob && (
+          <button
+            onClick={() => {
+              if (navigator.share && clipBlob) {
+                navigator.share({
+                  title: 'Code Run - My Score!',
+                  text: `I scored ${score} points in Code Run! Can you beat me?`,
+                  files: [new File([clipBlob], 'code-run-clip.webm', { type: 'video/webm' })],
+                }).catch(() => {})
+              }
+            }}
+            style={styles.shareBtn}
+          >
+            🎬 SHARE CLIP
+          </button>
         )}
 
         <button onClick={onRestart} style={styles.btn}>
@@ -135,4 +153,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Press Start 2P', monospace",
   },
   hint: { color: '#444', fontSize: 8, marginTop: 8, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
+  shareBtn: {
+    padding: '8px 24px',
+    border: '3px solid rgba(79,195,247,0.4)',
+    background: '#1a2a3a',
+    color: '#4FC3F7', fontSize: 9, fontWeight: 700, cursor: 'pointer',
+    letterSpacing: 2, transition: 'all 0.1s',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: "'Press Start 2P', monospace",
+    marginBottom: 6,
+  },
 }

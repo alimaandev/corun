@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Difficulty, Topic } from '../game/types'
-import { TOPICS } from '../game/challenges'
+import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
 
 interface Props {
   highScore: number
-  onStart: (topic: Topic | null, difficulty: Difficulty) => void
+  onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
 }
 
 const difficulties: { id: Difficulty; label: string }[] = [
@@ -22,6 +22,8 @@ const diffColors: Record<string, string> = {
 export default function StartScreen({ highScore, onStart }: Props) {
   const [topic, setTopic] = useState<Topic | null>(null)
   const [diff, setDiff] = useState<Difficulty>('medium')
+  const dailyDone = isDailyCompleted()
+  const lb = getLeaderboard()
 
   return (
     <div style={styles.page}>
@@ -76,6 +78,20 @@ export default function StartScreen({ highScore, onStart }: Props) {
           </div>
         </div>
 
+        <button
+          onClick={() => onStart(null, 'medium', true)}
+          disabled={dailyDone}
+          style={{
+            ...styles.dailyBtn,
+            opacity: dailyDone ? 0.4 : 1,
+            borderColor: dailyDone ? '#3a3a3a' : '#FFD700',
+            color: dailyDone ? '#555' : '#FFD700',
+            cursor: dailyDone ? 'default' : 'pointer',
+          }}
+        >
+          {dailyDone ? '✓ DAILY DONE' : '☀ DAILY CHALLENGE'}
+        </button>
+
         <button onClick={() => onStart(topic, diff)} style={styles.startBtn}>
           ▶ START GAME
         </button>
@@ -85,6 +101,19 @@ export default function StartScreen({ highScore, onStart }: Props) {
         {highScore > 0 && (
           <div style={styles.best}>
             ★ BEST: {highScore.toLocaleString()}
+          </div>
+        )}
+
+        {lb.length > 0 && (
+          <div style={styles.lbSection}>
+            <div style={styles.sectionLabel}>LEADERBOARD</div>
+            {lb.slice(0, 5).map((e, i) => (
+              <div key={i} style={styles.lbRow}>
+                <span style={styles.lbRank}>{i + 1}</span>
+                <span style={styles.lbScore}>{e.score.toLocaleString()}</span>
+                <span style={styles.lbDate}>{e.date}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -170,6 +199,18 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Press Start 2P', monospace",
     letterSpacing: 2,
   },
+  dailyBtn: {
+    padding: '8px 24px',
+    border: '3px solid',
+    background: '#1a1a00',
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: 2,
+    transition: 'all 0.1s',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+    fontFamily: "'Press Start 2P', monospace",
+  },
   startBtn: {
     padding: '12px 48px',
     border: '4px solid rgba(79,195,247,0.5)',
@@ -184,6 +225,18 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 6,
     fontFamily: "'Press Start 2P', monospace",
   },
+  lbSection: {
+    width: '100%', marginTop: 10,
+  },
+  lbRow: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '2px 0',
+    fontSize: 8,
+    fontFamily: "'Press Start 2P', monospace",
+  },
+  lbRank: { color: '#666', width: 14, textAlign: 'right' as const },
+  lbScore: { color: '#FFD700', flex: 1, textAlign: 'right' as const },
+  lbDate: { color: '#444', fontSize: 7 },
   hint: {
     color: '#444',
     fontSize: 8,

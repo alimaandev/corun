@@ -6,7 +6,7 @@ import StartScreen from './StartScreen'
 import GameOverScreen from './GameOverScreen'
 import PixelBackground from './PixelBackground'
 import { Challenge, HUDData, Difficulty, Topic, QuestionType } from '../game/types'
-import { getRandomChallenge } from '../game/challenges'
+import { getRandomChallenge, getDailyChallenge, markDailyCompleted, addToLeaderboard } from '../game/challenges'
 
 type Screen = 'start' | 'playing' | 'gameover'
 type Mode = 'normal' | 'boss' | 'bonus'
@@ -74,6 +74,8 @@ export default function Game() {
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
+  const [recording, setRecording] = useState(false)
+  const [clipBlob, setClipBlob] = useState<Blob | null>(null)
 
   const gameRef = useRef<PixelRunnerHandle>(null)
   const challengeRef = useRef(false)
@@ -89,8 +91,9 @@ export default function Game() {
   const bonusTimeLeftRef = useRef(0)
   const comboTimeoutRef = useRef<number>(0)
   const streakRef = useRef(0)
+  const isDailyRef = useRef(false)
 
-  const handleStart = useCallback((topic: Topic | null, difficulty: Difficulty) => {
+  const handleStart = useCallback((topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => {
     setSelectedTopic(topic)
     setSelectedDifficulty(difficulty)
     setScreen('playing')
@@ -101,6 +104,8 @@ export default function Game() {
     setBonusTimeLeft(0)
     setShowCombo(false)
     setComboText('')
+    setRecording(false)
+    setClipBlob(null)
     challengeRef.current = false
     lastBossScore.current = 0
     lastBonusScore.current = 0
@@ -112,6 +117,17 @@ export default function Game() {
     streakRef.current = 0
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
+    if (isDaily) {
+      isDailyRef.current = true
+      const dc = getDailyChallenge()
+      setTimeout(() => {
+        challengeRef.current = true
+        setCurrentChallenge(dc)
+        setTimeLimit(8)
+      }, 200)
+    } else {
+      isDailyRef.current = false
+    }
   }, [])
 
   function getAdaptiveDifficulty(base: Difficulty): Difficulty | undefined {
@@ -321,11 +337,15 @@ export default function Game() {
       }
       return nh
     })
+    if (score > 0) addToLeaderboard(Math.floor(score))
+    if (isDailyRef.current && score > 0) markDailyCompleted()
   }, [])
 
   const handleRestart = useCallback(() => {
     setScreen('start')
     setFinalScore(0)
+    setClipBlob(null)
+    setRecording(false)
     challengeRef.current = false
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
@@ -475,6 +495,33 @@ export default function Game() {
         />
       )}
 
+      {screen === 'playing' && (
+        <button
+          onClick={() => {
+            if (gameRef.current?.isRecording()) {
+              gameRef.current.stopRecording().then(blob => {
+                if (blob) setClipBlob(blob)
+              })
+              setRecording(false)
+            } else {
+              gameRef.current?.startRecording()
+              setRecording(true)
+            }
+          }}
+          style={{
+            position: 'fixed', bottom: 16, right: 16, zIndex: 100,
+            padding: '6px 12px', fontSize: 9,
+            fontFamily: "'Press Start 2P', monospace",
+            border: `3px solid ${recording ? '#F44336' : '#555'}`,
+            background: recording ? '#3a1111' : '#111',
+            color: recording ? '#F44336' : '#888',
+            cursor: 'pointer',
+          }}
+        >
+          {recording ? '● STOP' : '○ REC'}
+        </button>
+      )}
+
       {screen === 'playing' && !currentChallenge && (
         <HUD {...hudData} isBoss={mode === 'boss'} isBonus={mode === 'bonus'} />
       )}
@@ -509,6 +556,7 @@ export default function Game() {
             highScore={highScore}
             onRestart={handleRestart}
             badges={finalBadges}
+            clipBlob={clipBlob}
           />
         </>
       )}

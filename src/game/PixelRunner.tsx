@@ -14,9 +14,13 @@ const PENALTY_DURATION = 2000
 const BASE_SPEED = 1
 const BOOST_SPEED = 2.0
 const PENALTY_SPEED = 0.5
-const LANE_W = 60
-const PLAYER_W = 28
-const PLAYER_H = 36
+let PX_SCALE = 2
+function updateScale(w: number) {
+  PX_SCALE = Math.max(1.2, Math.min(3, Math.floor(w / 180)))
+}
+const LANE_W = () => PX_SCALE * 30
+const PLAYER_W = () => PX_SCALE * 14
+const PLAYER_H = () => PX_SCALE * 18
 
 export interface PixelRunnerHandle {
   startGame: (topic?: string, difficulty?: Difficulty) => void
@@ -25,6 +29,9 @@ export interface PixelRunnerHandle {
   setPaused: (paused: boolean) => void
   setMultiplier: (mult: number) => void
   setPreferredDifficulty: (diff?: string) => void
+  startRecording: () => void
+  stopRecording: () => Promise<Blob | null>
+  isRecording: () => boolean
 }
 
 interface Props {
@@ -45,7 +52,7 @@ interface GameS {
 
 function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number) {
   ctx.imageSmoothingEnabled = false
-  const s = 2
+  const s = PX_SCALE
   const legSwing = Math.sin(frame * 0.12) * 3
 
   ctx.fillStyle = '#fc0000'
@@ -81,7 +88,7 @@ function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, fr
 
 function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number, danger: number) {
   ctx.imageSmoothingEnabled = false
-  const s = 2
+  const s = PX_SCALE
   const bob = Math.sin(frame * 0.12) * 5 * danger
   const sc = 0.55 + danger * 0.95
   const sx = x
@@ -127,7 +134,7 @@ function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, f
 }
 
 function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, speed: number) {
-  const roadW = LANE_W * 3
+  const roadW = LANE_W() * 3
   const roadX = (w - roadW) / 2
 
   ctx.fillStyle = '#7a7a5a'
@@ -145,7 +152,7 @@ function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: n
   const total = laneH + gap
   const offset = scroll % total
   for (let lane = -1; lane <= 1; lane++) {
-    const lx = roadX + (lane + 1) * LANE_W + (LANE_W - 4) / 2
+    const lx = roadX + (lane + 1) * LANE_W() + (LANE_W() - 4) / 2
     for (let y = -total + offset; y < h + total; y += total) {
       ctx.fillRect(lx, y, 4, laneH)
     }
@@ -230,6 +237,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const propsRef = useRef(props)
   const animRef = useRef<number>(0)
   const startTimeRef = useRef(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const recordedChunksRef = useRef<Blob[]>([])
   propsRef.current = props
 
   const autoStartRef = useRef({ topic: props.topic })
@@ -242,9 +251,9 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   const playerX = () => {
     const cw = canvasRef.current?.width || window.innerWidth
-    const roadW = LANE_W * 3
+    const roadW = LANE_W() * 3
     const roadX = (cw - roadW) / 2
-    return roadX + (stateRef.current.currentLane + 1) * LANE_W + LANE_W / 2
+    return roadX + (stateRef.current.currentLane + 1) * LANE_W() + LANE_W() / 2
   }
 
   const playerY = () => (canvasRef.current?.height || window.innerHeight) - 100
@@ -323,6 +332,33 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     setPreferredDifficulty(diff?: string) {
       diffRef.current = diff
     },
+    startRecording() {
+      const canvas = canvasRef.current
+      if (!canvas || mediaRecorderRef.current) return
+      const stream = (canvas as HTMLCanvasElement).captureStream(30)
+      const mr = new MediaRecorder(stream, { mimeType: 'video/webm' })
+      recordedChunksRef.current = []
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data)
+      }
+      mr.start()
+      mediaRecorderRef.current = mr
+    },
+    async stopRecording(): Promise<Blob | null> {
+      const mr = mediaRecorderRef.current
+      if (!mr || mr.state === 'inactive') return null
+      return new Promise((resolve) => {
+        mr.onstop = () => {
+          const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' })
+          mediaRecorderRef.current = null
+          resolve(blob)
+        }
+        mr.stop()
+      })
+    },
+    isRecording(): boolean {
+      return mediaRecorderRef.current?.state === 'recording'
+    },
   }))
 
   useEffect(() => {
@@ -335,8 +371,32 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         s.currentLane = Math.min(1, s.currentLane + 1)
       }
     }
+
+    let touchStartX = 0
+    let touchStartY = 0
+    function handleTouchStart(e: TouchEvent) {
+      touchStartX = e.touches[0].clientX
+      touchStartY = e.touches[0].clientY
+    }
+    function handleTouchEnd(e: TouchEvent) {
+      if (!gameRunning.current) return
+      const dx = e.changedTouches[0].clientX - touchStartX
+      const dy = e.changedTouches[0].clientY - touchStartY
+      const s = stateRef.current
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
+        if (dx < 0) s.currentLane = Math.max(-1, s.currentLane - 1)
+        else s.currentLane = Math.min(1, s.currentLane + 1)
+      }
+    }
+
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
   }, [])
 
   useEffect(() => {
@@ -369,10 +429,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     let anim = 0
 
     function resize() {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      const dpr = window.devicePixelRatio || 1
+      updateScale(window.innerWidth)
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
       canvas.style.width = window.innerWidth + 'px'
       canvas.style.height = window.innerHeight + 'px'
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
     window.addEventListener('resize', resize)
