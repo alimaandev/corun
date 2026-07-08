@@ -49,16 +49,26 @@ const GameCanvas = forwardRef<GameCanvasHandle, Props>((props, ref) => {
   const propsRef = useRef(props)
   propsRef.current = props
 
-  function scheduleNext() {
-    const delay = CHALLENGE_MIN + Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
-    const challenge = getRandomChallenge(usedChallengeIds.current, topicRef.current)
+ async function scheduleNext() {
+  const delay =
+    CHALLENGE_MIN +
+    Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
+
+  clearTimeout(timeoutRef.current)
+
+  timeoutRef.current = window.setTimeout(async () => {
+    if (!runningRef.current) return
+
+    const challenge = await getRandomChallenge(
+      usedChallengeIds.current,
+      topicRef.current
+    )
+
     usedChallengeIds.current.add(challenge.id)
-    timeoutRef.current = window.setTimeout(() => {
-      if (runningRef.current) {
-        propsRef.current.onChallenge(challenge)
-      }
-    }, delay)
-  }
+
+    propsRef.current.onChallenge(challenge)
+  }, delay)
+}
 
   function resetState() {
     const s = stateRef.current

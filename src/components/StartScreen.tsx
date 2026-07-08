@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import { Difficulty, Topic } from '../game/types'
 import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
 
@@ -20,6 +21,7 @@ const diffColors: Record<string, string> = {
 }
 
 export default function StartScreen({ highScore, onStart }: Props) {
+  const { user, logout } = useAuth()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [diff, setDiff] = useState<Difficulty>('medium')
   const dailyDone = isDailyCompleted()
@@ -31,6 +33,11 @@ export default function StartScreen({ highScore, onStart }: Props) {
         <div style={styles.titleBlock}>
           <div className="screen-title" style={styles.pixelTitle}>CODE RUN</div>
           <div style={styles.pixelSub}>ESCAPE THE MONSTER</div>
+        </div>
+
+        <div style={styles.userBar}>
+          <span style={styles.userName}>@{user?.username}</span>
+          <button onClick={logout} style={styles.logoutBtn}>✕ LOGOUT</button>
         </div>
 
         <div style={styles.section}>
@@ -243,6 +250,20 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 10,
     fontFamily: "'Press Start 2P', monospace",
     letterSpacing: 2,
+  },
+  userBar: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginBottom: 12, width: '100%',
+  },
+  userName: {
+    color: '#aaa', fontSize: 9,
+    fontFamily: "'Press Start 2P', monospace", letterSpacing: 1,
+  },
+  logoutBtn: {
+    border: '3px solid #3a3a3a', background: '#111',
+    color: '#666', fontSize: 8, padding: '4px 10px',
+    fontFamily: "'Press Start 2P', monospace", cursor: 'pointer',
+    transition: 'all 0.1s',
   },
   best: {
     color: '#FFD700',

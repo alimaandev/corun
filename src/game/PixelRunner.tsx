@@ -1,6 +1,6 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Challenge, HUDData, Difficulty } from './types'
-import { getRandomChallenge } from './challenges'
+import { getRandomChallenge, prefetchAIChallenge, clearAIPool } from './challenges'
 
 
 const GAP_START = 60
@@ -274,9 +274,10 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     const s = stateRef.current
     if (s.paused) return
     const delay = CHALLENGE_MIN + Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
-    challengeTimerRef.current = window.setTimeout(() => {
+    challengeTimerRef.current = window.setTimeout(async () => {
       if (gameRunning.current && !stateRef.current.paused) {
-        const challenge = getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
+        const challenge = await getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
+        if (!gameRunning.current) return
         usedChallengeIds.current.add(challenge.id)
         propsRef.current.onChallenge(challenge)
       }
@@ -297,6 +298,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     usedChallengeIds.current.clear()
     frameCountRef.current = 0
     clearTimeout(challengeTimerRef.current)
+    clearAIPool()
+    prefetchAIChallenge(topicRef.current, diffRef.current, usedChallengeIds.current)
     scheduleChallenge()
   }
 

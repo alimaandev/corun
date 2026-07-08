@@ -181,15 +181,15 @@ export default function Game() {
     scheduleBossQuestion(bs)
   }
 
-  function scheduleBossQuestion(bs: BossState) {
+  async function scheduleBossQuestion(bs: BossState) {
     if (bs.questionsLeft <= 0) return finishBossBattle(bs)
-    const q = getRandomChallenge(new Set(), selectedTopic ?? undefined, 'hard')
+    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'hard')
     setCurrentChallenge(q)
     setTimeLimit(6)
     challengeRef.current = true
   }
 
-  function handleBossAnswer(correct: boolean) {
+  async function handleBossAnswer(correct: boolean) {
     const bs = bossRef.current
     if (!bs) return
     if (correct) {
@@ -202,7 +202,7 @@ export default function Game() {
       return
     }
     setBoss({ ...bs })
-    const q = getRandomChallenge(new Set(), selectedTopic ?? undefined, 'hard')
+    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'hard')
     setCurrentChallenge(q)
     setTimeLimit(6)
     challengeRef.current = true
@@ -232,20 +232,20 @@ export default function Game() {
     scheduleBonusQuestion()
   }
 
-  function scheduleBonusQuestion() {
-    const q = getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
+  async function scheduleBonusQuestion() {
+    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
     setCurrentChallenge(q)
     setTimeLimit(BONUS_DURATION - (bonusQuestionsRef.current * 0.3))
     challengeRef.current = true
   }
 
-  function handleBonusAnswer(correct: boolean) {
+  async function handleBonusAnswer(correct: boolean) {
     if (correct) bonusQuestionsRef.current++
     if (bonusTimeLeftRef.current <= 0 || bonusQuestionsRef.current >= 6) {
       finishBonusRound()
       return
     }
-    const q = getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
+    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
     setCurrentChallenge(q)
     setTimeLimit(Math.max(2, bonusTimeLeftRef.current - 0.5))
     challengeRef.current = true
