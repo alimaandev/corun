@@ -1,152 +1,202 @@
+import { useState } from 'react'
+import { Difficulty, Topic } from '../game/types'
+import { TOPICS } from '../game/challenges'
+
 interface Props {
   highScore: number
-  onStart: () => void
+  onStart: (topic: Topic | null, difficulty: Difficulty) => void
+}
+
+const difficulties: { id: Difficulty; label: string }[] = [
+  { id: 'easy', label: 'EASY' },
+  { id: 'medium', label: 'MEDIUM' },
+  { id: 'hard', label: 'HARD' },
+]
+
+const diffColors: Record<string, string> = {
+  easy: '#4CAF50',
+  medium: '#FFA000',
+  hard: '#F44336',
 }
 
 export default function StartScreen({ highScore, onStart }: Props) {
+  const [topic, setTopic] = useState<Topic | null>(null)
+  const [diff, setDiff] = useState<Difficulty>('medium')
+
   return (
-    <div style={styles.overlay}>
-      <div style={styles.container}>
-        <div style={styles.titleRow}>
-          <span style={styles.emoji}>🏃</span>
-          <h1 style={styles.title}>Code Run</h1>
-          <span style={styles.emoji}>👾</span>
-        </div>
-        <p style={styles.subtitle}>Escape the Monster</p>
-
-        <div style={styles.divider} />
-
-        <div style={styles.instructions}>
-          <div style={styles.instruction}>
-            <span style={styles.instrIcon}>⚡</span>
-            <span>Coding challenges appear &mdash; answer correctly to speed up!</span>
-          </div>
-          <div style={styles.instruction}>
-            <span style={styles.instrIcon}>🐢</span>
-            <span>Wrong or too slow &mdash; the monster gets closer!</span>
-          </div>
-          <div style={styles.instruction}>
-            <span style={styles.instrIcon}>🔥</span>
-            <span>Build streaks for bonus speed!</span>
-          </div>
+    <div style={styles.page}>
+      <div style={styles.content}>
+        <div style={styles.titleBlock}>
+          <div style={styles.pixelTitle}>CODE RUN</div>
+          <div style={styles.pixelSub}>ESCAPE THE MONSTER</div>
         </div>
 
-        <button style={styles.startBtn} onClick={onStart}>
-          START RUNNING
+        <div style={styles.section}>
+          <div style={styles.sectionLabel}>SUBJECT</div>
+          <div style={styles.topics}>
+            <button
+              onClick={() => setTopic(null)}
+              style={{
+                ...styles.topicBtn,
+                borderColor: topic === null ? '#4FC3F7' : '#3a3a3a',
+                background: topic === null ? '#1a2a3a' : '#111',
+                color: topic === null ? '#4FC3F7' : '#555',
+              }}
+            >ALL</button>
+            {TOPICS.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTopic(t.id)}
+                style={{
+                  ...styles.topicBtn,
+                  borderColor: topic === t.id ? '#4FC3F7' : '#3a3a3a',
+                  background: topic === t.id ? '#1a2a3a' : '#111',
+                  color: topic === t.id ? '#4FC3F7' : '#555',
+                }}
+              >{t.label.toUpperCase()}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={styles.section}>
+          <div style={styles.sectionLabel}>DIFFICULTY</div>
+          <div style={styles.diffs}>
+            {difficulties.map(d => (
+              <button
+                key={d.id}
+                onClick={() => setDiff(d.id)}
+                style={{
+                  ...styles.diffBtn,
+                  borderColor: diff === d.id ? diffColors[d.id] : '#3a3a3a',
+                  background: diff === d.id ? '#1a1a1a' : '#111',
+                  color: diff === d.id ? diffColors[d.id] : '#555',
+                }}
+              >{d.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <button onClick={() => onStart(topic, diff)} style={styles.startBtn}>
+          ▶ START GAME
         </button>
 
-        <p style={styles.hint}>Press <kbd style={styles.kbd}>Enter</kbd> or tap to start</p>
+        <div style={styles.hint}>PRESS ENTER</div>
 
         {highScore > 0 && (
-          <p style={styles.highScore}>🏆 High Score: {highScore.toLocaleString()}</p>
+          <div style={styles.best}>
+            ★ BEST: {highScore.toLocaleString()}
+          </div>
         )}
       </div>
     </div>
   )
 }
 
+const PIXEL = '4px solid'
+
 const styles: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'radial-gradient(ellipse at center, #0d0d2b 0%, #050510 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 200,
+  page: {
+    position: 'fixed', inset: 0, zIndex: 200,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: 20,
   },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    maxWidth: 420,
-    width: '100%',
+  content: {
+    position: 'relative',
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    maxWidth: 440, width: '100%',
+    animation: 'fadeIn 0.3s ease-out',
+    background: 'rgba(0,0,0,0.75)',
+    border: '4px solid rgba(79,195,247,0.3)',
+    borderRadius: 0,
+    padding: '28px 24px 24px',
   },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
+  titleBlock: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    marginBottom: 20,
   },
-  emoji: {
-    fontSize: 40,
-    lineHeight: 1,
-  },
-  title: {
+  pixelTitle: {
     color: '#4FC3F7',
-    fontSize: 48,
-    fontWeight: 800,
-    fontFamily: 'monospace',
-    textShadow: '0 0 30px rgba(79,195,247,0.3)',
-    letterSpacing: 2,
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
-    fontFamily: 'monospace',
-    marginTop: 4,
-    letterSpacing: 4,
-    textTransform: 'uppercase' as const,
-  },
-  divider: {
-    width: '60%',
-    height: 1,
-    background: 'linear-gradient(90deg, transparent, rgba(79,195,247,0.3), transparent)',
-    margin: '24px 0',
-  },
-  instructions: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-    width: '100%',
-    marginBottom: 28,
-  },
-  instruction: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 12,
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 13,
-    fontFamily: 'monospace',
+    fontSize: 38,
+    fontWeight: 900,
+    letterSpacing: 6,
+    fontFamily: "'Press Start 2P', monospace",
     lineHeight: 1.4,
+    textShadow: '3px 3px 0 #1a3a4a',
   },
-  instrIcon: {
-    fontSize: 18,
-    flexShrink: 0,
+  pixelSub: {
+    color: '#888',
+    fontSize: 9,
+    letterSpacing: 4,
+    fontFamily: "'Press Start 2P', monospace",
+    marginTop: 6,
+  },
+  section: {
+    width: '100%', marginBottom: 14,
+  },
+  sectionLabel: {
+    color: '#aaa', fontSize: 9,
+    fontWeight: 700, letterSpacing: 3,
+    marginBottom: 6,
+    fontFamily: "'Press Start 2P', monospace",
+  },
+  topics: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+    gap: 4,
+  },
+  topicBtn: {
+    padding: '8px 4px',
+    border: '3px solid',
+    fontSize: 9,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center' as const,
+    transition: 'all 0.1s',
+    fontFamily: "'Press Start 2P', monospace",
+    letterSpacing: 1,
+  },
+  diffs: {
+    display: 'flex', gap: 4,
+  },
+  diffBtn: {
+    flex: 1,
+    padding: '10px 12px',
+    border: '3px solid',
+    fontSize: 10,
+    fontWeight: 700,
+    cursor: 'pointer',
+    textAlign: 'center' as const,
+    transition: 'all 0.1s',
+    fontFamily: "'Press Start 2P', monospace",
+    letterSpacing: 2,
   },
   startBtn: {
-    padding: '14px 48px',
-    borderRadius: 10,
-    border: '2px solid #4FC3F7',
-    background: 'linear-gradient(135deg, rgba(79,195,247,0.15), rgba(21,101,192,0.15))',
+    padding: '12px 48px',
+    border: '4px solid rgba(79,195,247,0.5)',
+    background: '#1a2a3a',
     color: '#4FC3F7',
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: 700,
-    fontFamily: 'monospace',
     cursor: 'pointer',
-    letterSpacing: 2,
-    transition: 'all 0.2s',
-    textShadow: '0 0 10px rgba(79,195,247,0.3)',
-    boxShadow: '0 0 20px rgba(79,195,247,0.1)',
+    letterSpacing: 4,
+    transition: 'all 0.1s',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: 6,
+    fontFamily: "'Press Start 2P', monospace",
   },
   hint: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 12,
-    fontFamily: 'monospace',
-    marginTop: 16,
+    color: '#444',
+    fontSize: 8,
+    marginTop: 10,
+    fontFamily: "'Press Start 2P', monospace",
+    letterSpacing: 2,
   },
-  kbd: {
-    border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: 4,
-    padding: '1px 6px',
-    fontSize: 11,
-    fontFamily: 'monospace',
-    background: 'rgba(255,255,255,0.05)',
-  },
-  highScore: {
+  best: {
     color: '#FFD700',
-    fontSize: 14,
-    fontFamily: 'monospace',
-    marginTop: 12,
+    fontSize: 10,
+    fontWeight: 700,
+    marginTop: 8,
+    fontFamily: "'Press Start 2P', monospace",
+    letterSpacing: 1,
   },
 }

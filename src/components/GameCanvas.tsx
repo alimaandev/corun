@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
-import { GameState, Challenge, HUDData } from '../game/types'
+import { GameState, Challenge, HUDData, Difficulty } from '../game/types'
 import { renderFrame, spawnParticles, updateParticles } from '../game/renderer'
 import { getRandomChallenge } from '../game/challenges'
 
@@ -18,7 +18,7 @@ const PENALTY_SPEED = 0.65
 const PARTICLE_INTERVAL = 3
 
 export interface GameCanvasHandle {
-  startGame: () => void
+  startGame: (topic?: string, difficulty?: Difficulty) => void
   handleAnswer: (correct: boolean) => void
   handleTimeout: () => void
 }
@@ -44,12 +44,14 @@ const GameCanvas = forwardRef<GameCanvasHandle, Props>((props, ref) => {
   const timeoutRef = useRef<number>(0)
   const messageRef = useRef({ text: '', timer: 0 })
 
+  const topicRef = useRef<string | undefined>(undefined)
+  const difficultyRef = useRef<Difficulty>('medium')
   const propsRef = useRef(props)
   propsRef.current = props
 
   function scheduleNext() {
     const delay = CHALLENGE_MIN + Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
-    const challenge = getRandomChallenge(usedChallengeIds.current)
+    const challenge = getRandomChallenge(usedChallengeIds.current, topicRef.current)
     usedChallengeIds.current.add(challenge.id)
     timeoutRef.current = window.setTimeout(() => {
       if (runningRef.current) {
@@ -73,7 +75,9 @@ const GameCanvas = forwardRef<GameCanvasHandle, Props>((props, ref) => {
   }
 
   useImperativeHandle(ref, () => ({
-    startGame() {
+    startGame(topic?: string, difficulty?: Difficulty) {
+      topicRef.current = topic
+      if (difficulty) difficultyRef.current = difficulty
       resetState()
     },
     handleAnswer(correct: boolean) {

@@ -1,152 +1,85 @@
-import { useState, useEffect } from 'react'
 import { HUDData } from '../game/types'
 
-interface Props extends HUDData {}
-
-function useViewport() {
-  const [vw, setVw] = useState(window.innerWidth)
-  useEffect(() => {
-    function handleResize() {
-      setVw(window.innerWidth)
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-  return vw
+interface Props extends HUDData {
+  isBoss?: boolean
+  isBonus?: boolean
 }
 
-export default function HUD({ score, gap, speed, streak }: Props) {
-  const vw = useViewport()
-  const isMobile = vw < 480
-
-  const containerStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: isMobile ? '6px 10px' : '8px 16px',
-    background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%)',
-    zIndex: 50,
-    pointerEvents: 'none',
-    gap: isMobile ? 4 : 8,
-  }
-
-  const scoreStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 1,
-    minWidth: isMobile ? 50 : 70,
-  }
-
-  const scoreLabelStyle: React.CSSProperties = {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: isMobile ? 8 : 10,
-    fontFamily: 'monospace',
-    letterSpacing: 1,
-  }
-
-  const scoreValueStyle: React.CSSProperties = {
-    color: '#fff',
-    fontSize: isMobile ? 16 : 20,
-    fontWeight: 700,
-    fontFamily: 'monospace',
-  }
-
-  const gapBarStyle: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    maxWidth: isMobile ? 160 : 280,
-    height: isMobile ? 5 : 6,
-    background: 'rgba(255,255,255,0.08)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  }
-
-  const gapFillStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    height: '100%',
-    background: gap > 50 ? '#4CAF50' : gap > 25 ? '#FFA000' : '#D32F2F',
-    borderRadius: 3,
-    transition: 'width 0.3s ease, background 0.3s ease',
-    width: `${Math.max(2, gap)}%`,
-  }
-
-  const rightStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: isMobile ? 6 : 12,
-  }
-
-  const statBoxStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 1,
-  }
-
-  const statLabelStyle: React.CSSProperties = {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: isMobile ? 7 : 10,
-    fontFamily: 'monospace',
-    letterSpacing: 1,
-  }
-
-  const statValueStyle: React.CSSProperties = {
-    color: '#4FC3F7',
-    fontSize: isMobile ? 12 : 16,
-    fontWeight: 700,
-    fontFamily: 'monospace',
-  }
+export default function HUD({ score, gap, speed, streak, isBoss, isBonus }: Props) {
+  const barColor = gap > 40 ? '#4CAF50' : gap > 20 ? '#FFA000' : '#F44336'
 
   return (
-    <div style={containerStyle}>
-      <div style={scoreStyle}>
-        <span style={scoreLabelStyle}>SCORE</span>
-        <span style={scoreValueStyle}>{score.toLocaleString()}</span>
-      </div>
-
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <div style={{ ...gapBarStyle }}>
-          <div style={gapFillStyle} />
-          {!isMobile && (
-            <span style={{
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: 8,
-              fontFamily: 'monospace',
-              fontWeight: 600,
-            }}>
-              {gap}m
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div style={rightStyle}>
-        <div style={statBoxStyle}>
-          <span style={statLabelStyle}>SPD</span>
-          <span style={statValueStyle}>{speed}x</span>
-        </div>
-        {streak > 0 && (
-          <span style={{
-            fontSize: isMobile ? 12 : 14,
-            fontFamily: 'monospace',
-            color: '#FFD700',
-            fontWeight: 700,
-          }}>
-            🔥{streak}
-          </span>
+    <div style={{ ...styles.bar,
+      borderBottomColor: isBoss ? 'rgba(244,67,54,0.4)' : isBonus ? 'rgba(255,215,0,0.4)' : 'rgba(79,195,247,0.2)',
+    }}>
+      <div style={styles.left}>
+        <div style={styles.lLabel}>SCORE</div>
+        <div style={styles.lVal}>{score.toLocaleString()}</div>
+        {streak >= 3 && (
+          <div style={styles.streakBadge}>
+            <span style={styles.star}>★</span>
+            <span style={styles.sNum}>{streak}x</span>
+          </div>
         )}
+      </div>
+
+      <div style={styles.center}>
+        <div style={styles.gapLabel}>GAP</div>
+        <div style={styles.track}>
+          <div style={{ ...styles.fill, width: `${Math.max(2, gap)}%`, background: barColor,
+            boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none' }} />
+        </div>
+        <div style={styles.gapNum}>{Math.round(gap)}m</div>
+      </div>
+
+      <div style={styles.right}>
+        <div style={styles.stat}>
+          <div style={styles.sLabel}>SPD</div>
+          <div style={{ ...styles.sVal, color: speed > 1.3 ? '#4CAF50' : speed < 0.8 ? '#F44336' : '#4FC3F7' }}>
+            {speed.toFixed(1)}x
+          </div>
+        </div>
+        <div style={styles.stat}>
+          <div style={styles.sLabel}>MULT</div>
+          <div style={styles.sVal}>{streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : '1x'}</div>
+        </div>
       </div>
     </div>
   )
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  bar: {
+    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: 8, padding: '6px 10px',
+    background: 'rgba(0,0,0,0.75)',
+    borderBottom: '3px solid rgba(79,195,247,0.2)',
+    pointerEvents: 'none',
+  },
+  left: { display: 'flex', flexDirection: 'column', gap: 0, minWidth: 60, position: 'relative' as const },
+  lLabel: { color: '#888', fontSize: 7, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
+  lVal: { color: '#fff', fontSize: 16, fontWeight: 700, lineHeight: 1.2, fontFamily: "'Press Start 2P', monospace", letterSpacing: 1 },
+  streakBadge: {
+    position: 'absolute' as const, top: -2, right: -4,
+    display: 'flex', alignItems: 'center', gap: 1,
+    padding: '1px 3px',
+    border: '2px solid rgba(255,215,0,0.15)',
+    background: 'rgba(255,215,0,0.04)',
+  },
+  star: { color: '#FFD700', fontSize: 8 },
+  sNum: { color: '#FFD700', fontSize: 7, fontFamily: "'Press Start 2P', monospace" },
+  center: {
+    flex: 1, maxWidth: 200,
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'center', gap: 1,
+  },
+  gapLabel: { color: '#888', fontSize: 7, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
+  track: { width: '100%', height: 6, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.05)' },
+  fill: { height: '100%', transition: 'width 0.3s ease, background 0.3s ease' },
+  gapNum: { color: '#888', fontSize: 7, fontFamily: "'Press Start 2P', monospace" },
+  right: { display: 'flex', alignItems: 'center', gap: 6 },
+  stat: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0, minWidth: 36 },
+  sLabel: { color: '#888', fontSize: 7, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
+  sVal: { fontSize: 10, fontWeight: 700, fontFamily: "'Press Start 2P', monospace", letterSpacing: 1 },
 }

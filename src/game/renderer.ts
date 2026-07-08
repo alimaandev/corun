@@ -422,6 +422,46 @@ export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle
   ctx.globalAlpha = 1
 }
 
+function drawPlayerIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+  const s = size
+  ctx.strokeStyle = '#4FC3F7'
+  ctx.lineWidth = 1.8
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.arc(cx, cy - s * 0.3, s * 0.25, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx, cy - s * 0.05)
+  ctx.lineTo(cx, cy + s * 0.3)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx, cy + s * 0.05)
+  ctx.lineTo(cx - s * 0.35, cy + s * 0.5)
+  ctx.moveTo(cx, cy + s * 0.05)
+  ctx.lineTo(cx + s * 0.35, cy + s * 0.5)
+  ctx.stroke()
+}
+
+function drawMonsterIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+  const s = size
+  ctx.fillStyle = '#F44336'
+  ctx.beginPath()
+  ctx.arc(cx, cy, s * 0.4, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#B71C1C'
+  ctx.beginPath()
+  ctx.arc(cx - s * 0.15, cy - s * 0.05, s * 0.08, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(cx + s * 0.15, cy - s * 0.05, s * 0.08, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#B71C1C'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.arc(cx, cy + s * 0.05, s * 0.1, 0, Math.PI)
+  ctx.stroke()
+}
+
 function drawGapBar(ctx: CanvasRenderingContext2D, w: number, gap: number, streak: number) {
   const barW = Math.min(360, w * 0.45)
   const barH = 14
@@ -441,22 +481,19 @@ function drawGapBar(ctx: CanvasRenderingContext2D, w: number, gap: number, strea
   ctx.fill()
 
   ctx.fillStyle = '#fff'
-  ctx.font = '9px monospace'
+  ctx.font = '9px system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(`${Math.round(gap)}m`, w / 2, y + barH / 2 + 1)
 
-  ctx.font = '13px monospace'
-  ctx.textAlign = 'right'
-  ctx.fillText('🏃', x - 12, y + barH / 2 + 1)
-  ctx.textAlign = 'left'
-  ctx.fillText('👾', x + barW + 12, y + barH / 2 + 1)
+  drawPlayerIcon(ctx, x - 12, y + barH / 2, 10)
+  drawMonsterIcon(ctx, x + barW + 12, y + barH / 2, 10)
 
   ctx.textAlign = 'right'
-  ctx.font = '13px monospace'
+  ctx.font = 'bold 11px system-ui, sans-serif'
   ctx.fillStyle = '#FFD700'
   if (streak > 0) {
-    ctx.fillText(`🔥 x${streak}`, w - 14, y + barH / 2 + 1)
+    ctx.fillText(`x${streak}`, w - 14, y + barH / 2 + 1)
   }
 }
 
@@ -484,7 +521,7 @@ export function drawMessage(ctx: CanvasRenderingContext2D, w: number, h: number,
   ctx.save()
   ctx.globalAlpha = alpha
   ctx.fillStyle = message.startsWith('+') ? '#4CAF50' : '#F44336'
-  ctx.font = `bold ${Math.min(30, w * 0.055)}px monospace`
+  ctx.font = `bold ${Math.min(30, w * 0.055)}px system-ui, sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.shadowColor = message.startsWith('+') ? '#4CAF50' : '#F44336'

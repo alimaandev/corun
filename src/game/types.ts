@@ -1,37 +1,23 @@
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type Topic = 'javascript' | 'python' | 'web' | 'databases' | 'general' | 'algorithms'
+export type QuestionType = 'multiple' | 'fill-blank' | 'output' | 'spot-bug'
 
 export interface Challenge {
   id: number;
+  type: QuestionType;
   question: string;
   options: string[];
   correct: number;
   explanation: string;
   difficulty: Difficulty;
+  topic: Topic;
+  code?: string;
 }
 
-export interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  size: number;
-  color: string;
-}
-
-export interface GameState {
-  score: number;
-  gap: number;
-  speed: number;
-  streak: number;
-  runFrame: number;
-  scrollOffset: number;
-  boostUntil: number;
-  penaltyUntil: number;
-  particles: Particle[];
-  screenShake: number;
-  lastTime: number;
+export interface TopicOption {
+  id: Topic;
+  label: string;
+  description: string;
 }
 
 export interface HUDData {
@@ -39,4 +25,18 @@ export interface HUDData {
   gap: number;
   speed: number;
   streak: number;
+}
+
+export type GameStatus = 'playing' | 'boss-battle' | 'bonus-round'
+
+export interface BossData {
+  hp: number;
+  maxHp: number;
+  name: string;
+  questionsLeft: number;
+}
+
+export interface Badge {
+  topic: Topic;
+  label: string;
 }
