@@ -255,13 +255,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }, [])
 
   const playerX = () => {
-    const cw = canvasRef.current?.width || window.innerWidth
+    const cw = window.innerWidth
     const roadW = LANE_W() * 3
     const roadX = (cw - roadW) / 2
     return roadX + (stateRef.current.displayLane + 1) * LANE_W() + LANE_W() / 2
   }
 
-  const playerY = () => (canvasRef.current?.height || window.innerHeight) - 100
+  const playerY = () => window.innerHeight - 100
 
   const monsterY = () => {
     const s = stateRef.current
@@ -436,9 +436,12 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }, [])
 
   useEffect(() => {
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
     let anim = 0
+    let disposed = false
 
     function resize() {
       const dpr = window.devicePixelRatio || 1
@@ -453,6 +456,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     window.addEventListener('resize', resize)
 
     function loop(ts: number) {
+      if (disposed) return
       const s = stateRef.current
       const dt = lastFrameTimeRef.current ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05) : 0
       lastFrameTimeRef.current = ts
@@ -493,8 +497,9 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         }
       }
 
-      const w = canvas.width
-      const h = canvas.height
+      const dpr = window.devicePixelRatio || 1
+      const w = canvas.width / dpr
+      const h = canvas.height / dpr
 
       ctx.save()
 
@@ -566,6 +571,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     anim = requestAnimationFrame(loop)
 
     return () => {
+      disposed = true
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(anim)
       clearTimeout(challengeTimerRef.current)

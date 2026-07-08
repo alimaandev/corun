@@ -46,8 +46,8 @@ export default function GameOverScreen({ score, highScore, onRestart, badges, cl
 
   return (
     <div style={styles.page}>
-      <div style={styles.content}>
-        <div style={styles.title}>GAME OVER</div>
+      <div className="gameover-content" style={styles.content}>
+        <div className="screen-title" style={styles.title}>GAME OVER</div>
         <div style={styles.sub}>THE MONSTER CAUGHT YOU</div>
 
         <div style={styles.scoreBox}>

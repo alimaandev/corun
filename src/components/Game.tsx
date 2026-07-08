@@ -384,12 +384,11 @@ export default function Game() {
         if (screen === 'start') handleStart(null, 'medium')
         else if (screen === 'gameover') handleRestart()
       }
-      if (currentChallenge && gameRef.current) {
-        if (currentChallenge.type === 'fill-blank') return
-        const n = parseInt(e.key)
-        if (n >= 1 && n <= 4 && n <= currentChallenge.options.length) {
-          handleAnswer(n - 1)
-        }
+      if (!currentChallenge || !gameRef.current) return
+      if (currentChallenge.type === 'fill-blank') return
+      const n = parseInt(e.key)
+      if (n >= 1 && n <= 4 && n <= currentChallenge.options.length) {
+        handleAnswer(n - 1)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -502,7 +501,7 @@ export default function Game() {
       )}
 
       {screen === 'playing' && (
-        <button
+        <button className="rec-btn"
           onClick={() => {
             if (gameRef.current?.isRecording()) {
               gameRef.current.stopRecording().then(blob => {

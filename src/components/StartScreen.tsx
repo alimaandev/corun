@@ -29,13 +29,13 @@ export default function StartScreen({ highScore, onStart }: Props) {
     <div style={styles.page}>
       <div style={styles.content}>
         <div style={styles.titleBlock}>
-          <div style={styles.pixelTitle}>CODE RUN</div>
+          <div className="screen-title" style={styles.pixelTitle}>CODE RUN</div>
           <div style={styles.pixelSub}>ESCAPE THE MONSTER</div>
         </div>
 
         <div style={styles.section}>
           <div style={styles.sectionLabel}>SUBJECT</div>
-          <div style={styles.topics}>
+          <div className="topic-grid" style={styles.topics}>
             <button
               onClick={() => setTopic(null)}
               style={{

@@ -92,7 +92,7 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
 
   return (
     <div style={styles.overlay}>
-      <div style={{ ...styles.card, borderColor: isBoss ? 'rgba(244,67,54,0.4)' : isBonus ? 'rgba(255,215,0,0.4)' : 'rgba(79,195,247,0.2)' }}>
+      <div className="modal-card" style={{ ...styles.card, borderColor: isBoss ? 'rgba(244,67,54,0.4)' : isBonus ? 'rgba(255,215,0,0.4)' : 'rgba(79,195,247,0.2)' }}>
         <div style={styles.top}>
           <div style={styles.left}>
             <span style={{ ...styles.badge, borderColor: dc, color: dc, background: `${dc}15` }}>
