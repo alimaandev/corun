@@ -32,7 +32,7 @@ const BADGE_COLORS: Record<string, string> = {
   algorithms: '#00BCD4',
 }
 
-export default function GameOverScreen({ score, highScore, onRestart, badges }: Props) {
+export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob }: Props) {
   const newHigh = score >= highScore && score > 0
 
   return (
