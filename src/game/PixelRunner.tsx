@@ -2,6 +2,7 @@ import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Challenge, HUDData, Difficulty } from './types'
 import { getRandomChallenge } from './challenges'
 
+
 const GAP_START = 60
 const GAP_DRAIN = 1.8
 const CHALLENGE_MIN = 2500
@@ -436,9 +437,9 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }, [])
 
   useEffect(() => {
-    const canvas = canvasRef.current
+    const canvas = canvasRef.current!
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d')!
     if (!ctx) return
     let anim = 0
     let disposed = false
