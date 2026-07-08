@@ -1,10 +1,11 @@
-import { Navigate } from 'react-router-dom'
-import { useAuth } from '../auth/AuthContext'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '@clerk/clerk-react'
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth()
+  const location = useLocation()
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
@@ -17,6 +18,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     )
   }
 
-  if (!user) return <Navigate to="/login" replace />
+  if (!isSignedIn) return <Navigate to="/sign-in" state={{ from: location }} replace />
   return <>{children}</>
 }

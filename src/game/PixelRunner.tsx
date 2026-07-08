@@ -17,7 +17,7 @@ const BOOST_SPEED = 2.0
 const PENALTY_SPEED = 0.5
 let PX_SCALE = 2
 function updateScale(w: number) {
-  PX_SCALE = Math.max(1.2, Math.min(3, Math.floor(w / 180)))
+  PX_SCALE = Math.max(1.5, Math.min(3, Math.floor(w / 200)))
 }
 const LANE_W = () => PX_SCALE * 30
 const PLAYER_W = () => PX_SCALE * 14
@@ -399,9 +399,18 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       const dx = e.changedTouches[0].clientX - touchStartX
       const dy = e.changedTouches[0].clientY - touchStartY
       const s = stateRef.current
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
-        if (dx < 0) s.currentLane = Math.max(-1, s.currentLane - 1)
-        else s.currentLane = Math.min(1, s.currentLane + 1)
+      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
+          if (dx < 0) s.currentLane = Math.max(-1, s.currentLane - 1)
+          else s.currentLane = Math.min(1, s.currentLane + 1)
+        }
+      } else {
+        const x = e.changedTouches[0].clientX
+        if (x < window.innerWidth * 0.4) {
+          s.currentLane = Math.max(-1, s.currentLane - 1)
+        } else if (x > window.innerWidth * 0.6) {
+          s.currentLane = Math.min(1, s.currentLane + 1)
+        }
       }
     }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../auth/AuthContext'
+import { useUser, useAuth } from '@clerk/clerk-react'
 import { Difficulty, Topic } from '../game/types'
 import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
 
@@ -21,7 +21,8 @@ const diffColors: Record<string, string> = {
 }
 
 export default function StartScreen({ highScore, onStart }: Props) {
-  const { user, logout } = useAuth()
+  const { user } = useUser()
+  const { signOut } = useAuth()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [diff, setDiff] = useState<Difficulty>('medium')
   const dailyDone = isDailyCompleted()
@@ -37,7 +38,7 @@ export default function StartScreen({ highScore, onStart }: Props) {
 
         <div style={styles.userBar}>
           <span style={styles.userName}>@{user?.username}</span>
-          <button onClick={logout} style={styles.logoutBtn}>✕ LOGOUT</button>
+          <button onClick={() => signOut()} style={styles.logoutBtn}>✕ LOGOUT</button>
         </div>
 
         <div style={styles.section}>
@@ -128,8 +129,6 @@ export default function StartScreen({ highScore, onStart }: Props) {
   )
 }
 
-const PIXEL = '4px solid'
-
 const styles: Record<string, React.CSSProperties> = {
   page: {
     position: 'fixed', inset: 0, zIndex: 200,
@@ -140,6 +139,8 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative',
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     maxWidth: 440, width: '100%',
+    maxHeight: '95vh',
+    overflowY: 'auto',
     animation: 'fadeIn 0.3s ease-out',
     background: 'rgba(0,0,0,0.75)',
     border: '4px solid rgba(79,195,247,0.3)',
