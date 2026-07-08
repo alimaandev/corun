@@ -6,21 +6,31 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data')
 const DB_PATH = join(DATA_DIR, 'evade.db')
+const IS_VERCEL = !!process.env.VERCEL
 
 let db: SqlJsDatabase
+let useFilePersistence = false
 
 export async function initDb() {
   if (db) return
 
-  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
-
   const SQL = await initSqlJs()
 
-  if (existsSync(DB_PATH)) {
-    const buf = readFileSync(DB_PATH)
-    db = new SQL.Database(buf)
-  } else {
+  if (IS_VERCEL) {
     db = new SQL.Database()
+  } else {
+    try {
+      if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+      if (existsSync(DB_PATH)) {
+        const buf = readFileSync(DB_PATH)
+        db = new SQL.Database(buf)
+      } else {
+        db = new SQL.Database()
+      }
+      useFilePersistence = true
+    } catch {
+      db = new SQL.Database()
+    }
   }
 
   db.run(`
@@ -40,10 +50,11 @@ export async function initDb() {
     );
   `)
 
-  saveDb()
+  if (useFilePersistence) saveDb()
 }
 
 function saveDb() {
+  if (!useFilePersistence) return
   writeFileSync(DB_PATH, Buffer.from(db.export()))
 }
 
