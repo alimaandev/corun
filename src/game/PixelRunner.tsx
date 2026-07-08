@@ -364,8 +364,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }, [])
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
     let anim = 0
 
