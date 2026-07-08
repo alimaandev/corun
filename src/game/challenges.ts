@@ -1,7 +1,5 @@
 import { Challenge } from './types'
 
-const API_BASE = import.meta.env.VITE_API_URL || ''
-
 const AI_POOL: Challenge[] = []
 let aiFetching = false
 
@@ -39,7 +37,7 @@ export async function prefetchAIChallenge(topic?: string, difficulty?: string, u
   if (aiFetching) return
   aiFetching = true
   try {
-    const res = await fetch(`${API_BASE}/api/challenges/generate`, {
+    const res = await fetch('/api/challenges/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic, difficulty, usedIds: [...(usedIds || [])] }),
@@ -58,7 +56,7 @@ export async function prefetchAIChallenge(topic?: string, difficulty?: string, u
 
 async function fetchAIChallenge(topic?: string, difficulty?: string, usedIds?: Set<number>): Promise<Challenge | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/challenges/generate`, {
+    const res = await fetch('/api/challenges/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic, difficulty, usedIds: [...(usedIds || [])] }),

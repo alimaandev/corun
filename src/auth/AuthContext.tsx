@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 
-const API = import.meta.env.VITE_API_URL || ''
-
 interface User { id: number; username: string }
 
 interface AuthState {
@@ -22,14 +20,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!token) { setLoading(false); return }
-    fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => { setUser(data.user); setLoading(false) })
       .catch(() => { setToken(null); localStorage.removeItem('token'); setLoading(false) })
   }, [token])
 
   const login = useCallback(async (username: string, password: string) => {
-    const r = await fetch(`${API}/api/auth/login`, {
+    const r = await fetch('/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
@@ -42,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const register = useCallback(async (username: string, password: string) => {
-    const r = await fetch(`${API}/api/auth/register`, {
+    const r = await fetch('/api/auth/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
