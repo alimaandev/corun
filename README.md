@@ -1,4 +1,4 @@
-# Evade
+Corun
 
 > A 2D pixel-art endless runner where coding knowledge is your only weapon.
 
