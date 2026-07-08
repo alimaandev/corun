@@ -1,70 +1,87 @@
-# 🏃‍♂️ Temple Run: Coder's Edition
+# Evade
 
-An endless, fast-paced arcade runner built specifically for developers. Instead of dodging tree roots and demon monkeys, you are sprinting through a hazardous digital landscape dodging merge conflicts, memory leaks, and production crashes while collecting clean code tokens!
+> A 2D pixel-art endless runner where coding knowledge is your only weapon.
 
-## 🎮 Game Concept
+A monster is chasing you through a neon-pixel highway. Answer programming challenges correctly to stay ahead — one wrong answer and it closes in.
 
-You play as a junior developer who just pushed broken code directly to `main` right before a Friday evening deployment. The "Senior Architect Beast" is chasing you. Your goal is to survive the infinite codebase highway as long as you can.
+## Gameplay
 
-### 🕹️ Controls & Mechanics
-* **Jump (Up Arrow / W):** Leap over **Uncaught Exceptions** and **Broken Pipes**.
-* **Slide (Down Arrow / S):** Duck under **Legacy Code Overhangs** and **Technical Debt**.
-* **Turn Left/Right (Left/Right Arrows or A/D):** Navigate sharp architectural refactor pivots.
-* **Power-ups:** 
-  * ☕ **Coffee Boost:** Temporary speed burst and invincibility shield.
-  * 🛡️ **Linter Shield:** Absorbs one hit from a syntax error.
-  * 🪙 **Clean Code Tokens:** Collected to buy new developer skins (e.g., Senior Dev, Cyberpunk Hacker, StackOverflow Copier).
+- **3-lane road** — use `←`/`→` or `A`/`D` to switch lanes
+- **Coding challenges** pop up periodically (multiple choice, fill-in-the-blank, output prediction, spot the bug)
+- **Correct answer** = gap boost, monster falls back
+- **Wrong answer / timeout** = gap shrinks, monster closes in
+- **Gap hits zero** = game over
 
-## 🚀 Technical Stack
+### Question types
 
-List the technologies power this repository:
-* **Frontend/Engine:** [e.g., HTML5 Canvas / JavaScript / TypeScript / React]
-* **Styling:** [e.g., CSS3 / Tailwind CSS]
-* **Build Tool:** [e.g., Vite / Webpack]
+| Type | Description |
+|------|-------------|
+| Multiple choice | Pick the right answer from 4 options (keys 1-4) |
+| Fill-in-the-blank | Type the missing code, click Submit |
+| Output prediction | Read the code, predict what it prints |
+| Spot the bug | Find the error in the given snippet |
 
-## 🛠️ Installation & Local Setup
+### Features
 
-Get the game running locally on your machine in less than two minutes.
+- **57 challenges** across JavaScript, Python, Web, Databases, Algorithms, and General CS
+- **Adaptive difficulty** — 3 correct in a row = harder questions, 2 wrong = easier
+- **Combo multiplier** — streak 3+ → 1.5x, 5+ → 2x, 7+ → 3x, 10+ → 4x score
+- **Boss battles** every ~150 points — rapid-fire hard questions against Syntax Error, Null Pointer, and more
+- **Bonus rounds** every ~80 points — 5-second lightning round with 2x points
+- **Topic mastery badges** — 5+ correct in any topic unlocks a badge on game-over
+- **Monster proximity** — scales up and glows redder as the gap shrinks, with a pulsing vignette warning
 
-### Prerequisites
-Make sure you have [Node.js](https://nodejs.org) installed (version 18+ recommended).
+## Controls
 
-### Steps
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com
-   ```
-2. **Navigate into the project directory:**
-   ```bash
-   cd YOUR_REPO_NAME
-   ```
-3. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-4. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-5. **Play the game:** Open your browser and navigate to `http://localhost:5173` (or the port specified in your terminal).
+| Key | Action |
+|-----|--------|
+| `←` / `A` | Move left |
+| `→` / `D` | Move right |
+| `1`-`4` | Select answer |
+| `Enter` | Start / Restart |
 
-## 🗺️ Roadmap & Upcoming Features
+## Tech Stack
 
-- [ ] Add a **"Code Review Mode"** where obstacles spawn based on actual GitHub API issues.
-- [ ] Implement global leaderboards using a serverless backend.
-- [ ] Create a custom level designer based on `.json` AST configurations.
-- [ ] Add dark mode support for the UI dashboard.
+- **Engine** — HTML5 Canvas (React component)
+- **Language** — TypeScript
+- **Framework** — React 19
+- **Build** — Vite
+- **Font** — Press Start 2P (Google Fonts)
 
-## 🤝 Contributing
+## Getting Started
 
-Contributions are welcome! If you want to add new obstacles, power-ups, or themes, please follow these steps:
+```bash
+npm install
+npm run dev
+```
 
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git checkout -b feature/AmazingFeature`).
-5. Open a Pull Request.
+Open `http://localhost:3000`.
 
-## 📝 License
+## Build
 
-Distributed under the MIT License. See `LICENSE` for more information.
+```bash
+npm run build
+```
+
+Output goes to `dist/`.
+
+## Project Structure
+
+```
+src/
+├── game/
+│   ├── PixelRunner.tsx      — Canvas game loop, player/monster drawing, lane logic
+│   ├── challenges.ts        — 57 challenges, challenge selection
+│   ├── types.ts             — Shared types (Difficulty, Topic, QuestionType, etc.)
+│   ├── ThreeGame.tsx        — Legacy (kept for reference)
+│   └── renderer.ts          — Canvas rendering utilities
+├── components/
+│   ├── Game.tsx             — Screen state machine, boss/bonus/combo logic
+│   ├── ChallengeModal.tsx   — Question UI (all 4 types)
+│   ├── HUD.tsx              — Score, gap meter, streak display
+│   ├── StartScreen.tsx      — Topic/difficulty selection
+│   ├── GameOverScreen.tsx   — Final score + badges
+│   ├── PixelBackground.tsx  — Animated pixel-art background scene
+│   └── GameCanvas.tsx       — Legacy (kept for reference)
+└── index.css                — Animations, base styles, Press Start 2P
+```
