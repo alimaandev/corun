@@ -6,12 +6,21 @@ interface Badge {
   count: number
 }
 
+interface SavedClip {
+  id: number
+  url: string
+  score: number
+  date: string
+}
+
 interface Props {
   score: number
   highScore: number
   onRestart: () => void
   badges?: Badge[]
   clipBlob?: Blob | null
+  savedClips?: SavedClip[]
+  onDeleteClip?: (id: number) => void
 }
 
 const BADGE_LABELS: Record<string, string> = {
@@ -32,7 +41,7 @@ const BADGE_COLORS: Record<string, string> = {
   algorithms: '#00BCD4',
 }
 
-export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob }: Props) {
+export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob, savedClips, onDeleteClip }: Props) {
   const newHigh = score >= highScore && score > 0
 
   return (
@@ -64,6 +73,22 @@ export default function GameOverScreen({ score, highScore, onRestart, badges, cl
                   <span style={{ color: BADGE_COLORS[b.topic] || '#555', fontSize: 10 }}>★</span>
                   <span style={styles.badgeText}>{BADGE_LABELS[b.topic] || b.topic}</span>
                   <span style={{ ...styles.badgeCount, color: BADGE_COLORS[b.topic] || '#555' }}>{b.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {savedClips && savedClips.length > 0 && (
+          <div style={styles.badgeSection}>
+            <div style={styles.badgeTitle}>SAVED CLIPS</div>
+            <div style={{ maxHeight: 100, overflowY: 'auto', width: '100%' }}>
+              {savedClips.map(c => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 0', fontSize: 7, fontFamily: "'Press Start 2P', monospace" }}>
+                  <span style={{ color: '#888', width: 32 }}>{c.score}pts</span>
+                  <span style={{ color: '#555', flex: 1 }}>{c.date.slice(5, 10)}</span>
+                  <button onClick={() => { const a = document.createElement('a'); a.href = c.url; a.download = `coderun-${c.score}pts.webm`; a.click() }} style={styles.miniBtn}>▶</button>
+                  <button onClick={() => onDeleteClip?.(c.id)} style={{ ...styles.miniBtn, color: '#F44336' }}>✕</button>
                 </div>
               ))}
             </div>
@@ -153,6 +178,16 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Press Start 2P', monospace",
   },
   hint: { color: '#444', fontSize: 8, marginTop: 8, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
+  miniBtn: {
+    border: '2px solid #444',
+    background: '#1a1a1a',
+    color: '#aaa',
+    fontSize: 7,
+    cursor: 'pointer',
+    padding: '2px 5px',
+    fontFamily: "'Press Start 2P', monospace",
+    lineHeight: 1,
+  },
   shareBtn: {
     padding: '8px 24px',
     border: '3px solid rgba(79,195,247,0.4)',

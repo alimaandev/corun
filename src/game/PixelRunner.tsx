@@ -44,9 +44,12 @@ interface Props {
 
 interface GameS {
   score: number; gap: number; speed: number; streak: number
-  currentLane: number; runDist: number
+  currentLane: number
+  displayLane: number
   boostUntil: number; penaltyUntil: number
   scrollY: number; screenShake: number
+  flashTimer: number
+  flashGreen: boolean
   paused: boolean; multiplier: number
 }
 
@@ -222,10 +225,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stateRef = useRef<GameS>({
     score: 0, gap: GAP_START, speed: BASE_SPEED, streak: 0,
-    currentLane: 0, runDist: 0, boostUntil: 0, penaltyUntil: 0,
+    currentLane: 0, displayLane: 0,
+    boostUntil: 0, penaltyUntil: 0,
     scrollY: 0, screenShake: 0,
+    flashTimer: 0, flashGreen: false,
     paused: false, multiplier: 1,
   })
+  const lastFrameTimeRef = useRef(0)
   const gameRunning = useRef(false)
   const gameOverFired = useRef(false)
   const gameInitialized = useRef(false)
@@ -236,7 +242,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const frameCountRef = useRef(0)
   const propsRef = useRef(props)
   const animRef = useRef<number>(0)
-  const startTimeRef = useRef(0)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordedChunksRef = useRef<Blob[]>([])
   propsRef.current = props
@@ -253,7 +258,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     const cw = canvasRef.current?.width || window.innerWidth
     const roadW = LANE_W() * 3
     const roadX = (cw - roadW) / 2
-    return roadX + (stateRef.current.currentLane + 1) * LANE_W() + LANE_W() / 2
+    return roadX + (stateRef.current.displayLane + 1) * LANE_W() + LANE_W() / 2
   }
 
   const playerY = () => (canvasRef.current?.height || window.innerHeight) - 100
@@ -280,15 +285,16 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   function resetState() {
     const s = stateRef.current
     s.score = 0; s.gap = GAP_START; s.speed = BASE_SPEED; s.streak = 0
-    s.currentLane = 0; s.runDist = 0; s.boostUntil = 0; s.penaltyUntil = 0
+    s.currentLane = 0; s.displayLane = 0; s.boostUntil = 0; s.penaltyUntil = 0
     s.scrollY = 0; s.screenShake = 0
+    s.flashTimer = 0; s.flashGreen = false
     s.paused = false; s.multiplier = 1
+    lastFrameTimeRef.current = 0
     gameRunning.current = true
     gameOverFired.current = false
     gameInitialized.current = true
     usedChallengeIds.current.clear()
     frameCountRef.current = 0
-    startTimeRef.current = performance.now()
     clearTimeout(challengeTimerRef.current)
     scheduleChallenge()
   }
@@ -304,11 +310,15 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         s.gap = Math.min(100, s.gap + CORRECT_BOOST)
         s.streak++
         s.boostUntil = performance.now() + BOOST_DURATION
+        s.flashTimer = 0.3
+        s.flashGreen = true
       } else {
         s.gap = Math.max(5, s.gap - WRONG_PENALTY)
         s.streak = 0
         s.penaltyUntil = performance.now() + PENALTY_DURATION
         s.screenShake = 0.5
+        s.flashTimer = 0.3
+        s.flashGreen = false
       }
       clearTimeout(challengeTimerRef.current)
       scheduleChallenge()
@@ -319,6 +329,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       s.streak = 0
       s.penaltyUntil = performance.now() + PENALTY_DURATION
       s.screenShake = 0.8
+      s.flashTimer = 0.3
+      s.flashGreen = false
       clearTimeout(challengeTimerRef.current)
       scheduleChallenge()
     },
@@ -442,14 +454,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
     function loop(ts: number) {
       const s = stateRef.current
-      const elapsed = (ts - startTimeRef.current) / 1000
-      const dt = Math.min((ts - (s.runDist || ts)) / 1000, 0.05)
-      s.runDist = ts
+      const dt = lastFrameTimeRef.current ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05) : 0
+      lastFrameTimeRef.current = ts
 
       if (gameRunning.current) {
-        s.scrollY += s.speed * 4
-
         if (!s.paused) {
+          s.scrollY += s.speed * 4 * dt * 60
+
           const now = performance.now()
           if (now < s.boostUntil) {
             s.speed = BOOST_SPEED
@@ -465,9 +476,15 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
           s.gap -= GAP_DRAIN * s.speed * dt
         }
 
+        s.displayLane += (s.currentLane - s.displayLane) * 0.15
+
         if (s.screenShake > 0) {
           s.screenShake *= 0.9
           if (s.screenShake < 0.01) s.screenShake = 0
+        }
+
+        if (s.flashTimer > 0) {
+          s.flashTimer -= dt
         }
 
         if (s.gap <= 0) {
@@ -486,6 +503,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
           (Math.random() - 0.5) * s.screenShake * 6,
           (Math.random() - 0.5) * s.screenShake * 6,
         )
+      }
+
+      if (s.flashTimer > 0) {
+        ctx.fillStyle = s.flashGreen
+          ? `rgba(76,175,80,${s.flashTimer * 0.5})`
+          : `rgba(244,67,54,${s.flashTimer * 0.4})`
+        ctx.fillRect(0, 0, w, h)
       }
 
       const skyH = Math.floor(h * 0.32)

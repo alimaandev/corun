@@ -7,6 +7,7 @@ import GameOverScreen from './GameOverScreen'
 import PixelBackground from './PixelBackground'
 import { Challenge, HUDData, Difficulty, Topic, QuestionType } from '../game/types'
 import { getRandomChallenge, getDailyChallenge, markDailyCompleted, addToLeaderboard } from '../game/challenges'
+import { saveClip, downloadClip, getAllClips, deleteClip } from '../game/clips'
 
 type Screen = 'start' | 'playing' | 'gameover'
 type Mode = 'normal' | 'boss' | 'bonus'
@@ -76,6 +77,7 @@ export default function Game() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
   const [recording, setRecording] = useState(false)
   const [clipBlob, setClipBlob] = useState<Blob | null>(null)
+  const [savedClips, setSavedClips] = useState<{id: number; url: string; score: number; date: string}[]>([])
 
   const gameRef = useRef<PixelRunnerHandle>(null)
   const challengeRef = useRef(false)
@@ -106,6 +108,7 @@ export default function Game() {
     setComboText('')
     setRecording(false)
     setClipBlob(null)
+    setSavedClips([])
     challengeRef.current = false
     lastBossScore.current = 0
     lastBonusScore.current = 0
@@ -339,6 +342,9 @@ export default function Game() {
     })
     if (score > 0) addToLeaderboard(Math.floor(score))
     if (isDailyRef.current && score > 0) markDailyCompleted()
+    getAllClips().then(clips => {
+      setSavedClips(clips.map(c => ({ id: c.id!, url: c.url!, score: c.score, date: c.date })))
+    })
   }, [])
 
   const handleRestart = useCallback(() => {
@@ -500,7 +506,11 @@ export default function Game() {
           onClick={() => {
             if (gameRef.current?.isRecording()) {
               gameRef.current.stopRecording().then(blob => {
-                if (blob) setClipBlob(blob)
+                if (blob) {
+                  downloadClip(blob, hudData.score)
+                  saveClip(blob, hudData.score)
+                  setClipBlob(blob)
+                }
               })
               setRecording(false)
             } else {
@@ -557,6 +567,11 @@ export default function Game() {
             onRestart={handleRestart}
             badges={finalBadges}
             clipBlob={clipBlob}
+            savedClips={savedClips}
+            onDeleteClip={(id) => {
+              deleteClip(id)
+              setSavedClips(prev => prev.filter(c => c.id !== id))
+            }}
           />
         </>
       )}
