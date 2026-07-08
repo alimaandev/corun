@@ -463,7 +463,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       lastFrameTimeRef.current = ts
 
       if (gameRunning.current) {
-        if (!s.paused) {
+        if (!s.paused)  {
           s.scrollY += s.speed * 4 * dt * 60
 
           const now = performance.now()
