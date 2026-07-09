@@ -9,7 +9,7 @@
 <br />
 
 <div align="center">
-  <h1>🏃 CODE RUN</h1>
+  <h1>🏃 CORUN</h1>
   <h3>ESCAPE THE MONSTER</h3>
   <p><em>A retro pixel-art endless runner where coding knowledge is your only weapon.</em></p>
 </div>
@@ -24,7 +24,7 @@
 
 ## ✦ Overview
 
-**Code Run** transforms coding practice into an arcade experience. You control a runner on a 3-lane highway while a monster chases you. Answer programming challenges correctly to stay ahead — one wrong answer and it closes in.
+**CORUN** transforms coding practice into an arcade experience. You control a runner on a 3-lane highway while a monster chases you. Answer programming challenges correctly to stay ahead — one wrong answer and it closes in.
 
 ```
 ┌─────────────────────────────────────────┐
