@@ -58,80 +58,9 @@ button:active {
   50% { opacity: 0; }
 }
 
-/* ========== CLERK RESPONSIVE ========== */
-.cl-rootBox {
-  width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-}
-.cl-card {
-  max-width: 100% !important;
-}
-@media (max-width: 768px) {
-  .cl-card {
-    padding: 16px !important;
-  }
-  .cl-headerTitle {
-    font-size: 18px !important;
-    letter-spacing: 2px !important;
-  }
-  .cl-headerSubtitle {
-    font-size: 7px !important;
-  }
-  .cl-formButtonPrimary {
-    font-size: 9px !important;
-    padding: 8px 16px !important;
-  }
-  .cl-formFieldInput {
-    font-size: 13px !important;
-    padding: 8px 10px !important;
-  }
-  .cl-formFieldLabel {
-    font-size: 7px !important;
-  }
-  .cl-footerActionText,
-  .cl-footerActionLink {
-    font-size: 7px !important;
-  }
-  .cl-socialButtonsBlockButton {
-    font-size: 7px !important;
-  }
-}
-@media (max-width: 480px) {
-  .cl-card {
-    padding: 12px !important;
-    border-width: 3px !important;
-  }
-  .cl-headerTitle {
-    font-size: 14px !important;
-    letter-spacing: 1px !important;
-  }
-  .cl-headerSubtitle {
-    font-size: 6px !important;
-  }
-  .cl-formButtonPrimary {
-    font-size: 8px !important;
-    padding: 6px 12px !important;
-    letter-spacing: 1px !important;
-  }
-  .cl-formFieldInput {
-    font-size: 12px !important;
-    padding: 6px 8px !important;
-  }
-  .cl-formFieldLabel {
-    font-size: 6px !important;
-  }
-  .cl-footerActionText,
-  .cl-footerActionLink {
-    font-size: 6px !important;
-  }
-  .cl-socialButtonsBlockButton {
-    font-size: 6px !important;
-    padding: 4px 8px !important;
-  }
-  .cl-dividerLine {
-    margin: 8px 0 !important;
-  }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ========== TABLET RESPONSIVE ========== */

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useUser, useAuth } from '@clerk/clerk-react'
+import { useAuth0 } from '@auth0/auth0-react'
 import { Difficulty, Topic } from '../game/types'
 import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
 
@@ -21,8 +21,7 @@ const diffColors: Record<string, string> = {
 }
 
 export default function StartScreen({ highScore, onStart }: Props) {
-  const { user } = useUser()
-  const { signOut } = useAuth()
+  const { user, logout } = useAuth0()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [diff, setDiff] = useState<Difficulty>('medium')
   const dailyDone = isDailyCompleted()
@@ -37,8 +36,8 @@ export default function StartScreen({ highScore, onStart }: Props) {
         </div>
 
         <div style={styles.userBar}>
-          <span style={styles.userName}>@{user?.username}</span>
-          <button onClick={() => signOut()} style={styles.logoutBtn}>✕ LOGOUT</button>
+          <span style={styles.userName}>@{user?.nickname || user?.name || 'PLAYER'}</span>
+          <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })} style={styles.logoutBtn}>✕ LOGOUT</button>
         </div>
 
         <div style={styles.section}>
