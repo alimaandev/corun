@@ -92,6 +92,7 @@ export default function Game() {
   const bonusQuestionsRef = useRef(0)
   const bonusTimeLeftRef = useRef(0)
   const comboTimeoutRef = useRef<number>(0)
+  const dailyTimeoutRef = useRef<number>(0)
   const streakRef = useRef(0)
   const isDailyRef = useRef(false)
 
@@ -123,7 +124,7 @@ export default function Game() {
     if (isDaily) {
       isDailyRef.current = true
       const dc = getDailyChallenge()
-      setTimeout(() => {
+      dailyTimeoutRef.current = window.setTimeout(() => {
         challengeRef.current = true
         setCurrentChallenge(dc)
         setTimeLimit(8)
@@ -355,12 +356,14 @@ export default function Game() {
     challengeRef.current = false
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
+    clearTimeout(dailyTimeoutRef.current)
   }, [])
 
   useEffect(() => {
     return () => {
       clearTimeout(bonusTimerRef.current)
       clearTimeout(comboTimeoutRef.current)
+      clearTimeout(dailyTimeoutRef.current)
     }
   }, [])
 
@@ -374,7 +377,8 @@ export default function Game() {
         finishBonusRound()
       }
     }, 300)
-    return () => clearInterval(id)
+    bonusTimerRef.current = id
+    return () => { clearInterval(id); bonusTimerRef.current = 0 }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
 
@@ -531,7 +535,7 @@ export default function Game() {
         </button>
       )}
 
-      {screen === 'playing' && !currentChallenge && (
+      {screen === 'playing' && (
         <HUD {...hudData} isBoss={mode === 'boss'} isBonus={mode === 'bonus'} />
       )}
 

@@ -1,14 +1,26 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 
 export default function RegisterPage() {
   const { loginWithRedirect } = useAuth0()
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     loginWithRedirect({
       authorizationParams: { screen_hint: 'signup' },
-    })
+    }).catch(() => setError(true))
   }, [loginWithRedirect])
+
+  if (error) {
+    return (
+      <div style={wrap}>
+        <div style={{ color: '#F44336', fontSize: 9, fontFamily: "'Press Start 2P', monospace", textAlign: 'center', lineHeight: 2 }}>
+          AUTHENTICATION FAILED<br />
+          <span style={{ color: '#888', fontSize: 8, cursor: 'pointer' }} onClick={() => setError(false)}>TRY AGAIN</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={wrap}>

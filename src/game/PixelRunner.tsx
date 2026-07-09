@@ -1,6 +1,6 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Challenge, HUDData, Difficulty } from './types'
-import { getRandomChallenge, prefetchAIChallenge, clearAIPool } from './challenges'
+import { getRandomChallenge, clearAIPool } from './challenges'
 
 
 const GAP_START = 60
@@ -299,7 +299,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     frameCountRef.current = 0
     clearTimeout(challengeTimerRef.current)
     clearAIPool()
-    prefetchAIChallenge(topicRef.current, diffRef.current, usedChallengeIds.current)
     scheduleChallenge()
   }
 

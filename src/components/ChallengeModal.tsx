@@ -44,8 +44,13 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
     return () => clearInterval(interval.current)
   }, [challenge, timeLimit])
 
+  const timeoutFired = useRef(false)
   useEffect(() => {
-    if (timer <= 0 && !answered) { setAnswered(true); onTimeout() }
+    if (timer <= 0 && !answered && !timeoutFired.current) {
+      timeoutFired.current = true
+      setAnswered(true)
+      onTimeout()
+    }
   }, [timer, answered, onTimeout])
 
   useEffect(() => {
