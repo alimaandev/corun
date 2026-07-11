@@ -118,9 +118,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
   }, [handleInteract])
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
+    const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
 
     function resize() {

@@ -599,7 +599,6 @@ export default function Game() {
           ref={gameRef}
           topic={selectedTopic ?? undefined}
           difficulty={selectedDifficulty}
-          themeId={activeLevel?.id}
           onChallenge={handleChallenge}
           onGameOver={handleGameOver}
           onHUDUpdate={setHudData}
