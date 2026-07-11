@@ -3,6 +3,7 @@
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
   <img src="https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white" />
+  <img src="https://img.shields.io/badge/Canvas-FF6F00?style=for-the-badge&logo=html5&logoColor=white" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
 </div>
 
@@ -11,80 +12,111 @@
 <div align="center">
   <h1>🏃 CORUN</h1>
   <h3>ESCAPE THE MONSTER</h3>
-  <p><em>A retro pixel-art endless runner where coding knowledge is your only weapon.</em></p>
+  <p><em>A pixel-art coding adventure — story mode + endless runner.</em></p>
 </div>
-
-<br />
-
-<!-- TODO: Add screenshot
-![Gameplay Screenshot](.github/screenshots/gameplay.png)
--->
 
 <br />
 
 ## ✦ Overview
 
-**CORUN** transforms coding practice into an arcade experience. You control a runner on a 3-lane highway while a monster chases you. Answer programming challenges correctly to stay ahead — one wrong answer and it closes in.
+**CORUN** is a 2D pixel-art coding game with two modes:
+
+| Mode | Description |
+|------|-------------|
+| **Story Mode** | Walk through 9 themed levels as a pixel character, interact with NPCs, solve real JavaScript code puzzles to unlock the path, and experience a narrative with cutscenes. |
+| **Freeplay / Endless** | Classic auto-runner on a 3-lane highway. Dodge a chasing monster by answering programming challenges. Speed increases, combos stack, boss battles test your skills. |
 
 ```
 ┌─────────────────────────────────────────┐
 │                                         │
-│   ←/A  →/D          1-4 to answer      │
+│  STORY MODE                             │
+│                                         │
+│   ┌─────────────────────────┐           │
+│   │  [NPC]        [CODE]    │           │
+│   │       🧑──►──⚡         │           │
+│   │                     🚪  │           │
+│   │  ═══════════════════    │           │
+│   └─────────────────────────┘           │
+│   Walk · interact · solve · escape      │
+│                                         │
+│  FREEPLAY MODE                          │
 │   ┌────┐                                │
-│   │ 👾 │  ← MONSTER (grows as gap       │
-│   └────┘       gets smaller)            │
-│                                         │
-│   ════════ ════════ ════════  ← 3 lanes │
-│                                         │
+│   │ 👾 │  ← MONSTER                     │
+│   └────┘                                │
+│   ════════ ════════ ════════  ← 3 lanes│
 │   ┌────┐                                │
 │   │ 🏃 │  ← YOU                         │
 │   └────┘                                │
 │                                         │
-│   SCORE: 1,240   GAP: 42m   SPD: 1.0x  │
 └─────────────────────────────────────────┘
 ```
 
 <br />
 
-<!-- TODO: Add feature screenshots
-![Features](.github/screenshots/features.png)
--->
+## ✦ Story Mode — 9 Levels
 
-## ✦ Features
+Navigate a 2D side-scrolling world. Move left/right with arrow keys, press **E** to interact with glowing terminals and NPCs.
 
-| Feature | Description |
-|---------|-------------|
-| **Real-time Coding** | Solve programming challenges while running from the monster. Every second counts. |
-| **4 Question Types** | Multiple choice, fill-in-the-blank, output prediction, and spot the bug. |
-| **Adaptive Difficulty** | 3 correct in a row = harder questions, 2 wrong = easier. The game adjusts to you. |
-| **Combo Multiplier** | Streak 3+ → 1.5x, 5+ → 2x, 7+ → 3x, 10+ → 4x score multiplier. |
-| **Boss Battles** | Every ~150 points, face a coding boss (Syntax Error, Null Pointer, etc.). Hard questions, big rewards. |
-| **Bonus Rounds** | Every ~80 points, a 5-second lightning round with 2x points. |
-| **Daily Challenges** | One shot per day. Compete against yourself and the leaderboard. |
-| **Mastery Badges** | 5+ correct answers in any topic unlocks a badge shown on game-over. |
-| **Screen Recording** | Built-in canvas recording to capture and share your best runs. |
-| **Monster Proximity** | The monster scales up, glows redder, and the screen pulses as the gap shrinks. |
+| # | Level | Theme | Puzzle |
+|---|-------|-------|--------|
+| 1 | **Escape the Prison** | Dark prison walls, torches | `if` statements, guard patrol logic |
+| 2 | **The Sewers** | Green-lit pipes, toxic air | Loops, array filtering |
+| 3 | **The Forest** | Tall trees, hidden paths | String manipulation, recursion |
+| 4 | **The Village** | Warm huts, suspicious villagers | Object manipulation, data transformation |
+| 5 | **The Bandit Camp** | Tents, campfires | Sorting algorithms, comparison |
+| 6 | **The Mountain Pass** | Rocky cliffs, bridges | Math utilities, coordinate geometry |
+| 7 | **The Fortress Walls** | Guard towers, portcullis | Stack/queue logic, validation |
+| 8 | **The Throne Room** | Grand hall, king's court | State machines, complex conditions |
+| 9 | **The Final Escape** | Collapsing castle | Everything combined + final boss |
+
+Each level contains:
+- **2 code puzzles** — write real JavaScript in a retro terminal overlay, `new Function()` sandbox evaluates your answer
+- **NPC interactions** — guards, wardens, forest spirits, villagers, bandits, stone guardians, commanders, king, and elena
+- **Cutscenes** — intro/outro with typed dialogue, screen effects (shake, flash, fade), torch flicker
+- **Exit zones** — reach the end to progress
+
+After beating all 9 levels, an **ending cutscene** plays followed by a credits overlay.
 
 <br />
 
-## ✦ Topics
+## ✦ Freeplay / Endless Mode
 
-```
-General CS     JavaScript     Python
-Web Dev        Databases      Algorithms
-```
+The original arcade experience: control a runner on a 3-lane highway while being chased by a scaling monster.
 
-17 questions across all topics and difficulty levels (Easy / Medium / Hard).
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Real-time Coding** | Challenges pop up mid-run — answer fast or the monster closes in |
+| **4 Question Types** | Multiple choice, fill-in-the-blank, output prediction, spot the bug |
+| **Adaptive Difficulty** | 3 correct = harder, 2 wrong = easier |
+| **Combo Multiplier** | 3+ streak → 1.5x, 5+ → 2x, 7+ → 3x, 10+ → 4x score |
+| **Boss Battles** | Every ~150 pts — coding bosses with hard questions, big rewards |
+| **Bonus Rounds** | Every ~80 pts — 5-second lightning round, 2x points |
+| **Daily Challenges** | One shot per day, compare via leaderboard |
+| **Mastery Badges** | 5+ correct in a topic = badge on game-over screen |
+| **Monster Proximity** | Grows, glows redder, screen pulses as gap shrinks |
+| **Screen Recording** | Built-in canvas recording, save/share your runs |
 
 <br />
 
 ## ✦ Controls
 
+### Story Mode
+
 | Key | Action |
 |-----|--------|
-| `←` / `A` | Move left |
-| `→` / `D` | Move right |
-| `Swipe` (mobile) | Swipe or tap sides to change lane |
+| `←` / `→` | Move left / right |
+| `E` | Interact with terminal / NPC |
+| `Enter` | Advance dialogue |
+
+### Freeplay Mode
+
+| Key | Action |
+|-----|--------|
+| `←` / `A` | Move left lane |
+| `→` / `D` | Move right lane |
+| `Swipe` (mobile) | Swipe or tap sides |
 | `1` – `4` | Select answer |
 | `Enter` | Start / Restart |
 | `Type & Submit` | Fill-in-the-blank answers |
@@ -96,9 +128,46 @@ Web Dev        Databases      Algorithms
 ```
 Frontend   │ React 18 · TypeScript · Vite 6 · HTML5 Canvas
 Auth       │ Auth0 (hosted Universal Login)
-Storage    │ localStorage · IndexedDB (clips)
+State      │ React hooks + localStorage
+Storage    │ localStorage (progress, leaderboard) · IndexedDB (clips)
 Fonts      │ Press Start 2P · JetBrains Mono
 Deploy     │ Vercel (SPA)
+```
+
+<br />
+
+## ✦ Project Structure
+
+```
+src/
+├── game/
+│   ├── PixelRunner.tsx      — Endless runner game loop (3-lane, monster, challenges)
+│   ├── sceneEngine.tsx      — 2D adventure engine (walk, NPC patrol, triggers)
+│   ├── sceneCanvas.tsx      — Cutscene renderer (typed dialogue, effects, sprites)
+│   ├── codeTerminal.tsx     — In-game code editor (textarea, sandbox eval, feedback)
+│   ├── codePuzzles.ts       — 18 story-mode coding puzzles + evaluateCode sandbox
+│   ├── levelScenes.ts       — 9 level 2D layouts (ground, walls, NPCs, triggers)
+│   ├── levels.ts            — All 9 level configs + ENDING_SCENE + progress helpers
+│   ├── themes.ts            — 9 visual themes (sky, ground, road, scenery, particles)
+│   ├── sprites.ts           — 10 NPC pixel-art drawing functions
+│   ├── challenges.ts        — 17 built-in challenges, daily challenge, leaderboard
+│   └── types.ts             — Shared TypeScript types
+├── components/
+│   ├── Game.tsx             — Screen state machine, routing, auth integration
+│   ├── ChallengeModal.tsx   — Question UI (4 types)
+│   ├── HUD.tsx              — Score bar, gap meter, streak display
+│   ├── LevelSelect.tsx      — Level grid with lock/star/replay states
+│   ├── StartScreen.tsx      — Mode select, topic/difficulty, leaderboard
+│   ├── GameOverScreen.tsx   — Final score, badges, saved clips
+│   ├── PixelBackground.tsx  — Animated pixel-art landscape
+│   └── ProtectedRoute.tsx   — Auth0 route guard
+├── pages/
+│   ├── LandingPage.tsx      — Marketing homepage with parallax hero
+│   ├── LoginPage.tsx        — Auth0 login redirect
+│   └── RegisterPage.tsx     — Auth0 signup redirect
+├── main.tsx                 — Entry point + Auth0Provider
+├── App.tsx                  — Router setup
+└── index.css                — Global styles & animations
 ```
 
 <br />
@@ -107,7 +176,7 @@ Deploy     │ Vercel (SPA)
 
 ```bash
 # Clone & install
-git clone https://github.com/your-username/corun.git
+git clone https://github.com/alimaandev/corun.git
 cd corun
 npm install
 
@@ -128,6 +197,8 @@ Open `http://localhost:3000`.
 ```bash
 npm run build    # Output → dist/
 ```
+
+The production build uses `tsc -b && vite build` for type-checking before bundling.
 
 <br />
 
@@ -163,59 +234,14 @@ Set these environment variables in Vercel:
 
 <br />
 
-## ✦ Project Structure
-
-```
-src/
-├── game/
-│   ├── PixelRunner.tsx      — Canvas game loop, player/monster drawing, lane logic
-│   ├── challenges.ts        — 17 built-in challenges, daily challenge, leaderboard
-│   └── types.ts             — Shared TypeScript types
-├── components/
-│   ├── Game.tsx             — Screen state machine, boss/bonus/combo logic
-│   ├── ChallengeModal.tsx   — Question UI (all 4 types)
-│   ├── HUD.tsx              — Score bar, gap meter, streak display
-│   ├── StartScreen.tsx      — Topic/difficulty selection + leaderboard
-│   ├── GameOverScreen.tsx   — Final score, badges, saved clips
-│   ├── PixelBackground.tsx  — Animated pixel-art landscape background
-│   └── ProtectedRoute.tsx   — Auth0 route guard
-├── pages/
-│   ├── LandingPage.tsx      — Marketing homepage with parallax hero
-│   ├── LoginPage.tsx        — Auth0 login redirect
-│   └── RegisterPage.tsx     — Auth0 signup redirect
-├── main.tsx                 — Entry point + Auth0Provider
-├── App.tsx                  — Router setup
-└── index.css                — Global styles & animations
-```
-
-<br />
-
 ## ✦ Screenshots
 
-<!-- 
+<!--
 TODO: Add screenshots here
-
-| Landing | Gameplay | Boss Battle |
-|---------|----------|-------------|
-| ![Landing](.github/screenshots/landing.png) | ![Game](.github/screenshots/gameplay.png) | ![Boss](.github/screenshots/boss.png) |
+| Landing | Story Mode | Freeplay |
+|---------|-----------|----------|
+| ![Landing](.github/screenshots/landing.png) | ![Story](.github/screenshots/story.png) | ![Freeplay](.github/screenshots/freeplay.png) |
 -->
-
-<details>
-<summary><b>Click to view placeholder layout</b></summary>
-
-```
-┌────────────────────────────────────────────────┐
-│                                                │
-│   [Insert: Landing Page Hero]                  │
-│   [Insert: Feature Cards]                      │
-│   [Insert: Gameplay / Challenge Modal]         │
-│   [Insert: Boss Battle UI]                     │
-│   [Insert: Game Over Screen]                    │
-│                                                │
-└────────────────────────────────────────────────┘
-```
-
-</details>
 
 <br />
 
