@@ -313,7 +313,7 @@ export const ALL_LEVELS: LevelConfig[] = [
     enemyType: 'Royal Sorcerer', scoreTarget: 1200,
     boss: { name: 'THE KING', hp: 5, difficulty: 'hard' },
     storyIntro: 'The Throne Room',
-    storyOutro: 'Code Run — Complete',
+    storyOutro: 'corun — Complete',
     sceneIntro: sc('#1a0a1a', '#2a0a2a', '#2a1a2a', '#3a1a3a', [
       { type: 'throne', x: 0.65, y: 0.15, w: 0.18, h: 0.35, color: '#ffd700' },
       { type: 'pillar', x: 0.05, y: 0.0, w: 0.08, h: 0.6 },

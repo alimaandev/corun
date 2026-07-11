@@ -104,8 +104,8 @@ export default function GameOverScreen({ score, highScore, onRestart, badges, cl
             onClick={() => {
               if (navigator.share && clipBlob) {
                 navigator.share({
-                  title: 'Code Run - My Score!',
-                  text: `I scored ${score} points in Code Run! Can you beat me?`,
+title: 'corun - My Score!',
+text: `I scored ${score} points in corun! Can you beat me?`,
                   files: [new File([clipBlob], 'code-run-clip.webm', { type: 'video/webm' })],
                 }).catch(() => {})
               }
