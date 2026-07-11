@@ -77,7 +77,7 @@ export default function LandingPage() {
       <nav style={{ ...nav, background: scrolled ? 'rgba(10,10,26,0.96)' : 'transparent', borderBottom: scrolled ? '4px solid rgba(79,195,247,0.1)' : '4px solid transparent' }}>
         <div style={navIn}>
           <button onClick={() => go('home')} style={logoBtn}>
-            <span style={logoText}>CODE RUN</span>
+            <span style={logoText}>CORUN</span>
             <span style={logoBadge}>β</span>
           </button>
           <div className="lp-links" style={navLinks}>
@@ -103,7 +103,7 @@ export default function LandingPage() {
             <div style={heroBadge}>v1.0</div>
 
             <div style={titleBlock}>
-              <div className="lp-title" style={heroTitle}>CODE RUN</div>
+              <div className="lp-title" style={heroTitle}>CORUN</div>
               <div style={heroSub}>ESCAPE THE MONSTER</div>
             </div>
 
