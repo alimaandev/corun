@@ -198,6 +198,9 @@ button:active {
   .modal-card p {
     font-size: 11px !important;
   }
+  .modal-card .timer-seconds {
+    font-size: 9px !important;
+  }
 
   .rec-btn {
     bottom: 8px !important;
@@ -209,5 +212,27 @@ button:active {
   .gameover-content {
     max-height: 95vh !important;
     padding: 16px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .topic-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 3px !important;
+  }
+  .topic-grid button {
+    font-size: 7px !important;
+    padding: 6px 2px !important;
+    letter-spacing: 0 !important;
+  }
+  .screen-title {
+    font-size: 16px !important;
+    letter-spacing: 3px !important;
+  }
+  .modal-card p {
+    font-size: 10px !important;
+  }
+  .gameover-content {
+    padding: 12px 8px !important;
   }
 }
