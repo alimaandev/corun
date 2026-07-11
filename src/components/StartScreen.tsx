@@ -88,7 +88,7 @@ export default function StartScreen({ highScore, onStart, onStoryMode }: Props) 
               letterSpacing: m ? 2 : 4,
               lineHeight: 1.2,
             }}>
-              CODE RUN
+              CORUN
             </div>
             <div style={{
               color: '#555',
