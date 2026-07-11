@@ -601,6 +601,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         width: '100%',
         height: '100%',
         imageRendering: 'pixelated',
+        touchAction: 'none',
       }}
     />
   )

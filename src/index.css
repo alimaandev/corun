@@ -15,7 +15,6 @@ html, body, #root {
   text-rendering: optimizeLegibility;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none;
 }
 
 button {
