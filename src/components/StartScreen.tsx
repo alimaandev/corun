@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { Difficulty, Topic } from '../game/types'
 import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
@@ -6,271 +6,272 @@ import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
 interface Props {
   highScore: number
   onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
+  onStoryMode?: () => void
 }
 
-const difficulties: { id: Difficulty; label: string }[] = [
-  { id: 'easy', label: 'EASY' },
-  { id: 'medium', label: 'MEDIUM' },
-  { id: 'hard', label: 'HARD' },
+const difficulties: { id: Difficulty; label: string; color: string }[] = [
+  { id: 'easy', label: 'Easy', color: '#4CAF50' },
+  { id: 'medium', label: 'Medium', color: '#FFA000' },
+  { id: 'hard', label: 'Hard', color: '#F44336' },
 ]
 
-const diffColors: Record<string, string> = {
-  easy: '#4CAF50',
-  medium: '#FFA000',
-  hard: '#F44336',
-}
+const mono = "'Press Start 2P', monospace"
+const sans = "'JetBrains Mono', 'Inter', monospace"
 
-export default function StartScreen({ highScore, onStart }: Props) {
+export default function StartScreen({ highScore, onStart, onStoryMode }: Props) {
   const { user, logout } = useAuth0()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [diff, setDiff] = useState<Difficulty>('medium')
   const dailyDone = isDailyCompleted()
   const lb = getLeaderboard()
+  const [m, setM] = useState(false)
+
+  useEffect(() => {
+    const check = () => setM(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   return (
-    <div style={styles.page}>
-      <div style={styles.content}>
-        <div style={styles.titleBlock}>
-          <div className="screen-title" style={styles.pixelTitle}>CODE RUN</div>
-          <div style={styles.pixelSub}>ESCAPE THE MONSTER</div>
-        </div>
-
-        <div style={styles.userBar}>
-          <span style={styles.userName}>@{user?.nickname || user?.name || 'PLAYER'}</span>
-          <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })} style={styles.logoutBtn}>✕ LOGOUT</button>
-        </div>
-
-        <div style={styles.section}>
-          <div style={styles.sectionLabel}>SUBJECT</div>
-          <div className="topic-grid" style={styles.topics}>
-            <button
-              onClick={() => setTopic(null)}
-              style={{
-                ...styles.topicBtn,
-                borderColor: topic === null ? '#4FC3F7' : '#3a3a3a',
-                background: topic === null ? '#1a2a3a' : '#111',
-                color: topic === null ? '#4FC3F7' : '#555',
-              }}
-            >ALL</button>
-            {TOPICS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTopic(t.id)}
-                style={{
-                  ...styles.topicBtn,
-                  borderColor: topic === t.id ? '#4FC3F7' : '#3a3a3a',
-                  background: topic === t.id ? '#1a2a3a' : '#111',
-                  color: topic === t.id ? '#4FC3F7' : '#555',
-                }}
-              >{t.label.toUpperCase()}</button>
-            ))}
-          </div>
-        </div>
-
-        <div style={styles.section}>
-          <div style={styles.sectionLabel}>DIFFICULTY</div>
-          <div style={styles.diffs}>
-            {difficulties.map(d => (
-              <button
-                key={d.id}
-                onClick={() => setDiff(d.id)}
-                style={{
-                  ...styles.diffBtn,
-                  borderColor: diff === d.id ? diffColors[d.id] : '#3a3a3a',
-                  background: diff === d.id ? '#1a1a1a' : '#111',
-                  color: diff === d.id ? diffColors[d.id] : '#555',
-                }}
-              >{d.label}</button>
-            ))}
-          </div>
-        </div>
-
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: '#0a0a1a',
+      display: 'grid', gridTemplateRows: 'auto 1fr auto',
+      padding: m ? '0 16px' : '0 48px',
+      overflow: 'auto',
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '14px 0',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <span style={{ color: '#fff', fontSize: m ? 12 : 14, fontFamily: sans }}>
+          {user?.nickname || user?.name || 'player'}
+        </span>
         <button
-          onClick={() => onStart(null, 'medium', true)}
-          disabled={dailyDone}
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
           style={{
-            ...styles.dailyBtn,
-            opacity: dailyDone ? 0.4 : 1,
-            borderColor: dailyDone ? '#3a3a3a' : '#FFD700',
-            color: dailyDone ? '#555' : '#FFD700',
-            cursor: dailyDone ? 'default' : 'pointer',
+            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'transparent',
+            color: '#fff', fontSize: m ? 11 : 13,
+            padding: m ? '4px 12px' : '6px 16px',
+            cursor: 'pointer', fontFamily: sans,
+            transition: 'all 0.15s',
           }}
-        >
-          {dailyDone ? '✓ DAILY DONE' : '☀ DAILY CHALLENGE'}
-        </button>
-
-        <button onClick={() => onStart(topic, diff)} style={styles.startBtn}>
-          ▶ START GAME
-        </button>
-
-        <div style={styles.hint}>PRESS ENTER</div>
-
-        {highScore > 0 && (
-          <div style={styles.best}>
-            ★ BEST: {highScore.toLocaleString()}
-          </div>
-        )}
-
-        {lb.length > 0 && (
-          <div style={styles.lbSection}>
-            <div style={styles.sectionLabel}>LEADERBOARD</div>
-            {lb.slice(0, 5).map((e, i) => (
-              <div key={i} style={styles.lbRow}>
-                <span style={styles.lbRank}>{i + 1}</span>
-                <span style={styles.lbScore}>{e.score.toLocaleString()}</span>
-                <span style={styles.lbDate}>{e.date}</span>
-              </div>
-            ))}
-          </div>
-        )}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+        >Logout</button>
       </div>
+
+      <div style={{
+        display: 'flex',
+        flexDirection: m ? 'column' : 'row',
+        gap: m ? 24 : 64,
+        alignItems: m ? 'stretch' : 'center',
+        justifyContent: 'center',
+        padding: m ? '16px 0' : 0,
+        minHeight: 0,
+      }}>
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          gap: m ? 20 : 32,
+          flexShrink: 0,
+          textAlign: m ? 'center' : 'left',
+          alignItems: m ? 'center' : 'flex-start',
+        }}>
+          <div>
+            <div style={{
+              color: '#4FC3F7',
+              fontSize: m ? 32 : 56,
+              fontFamily: mono,
+              letterSpacing: m ? 2 : 4,
+              lineHeight: 1.2,
+            }}>
+              CODE RUN
+            </div>
+            <div style={{
+              color: '#555',
+              fontSize: m ? 13 : 16,
+              fontFamily: sans, marginTop: 6,
+            }}>
+              Escape the Monster
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: 10,
+            width: m ? '100%' : 'auto',
+          }}>
+            <button
+              onClick={() => onStoryMode?.()}
+              style={{
+                border: '2px solid rgba(79,195,247,0.3)',
+                background: 'rgba(79,195,247,0.06)',
+                color: '#4FC3F7',
+                fontSize: m ? 13 : 15,
+                padding: m ? '10px 20px' : '12px 24px',
+                cursor: 'pointer',
+                fontFamily: mono,
+                letterSpacing: 3,
+                textAlign: 'center',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,195,247,0.15)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(79,195,247,0.06)' }}
+            >
+              ⚔  STORY MODE
+            </button>
+            <button
+              onClick={() => onStart(null, 'medium', true)}
+              disabled={dailyDone}
+              style={{
+                border: '1px solid rgba(255,215,0,0.3)',
+                background: 'rgba(255,215,0,0.04)',
+                color: dailyDone ? '#333' : '#FFD700',
+                fontSize: m ? 12 : 14,
+                padding: m ? '7px 16px' : '8px 20px',
+                cursor: dailyDone ? 'default' : 'pointer',
+                fontFamily: sans,
+                opacity: dailyDone ? 0.5 : 1,
+                textAlign: 'center',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!dailyDone) e.currentTarget.style.background = 'rgba(255,215,0,0.1)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.04)' }}
+            >
+              {dailyDone ? 'Daily Challenge — Completed' : '☀ Daily Challenge'}
+            </button>
+
+            <button
+              onClick={() => onStart(topic, diff)}
+              style={{
+                border: '2px solid #4FC3F7',
+                background: '#4FC3F7',
+                color: '#0a0a1a',
+                fontSize: m ? 15 : 18,
+                padding: m ? '12px 20px' : '14px 24px',
+                cursor: 'pointer',
+                fontFamily: mono,
+                letterSpacing: 2,
+                fontWeight: 700,
+                transition: 'all 0.15s',
+                textAlign: 'center',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#6dd5ff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#4FC3F7' }}
+            >
+              ▶  START GAME
+            </button>
+
+            {highScore > 0 && (
+              <div style={{ color: '#FFD700', fontSize: m ? 12 : 14, fontFamily: sans, textAlign: 'center' }}>
+                ★ Best: {highScore.toLocaleString()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: m ? 16 : 24,
+          width: m ? '100%' : 'auto',
+        }}>
+          <div>
+            <div style={{ color: '#888', fontSize: m ? 10 : 12, fontFamily: sans, marginBottom: 6, letterSpacing: 1 }}>
+              SUBJECT
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              <button
+                onClick={() => setTopic(null)}
+                style={{
+                  padding: m ? '6px 14px' : '8px 18px', border: '2px solid', cursor: 'pointer',
+                  fontSize: m ? 11 : 13, fontFamily: sans, transition: 'all 0.15s',
+                  borderColor: topic === null ? '#4FC3F7' : 'rgba(255,255,255,0.08)',
+                  background: topic === null ? 'rgba(79,195,247,0.1)' : 'transparent',
+                  color: topic === null ? '#4FC3F7' : '#666',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FC3F7'; e.currentTarget.style.color = '#4FC3F7' }}
+                onMouseLeave={e => { if (topic !== null) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
+              >All</button>
+              {TOPICS.map(t => {
+                const sel = topic === t.id
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTopic(t.id)}
+                    style={{
+                      padding: m ? '6px 14px' : '8px 18px', border: '2px solid', cursor: 'pointer',
+                      fontSize: m ? 11 : 13, fontFamily: sans, transition: 'all 0.15s',
+                      borderColor: sel ? '#4FC3F7' : 'rgba(255,255,255,0.08)',
+                      background: sel ? 'rgba(79,195,247,0.1)' : 'transparent',
+                      color: sel ? '#4FC3F7' : '#666',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FC3F7'; e.currentTarget.style.color = '#4FC3F7' }}
+                    onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
+                  >{t.label}</button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color: '#888', fontSize: m ? 10 : 12, fontFamily: sans, marginBottom: 6, letterSpacing: 1 }}>
+              DIFFICULTY
+            </div>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {difficulties.map(d => {
+                const sel = diff === d.id
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => setDiff(d.id)}
+                    style={{
+                      flex: 1, padding: m ? '8px 10px' : '10px 18px', border: '2px solid', cursor: 'pointer',
+                      fontSize: m ? 12 : 14, fontFamily: sans, fontWeight: 600,
+                      transition: 'all 0.15s',
+                      borderColor: sel ? d.color : 'rgba(255,255,255,0.08)',
+                      background: sel ? `${d.color}15` : 'transparent',
+                      color: sel ? d.color : '#666',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = d.color; e.currentTarget.style.color = d.color }}
+                    onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
+                  >{d.label}</button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {lb.length > 0 && (
+        <div style={{
+          borderTop: '1px solid rgba(255,255,255,0.04)',
+          padding: m ? '10px 0' : '12px 0',
+          display: 'flex', gap: m ? 8 : 16,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ color: '#555', fontSize: m ? 10 : 12, fontFamily: sans, letterSpacing: 1 }}>
+            LEADERBOARD
+          </span>
+          {lb.slice(0, 5).map((e, i) => (
+            <div key={i} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+              <span style={{
+                color: i === 0 ? '#FFD700' : i === 1 ? '#aaa' : i === 2 ? '#CD7F32' : '#444',
+                fontSize: m ? 10 : 11, fontFamily: sans,
+              }}>
+                {i + 1}
+              </span>
+              <span style={{ color: '#eee', fontSize: m ? 11 : 12, fontFamily: sans }}>
+                {e.score.toLocaleString()}
+              </span>
+              <span style={{ color: '#444', fontSize: m ? 9 : 11, fontFamily: sans }}>
+                {e.date}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    position: 'fixed', inset: 0, zIndex: 200,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 20,
-  },
-  content: {
-    position: 'relative',
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    maxWidth: 440, width: '100%',
-    maxHeight: '95vh',
-    overflowY: 'auto',
-    animation: 'fadeIn 0.3s ease-out',
-    background: 'rgba(0,0,0,0.75)',
-    border: '4px solid rgba(79,195,247,0.3)',
-    borderRadius: 0,
-    padding: '28px 24px 24px',
-  },
-  titleBlock: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    marginBottom: 20,
-  },
-  pixelTitle: {
-    color: '#4FC3F7',
-    fontSize: 38,
-    fontWeight: 900,
-    letterSpacing: 6,
-    fontFamily: "'Press Start 2P', monospace",
-    lineHeight: 1.4,
-    textShadow: '3px 3px 0 #1a3a4a',
-  },
-  pixelSub: {
-    color: '#888',
-    fontSize: 9,
-    letterSpacing: 4,
-    fontFamily: "'Press Start 2P', monospace",
-    marginTop: 6,
-  },
-  section: {
-    width: '100%', marginBottom: 14,
-  },
-  sectionLabel: {
-    color: '#aaa', fontSize: 9,
-    fontWeight: 700, letterSpacing: 3,
-    marginBottom: 6,
-    fontFamily: "'Press Start 2P', monospace",
-  },
-  topics: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr 1fr',
-    gap: 4,
-  },
-  topicBtn: {
-    padding: '8px 4px',
-    border: '3px solid',
-    fontSize: 9,
-    fontWeight: 700,
-    cursor: 'pointer',
-    textAlign: 'center' as const,
-    transition: 'all 0.1s',
-    fontFamily: "'Press Start 2P', monospace",
-    letterSpacing: 1,
-  },
-  diffs: {
-    display: 'flex', gap: 4,
-  },
-  diffBtn: {
-    flex: 1,
-    padding: '10px 12px',
-    border: '3px solid',
-    fontSize: 10,
-    fontWeight: 700,
-    cursor: 'pointer',
-    textAlign: 'center' as const,
-    transition: 'all 0.1s',
-    fontFamily: "'Press Start 2P', monospace",
-    letterSpacing: 2,
-  },
-  dailyBtn: {
-    padding: '8px 24px',
-    border: '3px solid',
-    background: '#1a1a00',
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: 2,
-    transition: 'all 0.1s',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
-    fontFamily: "'Press Start 2P', monospace",
-  },
-  startBtn: {
-    padding: '12px 48px',
-    border: '4px solid rgba(79,195,247,0.5)',
-    background: '#1a2a3a',
-    color: '#4FC3F7',
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: 'pointer',
-    letterSpacing: 4,
-    transition: 'all 0.1s',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    marginTop: 6,
-    fontFamily: "'Press Start 2P', monospace",
-  },
-  lbSection: {
-    width: '100%', marginTop: 10,
-  },
-  lbRow: {
-    display: 'flex', alignItems: 'center', gap: 6,
-    padding: '2px 0',
-    fontSize: 8,
-    fontFamily: "'Press Start 2P', monospace",
-  },
-  lbRank: { color: '#666', width: 14, textAlign: 'right' as const },
-  lbScore: { color: '#FFD700', flex: 1, textAlign: 'right' as const },
-  lbDate: { color: '#444', fontSize: 7 },
-  hint: {
-    color: '#444',
-    fontSize: 8,
-    marginTop: 10,
-    fontFamily: "'Press Start 2P', monospace",
-    letterSpacing: 2,
-  },
-  userBar: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginBottom: 12, width: '100%',
-  },
-  userName: {
-    color: '#aaa', fontSize: 9,
-    fontFamily: "'Press Start 2P', monospace", letterSpacing: 1,
-  },
-  logoutBtn: {
-    border: '3px solid #3a3a3a', background: '#111',
-    color: '#666', fontSize: 8, padding: '4px 10px',
-    fontFamily: "'Press Start 2P', monospace", cursor: 'pointer',
-    transition: 'all 0.1s',
-  },
-  best: {
-    color: '#FFD700',
-    fontSize: 10,
-    fontWeight: 700,
-    marginTop: 8,
-    fontFamily: "'Press Start 2P', monospace",
-    letterSpacing: 1,
-  },
 }

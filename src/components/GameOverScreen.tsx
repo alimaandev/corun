@@ -21,6 +21,10 @@ interface Props {
   clipBlob?: Blob | null
   savedClips?: SavedClip[]
   onDeleteClip?: (id: number) => void
+  levelMode?: boolean
+  levelName?: string
+  onRetryLevel?: () => void
+  onBackToLevels?: () => void
 }
 
 const BADGE_LABELS: Record<string, string> = {
@@ -41,14 +45,14 @@ const BADGE_COLORS: Record<string, string> = {
   algorithms: '#00BCD4',
 }
 
-export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob, savedClips, onDeleteClip }: Props) {
+export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob, savedClips, onDeleteClip, levelMode, levelName, onRetryLevel, onBackToLevels }: Props) {
   const newHigh = score >= highScore && score > 0
 
   return (
     <div style={styles.page}>
       <div className="gameover-content" style={styles.content}>
         <div className="screen-title" style={styles.title}>GAME OVER</div>
-        <div style={styles.sub}>THE MONSTER CAUGHT YOU</div>
+        <div style={styles.sub}>{levelMode && levelName ? `${levelName} — ` : ''}THE MONSTER CAUGHT YOU</div>
 
         <div style={styles.scoreBox}>
           <div style={styles.scoreLabel}>SCORE</div>
@@ -112,9 +116,26 @@ export default function GameOverScreen({ score, highScore, onRestart, badges, cl
           </button>
         )}
 
-        <button onClick={onRestart} style={styles.btn}>
-          ↻ PLAY AGAIN
-        </button>
+        {levelMode ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+            {onRetryLevel && (
+              <button onClick={onRetryLevel} style={styles.btn}>
+                ↻ RETRY LEVEL
+              </button>
+            )}
+            {onBackToLevels && (
+              <button onClick={onBackToLevels} style={{
+                ...styles.btn, borderColor: 'rgba(79,195,247,0.3)', color: '#4FC3F7',
+              }}>
+                ◀ BACK TO LEVELS
+              </button>
+            )}
+          </div>
+        ) : (
+          <button onClick={onRestart} style={styles.btn}>
+            ↻ PLAY AGAIN
+          </button>
+        )}
 
         <div style={styles.hint}>PRESS ENTER</div>
       </div>

@@ -3,9 +3,10 @@ import { HUDData } from '../game/types'
 interface Props extends HUDData {
   isBoss?: boolean
   isBonus?: boolean
+  levelName?: string
 }
 
-export default function HUD({ score, gap, speed, streak, isBoss, isBonus }: Props) {
+export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelName }: Props) {
   const barColor = gap > 40 ? '#4CAF50' : gap > 20 ? '#FFA000' : '#F44336'
 
   return (
@@ -22,6 +23,16 @@ export default function HUD({ score, gap, speed, streak, isBoss, isBonus }: Prop
           </div>
         )}
       </div>
+
+      {levelName && (
+        <div style={{
+          color: 'rgba(79,195,247,0.2)', fontSize: 6,
+          fontFamily: "'Press Start 2P', monospace", letterSpacing: 1,
+          textAlign: 'center' as const, flexShrink: 0,
+        }}>
+          {levelName}
+        </div>
+      )}
 
       <div style={styles.center}>
         <div style={styles.gapLabel}>GAP</div>

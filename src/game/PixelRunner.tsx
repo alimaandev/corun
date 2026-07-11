@@ -1,6 +1,7 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Challenge, HUDData, Difficulty } from './types'
 import { getRandomChallenge, clearAIPool } from './challenges'
+import { THEMES, LevelTheme } from './themes'
 
 
 const GAP_START = 60
@@ -38,6 +39,7 @@ export interface PixelRunnerHandle {
 interface Props {
   topic?: string
   difficulty?: Difficulty
+  themeId?: number
   onChallenge: (challenge: Challenge) => void
   onGameOver: (score: number) => void
   onHUDUpdate: (data: HUDData) => void
@@ -90,7 +92,7 @@ function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, fr
   ctx.fillRect(x + 1 * s, y + 4 * s - legSwing, 4 * s, 3 * s)
 }
 
-function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number, danger: number) {
+function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number, danger: number, theme?: LevelTheme) {
   ctx.imageSmoothingEnabled = false
   const s = PX_SCALE
   const bob = Math.sin(frame * 0.12) * 5 * danger
@@ -103,29 +105,34 @@ function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, f
   ctx.scale(sc, sc)
   ctx.translate(-sx, -sy)
 
-  ctx.fillStyle = '#1a1a00'
+  const body = theme?.monsterBody || '#1a1a00'
+  const eye = theme?.monsterEye || '#ff0000'
+  const mouth = theme?.monsterMouth || '#8B0000'
+  const teeth = theme?.monsterTeeth || '#ffffff'
+
+  ctx.fillStyle = body
   ctx.fillRect(x - 14 * s, y - 10 * s, 28 * s, 20 * s)
 
-  ctx.fillStyle = '#2a2a00'
+  ctx.fillStyle = body
   ctx.fillRect(x - 16 * s, y - 12 * s, 32 * s, 16 * s)
   ctx.fillRect(x - 14 * s, y - 14 * s, 28 * s, 4 * s)
   ctx.fillRect(x - 12 * s, y - 18 * s, 24 * s, 6 * s)
 
-  ctx.fillStyle = '#ff0000'
+  ctx.fillStyle = eye
   ctx.fillRect(x - 8 * s, y - 14 * s, 6 * s, 6 * s)
   ctx.fillRect(x + 2 * s, y - 14 * s, 6 * s, 6 * s)
   ctx.fillStyle = '#ffff00'
   ctx.fillRect(x - 6 * s, y - 12 * s, 2 * s, 2 * s)
   ctx.fillRect(x + 4 * s, y - 12 * s, 2 * s, 2 * s)
 
-  ctx.fillStyle = '#3a3a00'
+  ctx.fillStyle = body
   ctx.fillRect(x - 4 * s, y - 22 * s, 3 * s, 5 * s)
   ctx.fillRect(x + 1 * s, y - 22 * s, 3 * s, 5 * s)
 
-  ctx.fillStyle = '#8B0000'
+  ctx.fillStyle = mouth
   ctx.fillRect(x - 10 * s, y + 2 * s, 20 * s, 3 * s)
 
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = teeth
   for (let tx = -8 * s; tx <= 6 * s; tx += 4 * s) {
     ctx.fillRect(x + tx, y + 1 * s, 2 * s, 3 * s)
   }
@@ -137,20 +144,20 @@ function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, f
   ctx.restore()
 }
 
-function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, speed: number) {
+function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, speed: number, theme?: LevelTheme) {
   const roadW = LANE_W() * 3
   const roadX = (w - roadW) / 2
 
-  ctx.fillStyle = '#7a7a5a'
+  ctx.fillStyle = theme?.roadFill || '#7a7a5a'
   ctx.fillRect(0, 0, w, h)
 
-  ctx.fillStyle = '#5a5a3a'
+  ctx.fillStyle = theme?.roadFill || '#5a5a3a'
   ctx.fillRect(roadX, 0, roadW, h)
 
-  ctx.fillStyle = '#4a4a2a'
+  ctx.fillStyle = theme?.roadEdge || '#4a4a2a'
   ctx.fillRect(roadX, 0, roadW, 3)
 
-  ctx.fillStyle = '#ffff00'
+  ctx.fillStyle = theme?.roadStripe || '#ffff00'
   const laneH = 30
   const gap = 20
   const total = laneH + gap
@@ -162,7 +169,7 @@ function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: n
     }
   }
 
-  ctx.fillStyle = '#3a3a2a'
+  ctx.fillStyle = theme?.roadEdge || '#3a3a2a'
   ctx.fillRect(roadX - 6, 0, 6, h)
   ctx.fillRect(roadX + roadW, 0, 6, h)
 }
@@ -186,27 +193,160 @@ function drawPixelCloud(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
   }
 }
 
-function drawTrees(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number) {
-  const treeSpacing = 80
-  const offset = scroll % treeSpacing
+function drawScenery(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, theme: LevelTheme) {
+  const spacing = 80
+  const offset = scroll % spacing
+  const s = Math.max(1, Math.floor(w / 250))
 
-  for (let y = -treeSpacing + offset; y < h + treeSpacing; y += treeSpacing) {
-    const leftX = 16
-    const rightX = w - 16 - 12
+  for (let y = -spacing + offset; y < h + spacing; y += spacing) {
+    const lx = 16
+    const rx = w - 16 - 12
+    const sy = y + 40
 
-    ctx.fillStyle = '#4a2a0a'
-    ctx.fillRect(leftX + 4, y + 40, 6, 20)
-    ctx.fillRect(rightX + 2, y + 40, 6, 20)
+    switch (theme.sceneryType) {
+      case 'walls': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx - 4, sy - 8, 24, 40)
+        ctx.fillRect(rx - 4, sy - 8, 24, 40)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 2, sy + 4, 6, 6)
+        ctx.fillRect(lx + 12, sy + 4, 6, 6)
+        ctx.fillRect(rx + 2, sy + 4, 6, 6)
+        ctx.fillRect(rx + 12, sy + 4, 6, 6)
+        break
+      }
+      case 'pillars': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx, sy - 4, 20, 36)
+        ctx.fillRect(rx, sy - 4, 20, 36)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 3, sy - 4, 14, 4)
+        ctx.fillRect(lx + 3, sy + 8, 14, 3)
+        ctx.fillRect(rx + 3, sy - 4, 14, 4)
+        ctx.fillRect(rx + 3, sy + 8, 14, 3)
+        break
+      }
+      case 'pipes': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx, sy, 22, 28)
+        ctx.fillRect(rx, sy, 22, 28)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 3, sy + 6, 5, 16)
+        ctx.fillRect(rx + 3, sy + 6, 5, 16)
+        ctx.fillStyle = 'rgba(0,0,0,0.2)'
+        ctx.fillRect(lx + 8, sy + 3, 6, 4)
+        ctx.fillRect(rx + 8, sy + 3, 6, 4)
+        break
+      }
+      case 'trees': {
+        ctx.fillStyle = '#4a2a0a'
+        ctx.fillRect(lx + 4, sy, 6, 20)
+        ctx.fillRect(rx + 2, sy, 6, 20)
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx, sy - 12, 14, 14)
+        ctx.fillRect(lx + 2, sy - 20, 10, 10)
+        ctx.fillRect(rx - 2, sy - 12, 14, 14)
+        ctx.fillRect(rx, sy - 20, 10, 10)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 6, sy - 24, 2, 4)
+        ctx.fillRect(rx + 4, sy - 24, 2, 4)
+        break
+      }
+      case 'buildings': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx - 6, sy - 16, 28, 36)
+        ctx.fillRect(rx - 6, sy - 16, 28, 36)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 2, sy - 8, 6, 6)
+        ctx.fillRect(lx + 14, sy - 8, 6, 6)
+        ctx.fillRect(rx + 2, sy - 8, 6, 6)
+        ctx.fillRect(rx + 14, sy - 8, 6, 6)
+        ctx.fillStyle = theme.accentColor + '44'
+        ctx.fillRect(lx + 6, sy - 12, 4, 4)
+        ctx.fillRect(rx + 6, sy - 12, 4, 4)
+        break
+      }
+      case 'columns': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx - 6, sy - 8, 28, 36)
+        ctx.fillRect(rx - 6, sy - 8, 28, 36)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx, sy - 8, 4, 36)
+        ctx.fillRect(lx + 16, sy - 8, 4, 36)
+        ctx.fillRect(rx, sy - 8, 4, 36)
+        ctx.fillRect(rx + 16, sy - 8, 4, 36)
+        ctx.fillStyle = theme.accentColor + '33'
+        ctx.fillRect(lx + 4, sy - 4, 12, 4)
+        ctx.fillRect(rx + 4, sy - 4, 12, 4)
+        break
+      }
+      case 'grand': {
+        ctx.fillStyle = theme.sceneryColor1
+        ctx.fillRect(lx - 8, sy - 12, 32, 36)
+        ctx.fillRect(rx - 8, sy - 12, 32, 36)
+        ctx.fillStyle = theme.sceneryColor2
+        ctx.fillRect(lx + 2, sy - 12, 4, 36)
+        ctx.fillRect(lx + 20, sy - 12, 4, 36)
+        ctx.fillRect(rx + 2, sy - 12, 4, 36)
+        ctx.fillRect(rx + 20, sy - 12, 4, 36)
+        ctx.fillStyle = theme.accentColor
+        ctx.fillRect(lx + 6, sy - 8, 12, 3)
+        ctx.fillRect(lx + 6, sy + 4, 12, 3)
+        ctx.fillRect(rx + 6, sy - 8, 12, 3)
+        ctx.fillRect(rx + 6, sy + 4, 12, 3)
+        break
+      }
+    }
+  }
+}
 
-    ctx.fillStyle = '#2a7a2a'
-    ctx.fillRect(leftX, y + 28, 14, 14)
-    ctx.fillRect(leftX + 2, y + 20, 10, 10)
-    ctx.fillRect(rightX - 2, y + 28, 14, 14)
-    ctx.fillRect(rightX, y + 20, 10, 10)
+function drawParticles(ctx: CanvasRenderingContext2D, w: number, h: number, frame: number, theme: LevelTheme) {
+  const t = theme.particleType
+  if (!t) return
+  const s = Math.max(1, Math.floor(w / 250))
 
-    ctx.fillStyle = '#3a9a3a'
-    ctx.fillRect(leftX + 6, y + 16, 2, 4)
-    ctx.fillRect(rightX + 4, y + 16, 2, 4)
+  for (let i = 0; i < 8; i++) {
+    const px = ((i * 137 + frame * (0.5 + i * 0.1)) % (w + 40)) - 20
+    const py = ((i * 97 + frame * (0.8 + i * 0.05)) % (h * 0.6)) + h * 0.1
+
+    switch (t) {
+      case 'torchlight': {
+        const flicker = Math.sin(frame * 0.05 + i * 2) * 0.3 + 0.7
+        ctx.fillStyle = `rgba(255,${150 + i * 20},0,${flicker * 0.08})`
+        const r = 4 + (i % 3) * 2
+        ctx.beginPath()
+        ctx.arc(px, py, r * s * 0.5, 0, Math.PI * 2)
+        ctx.fill()
+        break
+      }
+      case 'fireflies': {
+        const glow = Math.sin(frame * 0.03 + i * 1.5) * 0.5 + 0.5
+        ctx.fillStyle = `rgba(170,255,136,${glow * 0.15})`
+        const r = 2 + (i % 2)
+        ctx.beginPath()
+        ctx.arc(px, py, r * s * 0.5, 0, Math.PI * 2)
+        ctx.fill()
+        break
+      }
+      case 'snow': {
+        ctx.fillStyle = `rgba(255,255,255,${0.1 + (i % 3) * 0.05})`
+        ctx.fillRect(px, py, 2, 3)
+        break
+      }
+      case 'bubbles': {
+        ctx.fillStyle = `rgba(50,200,80,${0.05 + (i % 3) * 0.03})`
+        ctx.beginPath()
+        ctx.arc(px, py, 2 + (i % 2), 0, Math.PI * 2)
+        ctx.fill()
+        break
+      }
+      case 'embers': {
+        const rise = Math.sin(frame * 0.04 + i) * 2
+        ctx.fillStyle = `rgba(255,${80 + i * 20},0,${0.08 + (i % 3) * 0.04})`
+        ctx.fillRect(px + rise, py - rise, 2, 3)
+        break
+      }
+    }
   }
 }
 
@@ -239,18 +379,25 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const topicRef = useRef<string | undefined>(undefined)
   const diffRef = useRef<string | undefined>(undefined)
   const usedChallengeIds = useRef<Set<number>>(new Set())
+  const disposedRef = useRef(false)
   const challengeTimerRef = useRef<number>(0)
   const frameCountRef = useRef(0)
   const propsRef = useRef(props)
   const animRef = useRef<number>(0)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordedChunksRef = useRef<Blob[]>([])
+  const themeRef = useRef<LevelTheme>(THEMES[props.themeId ?? 1] || THEMES[1])
   propsRef.current = props
 
-  const autoStartRef = useRef({ topic: props.topic })
+  useEffect(() => {
+    themeRef.current = THEMES[props.themeId ?? 1] || THEMES[1]
+  }, [props.themeId])
 
   useEffect(() => {
-    topicRef.current = autoStartRef.current.topic
+    topicRef.current = props.topic
+  }, [props.topic])
+
+  useEffect(() => {
     resetState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -277,7 +424,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     challengeTimerRef.current = window.setTimeout(async () => {
       if (gameRunning.current && !stateRef.current.paused) {
         const challenge = await getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
-        if (!gameRunning.current) return
+        if (!gameRunning.current || disposedRef.current) return
         usedChallengeIds.current.add(challenge.id)
         propsRef.current.onChallenge(challenge)
       }
@@ -308,6 +455,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       resetState()
     },
     handleAnswer(correct: boolean) {
+      if (!gameRunning.current) return
       const s = stateRef.current
       if (correct) {
         s.gap = Math.min(100, s.gap + CORRECT_BOOST)
@@ -327,6 +475,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       scheduleChallenge()
     },
     handleTimeout() {
+      if (!gameRunning.current) return
       const s = stateRef.current
       s.gap = Math.max(5, s.gap - TIMEOUT_PENALTY)
       s.streak = 0
@@ -340,6 +489,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     setPaused(paused: boolean) {
       stateRef.current.paused = paused
       if (paused) clearTimeout(challengeTimerRef.current)
+      else scheduleChallenge()
     },
     setMultiplier(mult: number) {
       stateRef.current.multiplier = mult
@@ -425,7 +575,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!gameInitialized.current) return
+      if (!gameInitialized.current || disposedRef.current) return
       if (!gameRunning.current) {
         if (!gameOverFired.current) {
           gameOverFired.current = true
@@ -448,9 +598,9 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }, [])
 
   useEffect(() => {
-    const canvas = canvasRef.current!
+    const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d')
     if (!ctx) return
     let anim = 0
     let disposed = false
@@ -529,10 +679,11 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         ctx.fillRect(0, 0, w, h)
       }
 
+      const theme = themeRef.current
       const skyH = Math.floor(h * 0.32)
       const grad = ctx.createLinearGradient(0, 0, 0, skyH)
-      grad.addColorStop(0, '#2a4a7a')
-      grad.addColorStop(1, '#7ab8fc')
+      grad.addColorStop(0, theme.skyTop)
+      grad.addColorStop(1, theme.skyBottom)
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, w, skyH)
 
@@ -542,7 +693,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         drawPixelCloud(ctx, cx, cy, 50 + i * 10, i)
       }
 
-      ctx.fillStyle = '#2a5a2a'
+      ctx.fillStyle = theme.hillColor
       ctx.beginPath()
       ctx.moveTo(0, skyH - 8)
       for (let x = 0; x <= w; x += 8) {
@@ -553,14 +704,15 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       ctx.closePath()
       ctx.fill()
 
-      ctx.fillStyle = '#3a7a3a'
+      ctx.fillStyle = theme.groundColor
       ctx.fillRect(0, skyH + 12, w, h - skyH)
 
-      drawRoad(ctx, w, h, s.scrollY, s.speed)
-      drawTrees(ctx, w, h, s.scrollY)
+      drawRoad(ctx, w, h, s.scrollY, s.speed, theme)
+      drawScenery(ctx, w, h, s.scrollY, theme)
+      drawParticles(ctx, w, h, ts * 0.001, theme)
 
       const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
-      drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger)
+      drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger, theme)
       drawPixelPlayer(ctx, playerX(), playerY(), ts * 0.001)
 
       drawSpeedLines(ctx, w, h, s.speed, ts * 0.001)
@@ -584,6 +736,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
     return () => {
       disposed = true
+      disposedRef.current = true
+      gameRunning.current = false
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(anim)
       clearTimeout(challengeTimerRef.current)
