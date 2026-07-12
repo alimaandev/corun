@@ -17,6 +17,7 @@ const PLAYER_SPEED = 3
 const PLAYER_W = 20
 const PLAYER_H = 30
 const GROUND_Y = 450
+const MOBILE_BREAK = 768
 
 interface NpcState {
   id: string
@@ -140,7 +141,10 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
       const W = canvas.width
       const H = canvas.height
       const dpr = window.devicePixelRatio || 1
-      const sc = Math.min(W / BASE_W / dpr, H / BASE_H / dpr)
+      const isMobile = window.innerWidth < MOBILE_BREAK
+      const sc = isMobile
+        ? Math.max(W / BASE_W / dpr, H / BASE_H / dpr)
+        : Math.min(W / BASE_W / dpr, H / BASE_H / dpr)
       const ox = (W / dpr - BASE_W * sc) / 2
       const oy = (H / dpr - BASE_H * sc) / 2
       const scene = sceneRef.current
@@ -157,15 +161,17 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
       ctx.save()
       ctx.translate(-camX, 0)
 
+      const fillW = (scene?.worldWidth ?? BASE_W) + BASE_W
+      const fillH = BASE_H + 200
       const skyH = Math.floor(BASE_H * 0.45)
       const grad = ctx.createLinearGradient(0, 0, 0, skyH)
       grad.addColorStop(0, theme.skyTop)
       grad.addColorStop(1, theme.skyBottom)
       ctx.fillStyle = grad
-      ctx.fillRect(0, 0, (scene?.worldWidth ?? BASE_W) + BASE_W, skyH)
+      ctx.fillRect(-100, -100, fillW + 200, skyH + 100)
 
       ctx.fillStyle = theme.groundColor
-      ctx.fillRect(0, GROUND_Y, (scene?.worldWidth ?? BASE_W) + BASE_W, BASE_H - GROUND_Y)
+      ctx.fillRect(-100, GROUND_Y, fillW + 200, fillH - GROUND_Y)
 
       if (scene) {
         for (const g of scene.ground) {
@@ -242,7 +248,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
         ctx.fillStyle = `rgba(79,195,247,${pulse})`
         ctx.font = '8px monospace'
         ctx.textAlign = 'center'
-        ctx.fillText('[E] INTERACT', BASE_W / 2, BASE_H - 20)
+        ctx.fillText('[E] INTERACT', (W / dpr) / 2, (H / dpr) - 40)
         ctx.textAlign = 'start'
       }
 
