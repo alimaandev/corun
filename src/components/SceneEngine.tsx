@@ -45,6 +45,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
   const viewportWRef = useRef(BASE_W)
 
   const [showPuzzle, setShowPuzzle] = useState<CodePuzzle | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const [showComplete, setShowComplete] = useState(false)
 
   useEffect(() => {
@@ -112,11 +113,15 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
     function onKeyUp(e: KeyboardEvent) {
       keysDown.current.delete(e.key.toLowerCase())
     }
+    function checkMobile() { setIsMobile(window.innerWidth < MOBILE_BREAK) }
+    checkMobile()
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('resize', checkMobile)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('resize', checkMobile)
     }
   }, [handleInteract])
 
@@ -354,7 +359,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
       }}>
         &larr; &rarr; MOVE &nbsp;|&nbsp; E INTERACT
       </div>
-      <button
+      {isMobile && (<><button
         onTouchStart={handleTouchLeftStart}
         onTouchEnd={handleTouchLeftEnd}
         onMouseDown={handleTouchLeftStart}
@@ -412,7 +417,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
         aria-label="Interact"
-      >E</button>
+      >E</button></>)}
       {showComplete && (
         <div style={{
           position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
