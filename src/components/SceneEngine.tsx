@@ -117,6 +117,11 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
     }
   }, [handleInteract])
 
+  const handleTouchLeftStart = useCallback(() => { keysDown.current.add('arrowleft') }, [])
+  const handleTouchLeftEnd = useCallback(() => { keysDown.current.delete('arrowleft') }, [])
+  const handleTouchRightStart = useCallback(() => { keysDown.current.add('arrowright') }, [])
+  const handleTouchRightEnd = useCallback(() => { keysDown.current.delete('arrowright') }, [])
+
   useEffect(() => {
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
@@ -337,6 +342,65 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
       }}>
         &larr; &rarr; MOVE &nbsp;|&nbsp; E INTERACT
       </div>
+      <button
+        onTouchStart={handleTouchLeftStart}
+        onTouchEnd={handleTouchLeftEnd}
+        onMouseDown={handleTouchLeftStart}
+        onMouseUp={handleTouchLeftEnd}
+        onMouseLeave={handleTouchLeftEnd}
+        style={{
+          position: 'fixed', bottom: 16, left: 16,
+          width: 64, height: 64,
+          background: 'rgba(79,195,247,0.25)',
+          border: '2px solid rgba(79,195,247,0.5)',
+          borderRadius: 12,
+          color: '#4FC3F7', fontSize: 24,
+          fontFamily: "'Press Start 2P', monospace",
+          zIndex: 220,
+          cursor: 'pointer',
+          touchAction: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+        aria-label="Move left"
+      >&larr;</button>
+      <button
+        onTouchStart={handleTouchRightStart}
+        onTouchEnd={handleTouchRightEnd}
+        onMouseDown={handleTouchRightStart}
+        onMouseUp={handleTouchRightEnd}
+        onMouseLeave={handleTouchRightEnd}
+        style={{
+          position: 'fixed', bottom: 16, left: 96,
+          width: 64, height: 64,
+          background: 'rgba(79,195,247,0.25)',
+          border: '2px solid rgba(79,195,247,0.5)',
+          borderRadius: 12,
+          color: '#4FC3F7', fontSize: 24,
+          fontFamily: "'Press Start 2P', monospace",
+          zIndex: 220,
+          cursor: 'pointer',
+          touchAction: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+        aria-label="Move right"
+      >&rarr;</button>
+      <button
+        onClick={handleInteract}
+        style={{
+          position: 'fixed', bottom: 16, right: 16,
+          width: 56, height: 56,
+          background: 'rgba(79,195,247,0.25)',
+          border: '2px solid rgba(79,195,247,0.5)',
+          borderRadius: '50%',
+          color: '#4FC3F7', fontSize: 12,
+          fontFamily: "'Press Start 2P', monospace",
+          zIndex: 220,
+          cursor: 'pointer',
+          touchAction: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+        aria-label="Interact"
+      >E</button>
       {showComplete && (
         <div style={{
           position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
