@@ -42,6 +42,8 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
   const nearTriggerRef = useRef<TriggerZone | null>(null)
   const activePuzzleRef = useRef<CodePuzzle | null>(null)
 
+  const viewportWRef = useRef(BASE_W)
+
   const [showPuzzle, setShowPuzzle] = useState<CodePuzzle | null>(null)
   const [showComplete, setShowComplete] = useState(false)
 
@@ -147,11 +149,14 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
         : Math.min(W / BASE_W / dpr, H / BASE_H / dpr)
       const ox = (W / dpr - BASE_W * sc) / 2
       const oy = (H / dpr - BASE_H * sc) / 2
+      const viewW = W / dpr
       const scene = sceneRef.current
       const theme = themeRef.current
       const pxScale = Math.max(1, Math.floor(sc * 2))
       const frame = frameRef.current
       const camX = cameraX.current
+
+      viewportWRef.current = viewW / sc
 
       ctx.clearRect(0, 0, W, H)
       ctx.save()
@@ -290,8 +295,9 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
         playerX.current = nx
       }
 
-      const targetCam = playerX.current - BASE_W / 2 + PLAYER_W / 2
-      cameraX.current = Math.max(0, Math.min(scene.worldWidth - BASE_W, targetCam))
+      const vw = viewportWRef.current
+      const targetCam = playerX.current - vw / 2 + PLAYER_W / 2
+      cameraX.current = Math.max(0, Math.min(scene.worldWidth - vw, targetCam))
 
       const px = playerX.current
       const py = GROUND_Y - PLAYER_H
