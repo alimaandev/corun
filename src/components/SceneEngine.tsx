@@ -147,8 +147,8 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
       const sc = isMobile
         ? Math.max(W / BASE_W / dpr, H / BASE_H / dpr)
         : Math.min(W / BASE_W / dpr, H / BASE_H / dpr)
-      const ox = (W / dpr - BASE_W * sc) / 2
-      const oy = (H / dpr - BASE_H * sc) / 2
+      const ox = isMobile ? 0 : (W / dpr - BASE_W * sc) / 2
+      const oy = isMobile ? 0 : (H / dpr - BASE_H * sc) / 2
       const viewW = W / dpr
       const scene = sceneRef.current
       const theme = themeRef.current
@@ -253,7 +253,7 @@ export default function SceneEngine({ levelId, onComplete }: Props) {
         ctx.fillStyle = `rgba(79,195,247,${pulse})`
         ctx.font = '8px monospace'
         ctx.textAlign = 'center'
-        ctx.fillText('[E] INTERACT', (W / dpr) / 2, (H / dpr) - 40)
+        ctx.fillText('[E] INTERACT', (W / dpr / 2) / sc, (H / dpr - 20) / sc)
         ctx.textAlign = 'start'
       }
 
