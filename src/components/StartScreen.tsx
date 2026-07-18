@@ -6,22 +6,23 @@ import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
 import { TOPICS, isDailyCompleted } from '../game/challenges'
 import { getGlobalLeaderboard, getDailyLeaderboard } from '../lib/leaderboard'
+import { Topic, Difficulty } from '../game/types'
 
 interface Props {
   highScore: number
-  onStart: (topic: string | null, difficulty: string, isDaily?: boolean) => void
+  onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
   onStoryMode: () => void
   playerName?: string
   profileId?: string
 }
 
-const DIFFICULTIES = ['easy', 'medium', 'hard']
+const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 const LEADERBOARD_TABS = ['ALL TIME', 'TODAY']
 
 export default function StartScreen({ highScore, onStart, onStoryMode, playerName, profileId }: Props) {
   const { logout } = useAuth0()
-  const [subject, setSubject] = useState('all')
-  const [difficulty, setDifficulty] = useState('medium')
+  const [subject, setSubject] = useState<Topic | 'all'>('all')
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [lbTab, setLbTab] = useState(0)
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [dailyLeaderboard, setDailyLeaderboard] = useState<any[]>([])
