@@ -1,277 +1,212 @@
 import { useState, useEffect } from 'react'
+import { Canvas } from '@react-three/fiber'
 import { useAuth0 } from '@auth0/auth0-react'
-import { Difficulty, Topic } from '../game/types'
-import { TOPICS, isDailyCompleted, getLeaderboard } from '../game/challenges'
+import TerminalScene from './three/TerminalScene'
+import GlassButton from './GlassButton'
+import GlassPanel from './GlassPanel'
+import { TOPICS, isDailyCompleted } from '../game/challenges'
+import { getGlobalLeaderboard, getDailyLeaderboard } from '../lib/leaderboard'
 
 interface Props {
   highScore: number
-  onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
-  onStoryMode?: () => void
+  onStart: (topic: string | null, difficulty: string, isDaily?: boolean) => void
+  onStoryMode: () => void
+  playerName?: string
+  profileId?: string
 }
 
-const difficulties: { id: Difficulty; label: string; color: string }[] = [
-  { id: 'easy', label: 'Easy', color: '#4CAF50' },
-  { id: 'medium', label: 'Medium', color: '#FFA000' },
-  { id: 'hard', label: 'Hard', color: '#F44336' },
-]
+const DIFFICULTIES = ['easy', 'medium', 'hard']
+const LEADERBOARD_TABS = ['ALL TIME', 'TODAY']
 
-const mono = "'Press Start 2P', monospace"
-const sans = "'JetBrains Mono', 'Inter', monospace"
+export default function StartScreen({ highScore, onStart, onStoryMode, playerName, profileId }: Props) {
+  const { logout } = useAuth0()
+  const [subject, setSubject] = useState('all')
+  const [difficulty, setDifficulty] = useState('medium')
+  const [lbTab, setLbTab] = useState(0)
+  const [leaderboard, setLeaderboard] = useState<any[]>([])
+  const [dailyLeaderboard, setDailyLeaderboard] = useState<any[]>([])
+  const [playerRank, setPlayerRank] = useState<number | null>(null)
+  const [dailyDone, setDailyDone] = useState(false)
 
-export default function StartScreen({ highScore, onStart, onStoryMode }: Props) {
-  const { user, logout } = useAuth0()
-  const [topic, setTopic] = useState<Topic | null>(null)
-  const [diff, setDiff] = useState<Difficulty>('medium')
-  const dailyDone = isDailyCompleted()
-  const lb = getLeaderboard()
-  const [m, setM] = useState(false)
+  useEffect(() => { setDailyDone(isDailyCompleted()) }, [])
 
   useEffect(() => {
-    const check = () => setM(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
+    if (!profileId) return
+    getGlobalLeaderboard(profileId).then(res => {
+      if (res) { setLeaderboard(res.entries || []); setPlayerRank(res.yourRank ?? null) }
+    }).catch(() => setLeaderboard([]))
+  }, [profileId])
+
+  useEffect(() => {
+    if (!profileId) return
+    getDailyLeaderboard(profileId).then(res => {
+      if (res) setDailyLeaderboard(res.entries || [])
+    }).catch(() => setDailyLeaderboard([]))
+  }, [profileId])
+
+  const entries = lbTab === 0 ? leaderboard : dailyLeaderboard
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: '#0a0a1a',
-      display: 'grid', gridTemplateRows: 'auto 1fr auto',
-      padding: m ? '0 16px' : '0 48px',
-      overflow: 'auto',
-    }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 0',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <span style={{ color: '#fff', fontSize: m ? 12 : 14, fontFamily: sans }}>
-          {user?.nickname || user?.name || 'player'}
-        </span>
-        <button
-          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-          style={{
-            border: '1px solid rgba(255,255,255,0.1)',
-            background: 'transparent',
-            color: '#fff', fontSize: m ? 11 : 13,
-            padding: m ? '4px 12px' : '6px 16px',
-            cursor: 'pointer', fontFamily: sans,
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-        >Logout</button>
-      </div>
+    <div style={{ position: 'fixed', inset: 0, background: '#0a0a0a', zIndex: 100 }}>
+      <Canvas
+        gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
+        camera={{ position: [0, 0, 5], fov: 50, near: 0.1, far: 30 }}
+        style={{ position: 'fixed', inset: 0, display: 'block', zIndex: 0 }}
+      >
+        <TerminalScene />
+      </Canvas>
 
       <div style={{
-        display: 'flex',
-        flexDirection: m ? 'column' : 'row',
-        gap: m ? 24 : 64,
-        alignItems: m ? 'stretch' : 'center',
-        justifyContent: 'center',
-        padding: m ? '16px 0' : 0,
-        minHeight: 0,
+        position: 'absolute', inset: 0, zIndex: 10,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '40px 16px', overflow: 'auto',
       }}>
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          gap: m ? 20 : 32,
-          flexShrink: 0,
-          textAlign: m ? 'center' : 'left',
-          alignItems: m ? 'center' : 'flex-start',
-        }}>
-          <div>
-            <div style={{
-              color: '#4FC3F7',
-              fontSize: m ? 32 : 56,
-              fontFamily: mono,
-              letterSpacing: m ? 2 : 4,
-              lineHeight: 1.2,
-            }}>
-              CORUN
+        <div style={{ fontSize: 48, fontWeight: 800, letterSpacing: 2, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", textShadow: '0 0 40px rgba(240,235,227,0.15)', marginBottom: 8 }}>
+          CORUN
+        </div>
+        <div style={{ fontSize: 9, fontWeight: 300, letterSpacing: 6, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", marginBottom: 32 }}>
+          SELECT YOUR MODE
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
+          <GlassPanel onClick={onStoryMode} style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>01</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>STORY</div>
+            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+              9 levels. Escape the monster.
             </div>
-            <div style={{
-              color: '#555',
-              fontSize: m ? 13 : 16,
-              fontFamily: sans, marginTop: 6,
-            }}>
-              Escape the Monster
+          </GlassPanel>
+
+          <GlassPanel onClick={() => onStart(subject === 'all' ? null : subject, difficulty)} style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>02</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>FREE PLAY</div>
+            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+              Endless challenges. Build your streak.
             </div>
+          </GlassPanel>
+
+          <GlassPanel
+            onClick={dailyDone ? undefined : () => onStart(null, 'medium', true)}
+            style={{ width: 160, padding: '20px 16px', textAlign: 'center', opacity: dailyDone ? 0.4 : 1 }}
+            glow={dailyDone ? undefined : '#F0EBE3'}
+          >
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>03</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>DAILY</div>
+            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+              {dailyDone ? 'COMPLETED TODAY' : 'One shot. One score.'}
+            </div>
+          </GlassPanel>
+        </div>
+
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", letterSpacing: 1 }}>TOPIC</span>
+            <select
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
+              style={{
+                background: 'rgba(0,0,0,0.4)', color: '#F0EBE3',
+                border: '1px solid rgba(240,235,227,0.15)',
+                borderRadius: 8, padding: '6px 10px', outline: 'none',
+                fontFamily: "'Roboto', sans-serif", fontSize: 9, cursor: 'pointer',
+              }}
+            >
+              <option value="all">ALL</option>
+              {TOPICS.map(t => (
+                <option key={t.id} value={t.id}>{t.label.toUpperCase()}</option>
+              ))}
+            </select>
           </div>
-
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: 10,
-            width: m ? '100%' : 'auto',
-          }}>
-            <button
-              onClick={() => onStoryMode?.()}
-              style={{
-                border: '2px solid rgba(79,195,247,0.3)',
-                background: 'rgba(79,195,247,0.06)',
-                color: '#4FC3F7',
-                fontSize: m ? 13 : 15,
-                padding: m ? '10px 20px' : '12px 24px',
-                cursor: 'pointer',
-                fontFamily: mono,
-                letterSpacing: 3,
-                textAlign: 'center',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,195,247,0.15)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(79,195,247,0.06)' }}
-            >
-              ⚔  STORY MODE
-            </button>
-            <button
-              onClick={() => onStart(null, 'medium', true)}
-              disabled={dailyDone}
-              style={{
-                border: '1px solid rgba(255,215,0,0.3)',
-                background: 'rgba(255,215,0,0.04)',
-                color: dailyDone ? '#333' : '#FFD700',
-                fontSize: m ? 12 : 14,
-                padding: m ? '7px 16px' : '8px 20px',
-                cursor: dailyDone ? 'default' : 'pointer',
-                fontFamily: sans,
-                opacity: dailyDone ? 0.5 : 1,
-                textAlign: 'center',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { if (!dailyDone) e.currentTarget.style.background = 'rgba(255,215,0,0.1)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.04)' }}
-            >
-              {dailyDone ? 'Daily Challenge — Completed' : '☀ Daily Challenge'}
-            </button>
-
-            <button
-              onClick={() => onStart(topic, diff)}
-              style={{
-                border: '2px solid #4FC3F7',
-                background: '#4FC3F7',
-                color: '#0a0a1a',
-                fontSize: m ? 15 : 18,
-                padding: m ? '12px 20px' : '14px 24px',
-                cursor: 'pointer',
-                fontFamily: mono,
-                letterSpacing: 2,
-                fontWeight: 700,
-                transition: 'all 0.15s',
-                textAlign: 'center',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#6dd5ff' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#4FC3F7' }}
-            >
-              ▶  START GAME
-            </button>
-
-            {highScore > 0 && (
-              <div style={{ color: '#FFD700', fontSize: m ? 12 : 14, fontFamily: sans, textAlign: 'center' }}>
-                ★ Best: {highScore.toLocaleString()}
-              </div>
-            )}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", letterSpacing: 1 }}>DIFF</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {DIFFICULTIES.map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  style={{
+                    background: difficulty === d ? 'rgba(240,235,227,0.1)' : 'transparent',
+                    color: difficulty === d ? '#F0EBE3' : 'rgba(240,235,227,0.4)',
+                    border: difficulty === d ? '1px solid rgba(240,235,227,0.3)' : '1px solid rgba(240,235,227,0.1)',
+                    borderRadius: 8, padding: '4px 12px', cursor: 'pointer',
+                    fontFamily: "'Roboto', sans-serif", fontSize: 10, fontWeight: 500,
+                    textTransform: 'capitalize', transition: 'all 0.2s',
+                  }}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div style={{
-          display: 'flex', flexDirection: 'column', gap: m ? 16 : 24,
-          width: m ? '100%' : 'auto',
-        }}>
-          <div>
-            <div style={{ color: '#888', fontSize: m ? 10 : 12, fontFamily: sans, marginBottom: 6, letterSpacing: 1 }}>
-              SUBJECT
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+        <GlassPanel style={{ width: '100%', maxWidth: 480, padding: 16 }}>
+          <div style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
+            {LEADERBOARD_TABS.map((tab, i) => (
               <button
-                onClick={() => setTopic(null)}
+                key={tab}
+                onClick={() => setLbTab(i)}
                 style={{
-                  padding: m ? '6px 14px' : '8px 18px', border: '2px solid', cursor: 'pointer',
-                  fontSize: m ? 11 : 13, fontFamily: sans, transition: 'all 0.15s',
-                  borderColor: topic === null ? '#4FC3F7' : 'rgba(255,255,255,0.08)',
-                  background: topic === null ? 'rgba(79,195,247,0.1)' : 'transparent',
-                  color: topic === null ? '#4FC3F7' : '#666',
+                  flex: 1,
+                  background: lbTab === i ? 'rgba(240,235,227,0.08)' : 'transparent',
+                  color: lbTab === i ? '#F0EBE3' : 'rgba(240,235,227,0.3)',
+                  border: '1px solid rgba(240,235,227,0.1)',
+                  fontFamily: "'Roboto', sans-serif", fontSize: 8, fontWeight: 300,
+                  padding: '8px 0', cursor: 'pointer', transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FC3F7'; e.currentTarget.style.color = '#4FC3F7' }}
-                onMouseLeave={e => { if (topic !== null) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
-              >All</button>
-              {TOPICS.map(t => {
-                const sel = topic === t.id
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setTopic(t.id)}
-                    style={{
-                      padding: m ? '6px 14px' : '8px 18px', border: '2px solid', cursor: 'pointer',
-                      fontSize: m ? 11 : 13, fontFamily: sans, transition: 'all 0.15s',
-                      borderColor: sel ? '#4FC3F7' : 'rgba(255,255,255,0.08)',
-                      background: sel ? 'rgba(79,195,247,0.1)' : 'transparent',
-                      color: sel ? '#4FC3F7' : '#666',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#4FC3F7'; e.currentTarget.style.color = '#4FC3F7' }}
-                    onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
-                  >{t.label}</button>
-                )
-              })}
-            </div>
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
-          <div>
-            <div style={{ color: '#888', fontSize: m ? 10 : 12, fontFamily: sans, marginBottom: 6, letterSpacing: 1 }}>
-              DIFFICULTY
-            </div>
-            <div style={{ display: 'flex', gap: 5 }}>
-              {difficulties.map(d => {
-                const sel = diff === d.id
-                return (
-                  <button
-                    key={d.id}
-                    onClick={() => setDiff(d.id)}
-                    style={{
-                      flex: 1, padding: m ? '8px 10px' : '10px 18px', border: '2px solid', cursor: 'pointer',
-                      fontSize: m ? 12 : 14, fontFamily: sans, fontWeight: 600,
-                      transition: 'all 0.15s',
-                      borderColor: sel ? d.color : 'rgba(255,255,255,0.08)',
-                      background: sel ? `${d.color}15` : 'transparent',
-                      color: sel ? d.color : '#666',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = d.color; e.currentTarget.style.color = d.color }}
-                    onMouseLeave={e => { if (!sel) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' } }}
-                  >{d.label}</button>
-                )
-              })}
-            </div>
+          <div style={{ display: 'flex', fontSize: 7, color: 'rgba(240,235,227,0.3)', fontFamily: "'Roboto', sans-serif", padding: '0 4px 4px', borderBottom: '1px solid rgba(240,235,227,0.08)' }}>
+            <span style={{ width: 30 }}>RANK</span>
+            <span style={{ flex: 1 }}>NAME</span>
+            <span style={{ width: 60, textAlign: 'right' }}>SCORE</span>
           </div>
-        </div>
-      </div>
 
-      {lb.length > 0 && (
-        <div style={{
-          borderTop: '1px solid rgba(255,255,255,0.04)',
-          padding: m ? '10px 0' : '12px 0',
-          display: 'flex', gap: m ? 8 : 16,
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}>
-          <span style={{ color: '#555', fontSize: m ? 10 : 12, fontFamily: sans, letterSpacing: 1 }}>
-            LEADERBOARD
-          </span>
-          {lb.slice(0, 5).map((e, i) => (
-            <div key={i} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-              <span style={{
-                color: i === 0 ? '#FFD700' : i === 1 ? '#aaa' : i === 2 ? '#CD7F32' : '#444',
-                fontSize: m ? 10 : 11, fontFamily: sans,
-              }}>
-                {i + 1}
+          {entries.slice(0, 10).map(entry => (
+            <div key={entry.rank} style={{
+              display: 'flex', alignItems: 'center', padding: '5px 4px',
+              borderBottom: '1px solid rgba(240,235,227,0.04)',
+              fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)',
+              fontFamily: "'Roboto', sans-serif",
+              background: playerRank === entry.rank ? 'rgba(240,235,227,0.04)' : 'transparent',
+            }}>
+              <span style={{ width: 30, color: entry.rank <= 3 ? '#F0EBE3' : 'rgba(240,235,227,0.4)' }}>
+                #{entry.rank}
               </span>
-              <span style={{ color: '#eee', fontSize: m ? 11 : 12, fontFamily: sans }}>
-                {e.score.toLocaleString()}
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {entry.player_name}
+                {playerRank === entry.rank && (
+                  <span style={{ fontWeight: 300, color: 'rgba(240,235,227,0.7)', fontFamily: "'Roboto', sans-serif", fontSize: 7, marginLeft: 6 }}>(you)</span>
+                )}
               </span>
-              <span style={{ color: '#444', fontSize: m ? 9 : 11, fontFamily: sans }}>
-                {e.date}
+              <span style={{ width: 60, textAlign: 'right', color: '#F0EBE3' }}>
+                {entry.score.toLocaleString()}
               </span>
             </div>
           ))}
-        </div>
-      )}
+
+          {playerRank !== null && (
+            <div style={{ textAlign: 'center', marginTop: 12 }}>
+              <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.7)', fontFamily: "'Roboto', sans-serif" }}>
+                YOUR RANK: #{playerRank}
+              </span>
+            </div>
+          )}
+        </GlassPanel>
+      </div>
+
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 20, display: 'flex', gap: 8, alignItems: 'center' }}>
+        <span style={{ fontSize: 9, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif" }}>
+          {playerName || 'RUNNER'}
+        </span>
+        <GlassButton size="sm" variant="secondary" onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+          EXIT
+        </GlassButton>
+      </div>
     </div>
   )
 }
