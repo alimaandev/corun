@@ -41,7 +41,7 @@ export default function IsometricMap({ progress, onSelectLevel }: Props) {
             <mesh
               position={[x, 0.3, 0]}
               onClick={() => isUnlocked && onSelectLevel(level.id)}
-              style={{ cursor: isUnlocked ? 'pointer' : 'default' } as any}
+              cursor={isUnlocked ? 'pointer' : 'default'}
             >
               <boxGeometry args={[1.2, 0.6, 0.8]} />
               <meshBasicMaterial color={color} transparent opacity={isUnlocked ? 1 : 0.3} />

@@ -104,7 +104,7 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
             <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", letterSpacing: 1 }}>TOPIC</span>
             <select
               value={subject}
-              onChange={e => setSubject(e.target.value)}
+              onChange={e => setSubject(e.target.value as Topic | 'all')}
               style={{
                 background: 'rgba(0,0,0,0.4)', color: '#F0EBE3',
                 border: '1px solid rgba(240,235,227,0.15)',

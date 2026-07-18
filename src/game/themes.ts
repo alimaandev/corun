@@ -15,6 +15,8 @@ export interface LevelTheme {
   sceneryColor1: string
   sceneryColor2: string
   accentColor: string
+  ambientLight: string
+  directionalLight: string
 }
 
 export const THEMES: Record<number, LevelTheme> = {
@@ -26,6 +28,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#3a1a00', monsterEye: '#ff4400', monsterMouth: '#6a0000', monsterTeeth: '#ddd',
     particleType: 'torchlight',
     sceneryColor1: '#4a4a4a', sceneryColor2: '#5a3a2a', accentColor: '#ff6600',
+    ambientLight: '#1a1a3a', directionalLight: '#ff8844',
   },
   2: {
     skyTop: '#0a0a0a', skyBottom: '#1a1a1a',
@@ -35,6 +38,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#2a0a0a', monsterEye: '#ff0000', monsterMouth: '#5a0000', monsterTeeth: '#ccc',
     particleType: 'torchlight',
     sceneryColor1: '#3a3a3a', sceneryColor2: '#4a2a1a', accentColor: '#ff4400',
+    ambientLight: '#111122', directionalLight: '#ff6633',
   },
   3: {
     skyTop: '#0a1a0a', skyBottom: '#1a2a1a',
@@ -44,6 +48,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#1a3a1a', monsterEye: '#00ff00', monsterMouth: '#005a00', monsterTeeth: '#aea',
     particleType: 'bubbles',
     sceneryColor1: '#3a4a3a', sceneryColor2: '#4a5a2a', accentColor: '#33cc33',
+    ambientLight: '#0a1a0a', directionalLight: '#66ff66',
   },
   4: {
     skyTop: '#0a0a2a', skyBottom: '#1a1a3a',
@@ -53,6 +58,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#1a0a00', monsterEye: '#ff6600', monsterMouth: '#3a1a00', monsterTeeth: '#bbb',
     particleType: 'fireflies',
     sceneryColor1: '#1a3a1a', sceneryColor2: '#2a4a1a', accentColor: '#aaff88',
+    ambientLight: '#0a0a1a', directionalLight: '#88ffaa',
   },
   5: {
     skyTop: '#1a1a2a', skyBottom: '#3a3a4a',
@@ -62,6 +68,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#2a1a1a', monsterEye: '#ff4444', monsterMouth: '#4a1a1a', monsterTeeth: '#ccc',
     particleType: 'torchlight',
     sceneryColor1: '#5a4a3a', sceneryColor2: '#6a5a4a', accentColor: '#ff8844',
+    ambientLight: '#1a1a2a', directionalLight: '#ffaa66',
   },
   6: {
     skyTop: '#1a1a2a', skyBottom: '#3a3a4a',
@@ -71,6 +78,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#3a3a3a', monsterEye: '#ffaaaa', monsterMouth: '#5a5a5a', monsterTeeth: '#eee',
     particleType: 'snow',
     sceneryColor1: '#4a4a4a', sceneryColor2: '#5a5a5a', accentColor: '#ffffff',
+    ambientLight: '#1a1a2a', directionalLight: '#ccccff',
   },
   7: {
     skyTop: '#1a1a2a', skyBottom: '#2a2a4a',
@@ -80,6 +88,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#2a0a0a', monsterEye: '#ff0000', monsterMouth: '#5a0000', monsterTeeth: '#ddd',
     particleType: 'torchlight',
     sceneryColor1: '#5a4a3a', sceneryColor2: '#6a3a2a', accentColor: '#ff4444',
+    ambientLight: '#1a1a2a', directionalLight: '#ff6644',
   },
   8: {
     skyTop: '#1a0a0a', skyBottom: '#2a1a1a',
@@ -89,6 +98,7 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#2a0000', monsterEye: '#ff2222', monsterMouth: '#6a0000', monsterTeeth: '#ddd',
     particleType: 'embers',
     sceneryColor1: '#5a3a3a', sceneryColor2: '#7a4a3a', accentColor: '#ff6644',
+    ambientLight: '#1a0a0a', directionalLight: '#ff4444',
   },
   9: {
     skyTop: '#1a0a1a', skyBottom: '#2a1a2a',
@@ -98,5 +108,6 @@ export const THEMES: Record<number, LevelTheme> = {
     monsterBody: '#3a0000', monsterEye: '#ff0000', monsterMouth: '#8a0000', monsterTeeth: '#ffd700',
     particleType: 'embers',
     sceneryColor1: '#5a3a4a', sceneryColor2: '#8a4a3a', accentColor: '#ffd700',
+    ambientLight: '#1a0a1a', directionalLight: '#ffd700',
   },
 }
