@@ -1,4 +1,13 @@
-import { supabase } from './supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { getSupabase } from './supabase'
+
+let _supabase: SupabaseClient | null = null
+function sb(): SupabaseClient {
+  if (!_supabase) {
+    _supabase = getSupabase()
+  }
+  return _supabase
+}
 
 export interface LeaderboardEntry {
   profile_id: string
@@ -55,7 +64,7 @@ export async function initSession(userId?: string): Promise<PlayerProfile | null
     const localName = getLocalPlayerName(userId)
     const name = localName || 'Runner'
 
-    const { data: existing } = await supabase
+    const { data: existing } = await sb()
       .from('profiles')
       .select('id, player_name')
       .eq('id', profileId)
@@ -63,12 +72,12 @@ export async function initSession(userId?: string): Promise<PlayerProfile | null
 
     if (existing) {
       if (localName && localName !== existing.player_name) {
-        await supabase
+        await sb()
           .from('profiles')
           .update({ player_name: localName, last_seen: new Date().toISOString() })
           .eq('id', profileId)
       } else {
-        await supabase
+        await sb()
           .from('profiles')
           .update({ last_seen: new Date().toISOString() })
           .eq('id', profileId)
@@ -78,7 +87,7 @@ export async function initSession(userId?: string): Promise<PlayerProfile | null
     }
 
     setLocalPlayerName(name, userId)
-    const { data: created } = await supabase
+    const { data: created } = await sb()
       .from('profiles')
       .insert({ id: profileId, player_name: name })
       .select('id, player_name')
@@ -94,7 +103,7 @@ export async function initSession(userId?: string): Promise<PlayerProfile | null
 export async function updatePlayerName(profileId: string, name: string, userId?: string): Promise<boolean> {
   setLocalPlayerName(name, userId)
   try {
-    const { error } = await supabase
+    const { error } = await sb()
       .from('profiles')
       .update({ player_name: name })
       .eq('id', profileId)
@@ -108,7 +117,7 @@ export async function submitScore(
   mode: 'freeplay' | 'story' | 'daily',
   levelId = 0
 ): Promise<boolean> {
-  const { error } = await supabase
+  const { error } = await sb()
     .from('scores')
     .insert({ profile_id: profileId, score, mode, level_id: levelId })
   if (error) {
@@ -128,7 +137,7 @@ export async function flushScoreQueue(): Promise<number> {
     if (queue.length === 0) return 0
     let flushed = 0
     for (const item of queue) {
-      const { error } = await supabase.from('scores').insert(item)
+      const { error } = await sb().from('scores').insert(item)
       if (!error) flushed++
     }
     if (flushed > 0) {
@@ -147,13 +156,13 @@ export async function getGlobalLeaderboard(
     const from = (page - 1) * limit
 
     let rows: any[] | null = null
-    const { data: rpcData, error: rpcErr } = await supabase
+    const { data: rpcData, error: rpcErr } = await sb()
       .rpc('get_leaderboard', { lim: limit, off: from })
 
     if (!rpcErr && rpcData) {
       rows = rpcData
     } else {
-      const { data: scores } = await supabase
+      const { data: scores } = await sb()
         .from('scores')
         .select('profile_id, score, profiles!inner(player_name)')
         .order('score', { ascending: false })
@@ -181,7 +190,7 @@ export async function getGlobalLeaderboard(
       is_you: r.profile_id === profileId,
     }))
 
-    const { data: yourBestRow } = await supabase
+    const { data: yourBestRow } = await sb()
       .from('scores')
       .select('score')
       .eq('profile_id', profileId)
@@ -192,7 +201,7 @@ export async function getGlobalLeaderboard(
 
     let yourRank = 0
     if (yourBest > 0) {
-      const { count } = await supabase
+      const { count } = await sb()
         .from('scores')
         .select('*', { count: 'exact', head: true })
         .gt('score', yourBest)
@@ -212,13 +221,13 @@ export async function getDailyLeaderboard(
     const today = new Date().toISOString().slice(0, 10)
 
     let rows: any[] | null = null
-    const { data: rpcData, error: rpcErr } = await supabase
+    const { data: rpcData, error: rpcErr } = await sb()
       .rpc('get_daily_leaderboard', { day: today })
 
     if (!rpcErr && rpcData) {
       rows = rpcData
     } else {
-      const { data: scores } = await supabase
+      const { data: scores } = await sb()
         .from('scores')
         .select('profile_id, score, profiles!inner(player_name)')
         .gte('created_at', today)
@@ -247,7 +256,7 @@ export async function getDailyLeaderboard(
       is_you: r.profile_id === profileId,
     }))
 
-    const { data: yourBestRow } = await supabase
+    const { data: yourBestRow } = await sb()
       .from('scores')
       .select('score')
       .eq('profile_id', profileId)
@@ -259,7 +268,7 @@ export async function getDailyLeaderboard(
 
     let yourRank = 0
     if (yourBest > 0) {
-      const { count } = await supabase
+      const { count } = await sb()
         .from('scores')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', today)
