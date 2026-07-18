@@ -1,20 +1,57 @@
+:root {
+  --beige: #F0EBE3;
+  --green-dark: #769826;
+  --glass-bg: rgba(118, 152, 38, 0.08);
+  --glass-border: rgba(118, 152, 38, 0.2);
+  --glass-blur: blur(24px);
+  --font-heading: 'Poppins', 'Inter', sans-serif;
+  --font-body: 'Roboto', 'Inter', sans-serif;
+}
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  background: var(--green-dark);
+}
+
+body {
+  background: var(--green-dark);
+}
+
 html, body, #root {
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
-  background: #0a0a1a;
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   user-select: none;
   -webkit-user-select: none;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 button {
