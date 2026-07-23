@@ -1,0 +1,14 @@
+title: "Q&A"
+description: "Ask a question about the project"
+labels: ["question"]
+body:
+  - type: textarea
+    attributes:
+      label: "Your question"
+      placeholder: "What would you like to know?"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Additional context"
+      placeholder: "Screenshots, links, or background info..."

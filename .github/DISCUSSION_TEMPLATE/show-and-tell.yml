@@ -1,0 +1,14 @@
+title: "Show and tell"
+description: "Share something you built or learned related to Corun"
+labels: ["show-and-tell"]
+body:
+  - type: textarea
+    attributes:
+      label: "What are you sharing?"
+      placeholder: "Describe what you made or discovered..."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Links or screenshots"
+      placeholder: "Optional URLs or images"
