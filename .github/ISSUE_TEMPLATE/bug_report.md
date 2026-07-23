@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Report a bug to help improve Corun
-title: ''
-labels: bug
+title: "[Bug] "
+labels: bug, priority: medium
 assignees: ''
-
 ---
 
 **Describe the bug**
@@ -26,3 +25,4 @@ If applicable, add screenshots or browser console logs.
 **Environment**
 - OS: [e.g. Windows, macOS]
 - Browser: [e.g. Chrome, Firefox]
+- Version: [e.g. 1.0.0]

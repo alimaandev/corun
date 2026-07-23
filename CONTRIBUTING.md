@@ -27,11 +27,27 @@ src/
 - **Style**: Inline styles via React `style` objects — no CSS modules or styled-components.
 - **Three.js**: Use `<Canvas>` from `@react-three/fiber`. No `@react-three/postprocessing` (glow is sprite-based).
 
+## Issues
+
+Check existing labels before opening an issue:
+
+| Label | When to use |
+|-------|-------------|
+| `bug` | Something isn't working |
+| `enhancement` | New feature or request |
+| `gameplay` | Game mechanics or balance |
+| `polish` | Visual/UI refinement |
+| `performance` | Optimization or memory |
+| `accessibility` | a11y improvements |
+| `good first issue` | Beginner-friendly |
+| `priority: high/medium/low` | Urgency |
+
 ## Pull Requests
 
 - Run `tsc -b && npx vite build` before submitting.
 - Keep changes focused — one feature/fix per PR.
-- Match the existing code style (no semicolons where the project skips them, etc.).
+- Match the existing code style.
+- PRs require CI (build check) to pass before merging.
 
 ## Reporting Issues
 
