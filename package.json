@@ -1,12 +1,38 @@
 {
-  "name": "evade",
+  "name": "corun",
   "private": true,
   "version": "1.0.0",
+  "description": "A pixel-art coding adventure game. Solve JavaScript puzzles, escape the monster, and master programming through play.",
+  "keywords": [
+    "game",
+    "coding",
+    "educational",
+    "pixel-art",
+    "javascript",
+    "typescript",
+    "react",
+    "vite"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alimaandev/corun.git"
+  },
+  "homepage": "https://corun-zeta.vercel.app",
+  "bugs": {
+    "url": "https://github.com/alimaandev/corun/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "eslint src/",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "husky"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.20.0",
@@ -20,13 +46,38 @@
     "react-router-dom": "^6.30.4",
     "three": "^0.185.1"
   },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.0",
+    "@semantic-release/github": "^12.0.9",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.1.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^17.1.1",
+    "prettier": "^3.9.6",
+    "semantic-release": "^25.0.8",
     "typescript": "~5.6.3",
+    "typescript-eslint": "^8.65.0",
     "vite": "^6.0.0",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.10"
   }
 }
