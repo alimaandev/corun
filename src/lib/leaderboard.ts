@@ -29,11 +29,17 @@ function getNameKey(userId?: string): string {
 }
 
 export function getLocalPlayerName(userId?: string): string {
-  try { return localStorage.getItem(getNameKey(userId)) || '' } catch { return '' }
+  try {
+    return localStorage.getItem(getNameKey(userId)) || ''
+  } catch {
+    return ''
+  }
 }
 
 export function setLocalPlayerName(name: string, userId?: string) {
-  try { localStorage.setItem(getNameKey(userId), name) } catch {}
+  try {
+    localStorage.setItem(getNameKey(userId), name)
+  } catch {}
 }
 
 const PID_KEY = 'corun_profile_id'
@@ -93,29 +99,34 @@ export async function initSession(userId?: string): Promise<PlayerProfile | null
       .select('id, player_name')
       .maybeSingle()
 
-    return created ? { id: created.id, player_name: created.player_name } : { id: profileId, player_name: name }
+    return created
+      ? { id: created.id, player_name: created.player_name }
+      : { id: profileId, player_name: name }
   } catch (e) {
     console.warn('[leaderboard] Init failed:', e)
     return null
   }
 }
 
-export async function updatePlayerName(profileId: string, name: string, userId?: string): Promise<boolean> {
+export async function updatePlayerName(
+  profileId: string,
+  name: string,
+  userId?: string,
+): Promise<boolean> {
   setLocalPlayerName(name, userId)
   try {
-    const { error } = await sb()
-      .from('profiles')
-      .update({ player_name: name })
-      .eq('id', profileId)
+    const { error } = await sb().from('profiles').update({ player_name: name }).eq('id', profileId)
     return !error
-  } catch { return false }
+  } catch {
+    return false
+  }
 }
 
 export async function submitScore(
   profileId: string,
   score: number,
   mode: 'freeplay' | 'story' | 'daily',
-  levelId = 0
+  levelId = 0,
 ): Promise<boolean> {
   const { error } = await sb()
     .from('scores')
@@ -133,7 +144,7 @@ export async function submitScore(
 
 export async function flushScoreQueue(): Promise<number> {
   try {
-    let queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
+    const queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
     if (queue.length === 0) return 0
     const remaining: typeof queue = []
     let flushed = 0
@@ -144,13 +155,15 @@ export async function flushScoreQueue(): Promise<number> {
     }
     localStorage.setItem('corun_score_queue', JSON.stringify(remaining))
     return flushed
-  } catch { return 0 }
+  } catch {
+    return 0
+  }
 }
 
 export async function getGlobalLeaderboard(
   profileId: string,
   page = 1,
-  limit = 100
+  limit = 100,
 ): Promise<{ entries: LeaderboardEntry[]; yourRank: number; yourBest: number }> {
   try {
     const from = (page - 1) * limit
@@ -208,7 +221,7 @@ export async function getGlobalLeaderboard(
 }
 
 export async function getDailyLeaderboard(
-  profileId: string
+  profileId: string,
 ): Promise<{ entries: LeaderboardEntry[]; yourRank: number; yourBest: number }> {
   try {
     const today = new Date().toISOString().slice(0, 10)
