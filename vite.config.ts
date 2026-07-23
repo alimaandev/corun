@@ -12,6 +12,8 @@ export default defineConfig({
         name: 'corun - Escape the Monster',
         short_name: 'corun',
         description: 'A pixel-art coding adventure game — solve JS puzzles to escape.',
+        start_url: '/',
+        scope: '/',
         theme_color: '#0a0a0a',
         background_color: '#0a0a0a',
         display: 'standalone',

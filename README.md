@@ -2,9 +2,12 @@
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" />
   <img src="https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white" />
-  <img src="https://img.shields.io/badge/Canvas-FF6F00?style=for-the-badge&logo=html5&logoColor=white" />
-  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+  <br/>
+  <img src="https://img.shields.io/github/actions/workflow/status/alimaandev/corun/.github/workflows/ci.yml?style=flat-square&logo=github&label=CI" />
+  <img src="https://img.shields.io/github/license/alimaandev/corun?style=flat-square" />
+  <img src="https://img.shields.io/github/stars/alimaandev/corun?style=flat-square&logo=github" />
 </div>
 
 <br />
@@ -13,6 +16,14 @@
   <h1>🏃 CORUN</h1>
   <h3>ESCAPE THE MONSTER</h3>
   <p><em>A pixel-art coding adventure — story mode + endless runner.</em></p>
+</div>
+
+<br />
+
+<div align="center">
+  <a href="https://corun.vercel.app">
+    <img src="public/demo.gif" alt="Corun gameplay demo" width="720" />
+  </a>
 </div>
 
 <br />
@@ -130,7 +141,7 @@ Frontend   │ React 18 · TypeScript · Vite 6 · HTML5 Canvas
 Auth       │ Auth0 (hosted Universal Login)
 State      │ React hooks + localStorage
 Storage    │ localStorage (progress, leaderboard) · IndexedDB (clips)
-Fonts      │ Press Start 2P · JetBrains Mono
+Fonts      │ Poppins · Roboto · JetBrains Mono
 Deploy     │ Vercel (SPA)
 ```
 
@@ -234,14 +245,21 @@ Set these environment variables in Vercel:
 
 <br />
 
-## ✦ Screenshots
+## ✦ Gameplay
 
 <!--
-TODO: Add screenshots here
-| Landing | Story Mode | Freeplay |
-|---------|-----------|----------|
-| ![Landing](.github/screenshots/landing.png) | ![Story](.github/screenshots/story.png) | ![Freeplay](.github/screenshots/freeplay.png) |
+Replace with an actual demo GIF recorded from the game:
+  - Record ~15 seconds of gameplay (OBS, ShareX, or your tool of choice)
+  - Save as assets/demo.gif
+  - The GIF is already referenced at the top of this README
 -->
+
+To record a demo:
+1. Open the game at `http://localhost:3000` or the deployed URL
+2. Capture ~15 seconds showing both story mode and challenges
+3. Convert to GIF (max ~5 MB) and place at `public/demo.gif`
+
+<br />
 
 <br />
 

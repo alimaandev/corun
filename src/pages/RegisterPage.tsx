@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useAuth0 } from '@auth0/auth0-react'
 
 export default function RegisterPage() {
@@ -14,6 +15,10 @@ export default function RegisterPage() {
   if (error) {
     return (
       <div style={wrap}>
+        <Helmet>
+          <title>Sign Up — Corun</title>
+          <meta name="description" content="Create your Corun account and start your coding adventure." />
+        </Helmet>
         <div style={{ color: '#F0EBE3', fontSize: 9, fontFamily: "'Roboto', sans-serif", textAlign: 'center', lineHeight: 2, letterSpacing: 2 }}>
           AUTHENTICATION FAILED<br />
           <span style={{ color: '#769826', fontSize: 8, cursor: 'pointer' }} onClick={() => setError(false)}>TRY AGAIN</span>
@@ -24,6 +29,10 @@ export default function RegisterPage() {
 
   return (
     <div style={wrap}>
+      <Helmet>
+        <title>Sign Up — Corun</title>
+        <meta name="description" content="Create your Corun account and start your coding adventure." />
+      </Helmet>
       <div style={spinner} />
     </div>
   )

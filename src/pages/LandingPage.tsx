@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import LandingNav from '../components/LandingNav'
 import { useScrollProgress } from '../hooks/useScrollProgress'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
@@ -52,6 +53,21 @@ export default function LandingPage() {
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+      <Helmet>
+        <title>Corun — Escape the Monster</title>
+        <meta name="description" content="A pixel-art coding adventure game. Solve JavaScript puzzles, escape the monster, and master programming through play." />
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Corun",
+            "description": "A pixel-art coding adventure game. Solve JavaScript puzzles, escape the monster.",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Web",
+            "author": { "@type": "Person", "name": "Ali Sher" }
+          }
+        `}</script>
+      </Helmet>
       <LandingNav sections={sections} currentSection={section} onNavigate={handleNavClick} />
 
       <div style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
