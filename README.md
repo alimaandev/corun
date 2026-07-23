@@ -21,7 +21,7 @@
 <br />
 
 <div align="center">
-  <a href="https://corun.vercel.app">
+  <a href="https://corun-zeta.vercel.app">
     <img src="public/demo.gif" alt="Corun gameplay demo" width="720" />
   </a>
 </div>
