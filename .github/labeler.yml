@@ -1,0 +1,10 @@
+gameplay:
+  - src/game/**/*
+
+polish:
+  - src/components/**/*
+  - src/pages/**/*
+
+documentation:
+  - '*.md'
+  - .github/**/*

@@ -1,0 +1,14 @@
+name: PR title check
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Slashgear/action-check-pr-title@v4.3.1
+        with:
+          regex: '\[(Bug|Feature|Enhancement|Polish|Docs)\]\s.+'
+          helpMessage: 'PR title must start with [Bug], [Feature], [Enhancement], [Polish], or [Docs]'

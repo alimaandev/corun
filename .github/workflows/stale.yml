@@ -1,0 +1,19 @@
+name: Stale issues
+
+on:
+  schedule:
+    - cron: 0 0 * * 1
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: This issue has been inactive for 60 days. Marked as stale — will close in 14 days if no activity.
+          stale-pr-message: This PR has been inactive for 60 days. Marked as stale — will close in 14 days if no activity.
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
