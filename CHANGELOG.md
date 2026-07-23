@@ -1,3 +1,15 @@
+# 1.0.0 (2026-07-23)
+
+
+### Bug Fixes
+
+* dt calc, lane smoothing, canvas flash, scroll guard, remove dead code ([f76f407](https://github.com/alimaandev/corun/commit/f76f4078445ed128f18e0f5f968d3fa1d2ba405a))
+
+
+### Features
+
+* mobile touch controls, responsive canvas, daily challenges, leaderboard, clip recording, 100 challenges ([5e9c3e4](https://github.com/alimaandev/corun/commit/5e9c3e40eca2c61f470a38f84e22bc33e6e799bb))
+
 # Changelog
 
 All notable changes to Corun will be documented in this file.
