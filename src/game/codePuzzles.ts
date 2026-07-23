@@ -208,16 +208,36 @@ export function getPuzzle(id: string): CodePuzzle | undefined {
   return ALL_PUZZLES[id]
 }
 
-export function evaluateCode(userCode: string, testCode: string): { success: boolean; output: string } {
-  try {
-    const output: string[] = []
-    const mockConsole = { log: (...args: unknown[]) => output.push(args.map(String).join(' ')) }
-    const fullCode = userCode + '\n' + testCode
-    const fn = new Function('console', fullCode)
-    const result = fn(mockConsole)
-    return { success: result === true, output: output.join('\n') }
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e)
-    return { success: false, output: msg }
-  }
+export function evaluateCode(userCode: string, testCode: string): Promise<{ success: boolean; output: string }> {
+  return new Promise(resolve => {
+    const id = crypto.randomUUID()
+    const worker = new Worker(new URL('./sandbox.worker.ts', import.meta.url), { type: 'module' })
+
+    const timer = setTimeout(() => {
+      worker.terminate()
+      resolve({ success: false, output: 'Execution timed out (2s limit)' })
+    }, 2000)
+
+    worker.onmessage = (e: MessageEvent<{ id: string; success: boolean; output: string }>) => {
+      if (e.data.id === id) {
+        clearTimeout(timer)
+        worker.terminate()
+        resolve({ success: e.data.success, output: e.data.output })
+      }
+    }
+
+    worker.onerror = () => {
+      clearTimeout(timer)
+      worker.terminate()
+      resolve({ success: false, output: 'Worker error' })
+    }
+
+    worker.onmessageerror = () => {
+      clearTimeout(timer)
+      worker.terminate()
+      resolve({ success: false, output: 'Worker communication error' })
+    }
+
+    worker.postMessage({ id, userCode, testCode })
+  })
 }

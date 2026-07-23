@@ -1,13 +1,18 @@
 let ctx: AudioContext | null = null
 
-function getCtx(): AudioContext {
-  if (!ctx) ctx = new AudioContext()
-  if (ctx.state === 'suspended') ctx.resume()
-  return ctx
+function getCtx(): AudioContext | null {
+  try {
+    if (!ctx) ctx = new AudioContext()
+    if (ctx.state === 'suspended') ctx.resume()
+    return ctx
+  } catch {
+    return null
+  }
 }
 
 export function playSuccess() {
   const c = getCtx()
+  if (!c) return
   const o = c.createOscillator()
   const g = c.createGain()
   o.type = 'square'
@@ -23,6 +28,7 @@ export function playSuccess() {
 
 export function playError() {
   const c = getCtx()
+  if (!c) return
   const o = c.createOscillator()
   const g = c.createGain()
   o.type = 'sawtooth'
@@ -37,6 +43,7 @@ export function playError() {
 
 export function playInteract() {
   const c = getCtx()
+  if (!c) return
   const o = c.createOscillator()
   const g = c.createGain()
   o.type = 'triangle'
@@ -51,6 +58,7 @@ export function playInteract() {
 
 export function playStep() {
   const c = getCtx()
+  if (!c) return
   const o = c.createOscillator()
   const g = c.createGain()
   o.type = 'square'
@@ -64,6 +72,7 @@ export function playStep() {
 
 export function playLevelComplete() {
   const c = getCtx()
+  if (!c) return
   const notes = [523, 587, 659, 784, 880, 1047]
   notes.forEach((freq, i) => {
     const o = c.createOscillator()
@@ -80,6 +89,7 @@ export function playLevelComplete() {
 
 export function playBossAppear() {
   const c = getCtx()
+  if (!c) return
   for (let i = 0; i < 4; i++) {
     const o = c.createOscillator()
     const g = c.createGain()
@@ -97,6 +107,7 @@ export function playBossAppear() {
 
 export function playGameOver() {
   const c = getCtx()
+  if (!c) return
   const notes = [440, 370, 330, 262]
   notes.forEach((freq, i) => {
     const o = c.createOscillator()

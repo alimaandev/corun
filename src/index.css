@@ -4,8 +4,8 @@
   --glass-bg: rgba(118, 152, 38, 0.08);
   --glass-border: rgba(118, 152, 38, 0.2);
   --glass-blur: blur(24px);
-  --font-heading: 'Poppins', 'Inter', sans-serif;
-  --font-body: 'Roboto', 'Inter', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Roboto', sans-serif;
 }
 
 *, *::before, *::after {
@@ -61,8 +61,8 @@ button {
 }
 
 button:focus-visible {
-  outline: 3px solid #4FC3F7;
-  outline-offset: 3px;
+  outline: 2px solid #F0EBE3;
+  outline-offset: 2px;
 }
 
 button:hover {
@@ -117,13 +117,13 @@ button:active {
 }
 
 @keyframes titleGlow {
-  0%, 100% { text-shadow: 0 0 20px rgba(79,195,247,0.3), 3px 3px 0 #1a3a4a; }
-  50% { text-shadow: 0 0 40px rgba(79,195,247,0.6), 3px 3px 0 #1a3a4a; }
+  0%, 100% { text-shadow: 0 0 20px rgba(240,235,227,0.3), 3px 3px 0 #1a1a1a; }
+  50% { text-shadow: 0 0 40px rgba(240,235,227,0.6), 3px 3px 0 #1a1a1a; }
 }
 
 @keyframes borderGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(79,195,247,0.2), inset 0 0 5px rgba(79,195,247,0.05); }
-  50% { box-shadow: 0 0 15px rgba(79,195,247,0.5), inset 0 0 10px rgba(79,195,247,0.1); }
+  0%, 100% { box-shadow: 0 0 5px rgba(240,235,227,0.2), inset 0 0 5px rgba(240,235,227,0.05); }
+  50% { box-shadow: 0 0 15px rgba(240,235,227,0.5), inset 0 0 10px rgba(240,235,227,0.1); }
 }
 
 @keyframes scanline {
@@ -142,8 +142,8 @@ button:active {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 10px rgba(79,195,247,0.3); }
-  50% { box-shadow: 0 0 30px rgba(79,195,247,0.7), 0 0 60px rgba(79,195,247,0.2); }
+  0%, 100% { box-shadow: 0 0 10px rgba(240,235,227,0.2); }
+  50% { box-shadow: 0 0 30px rgba(240,235,227,0.5), 0 0 60px rgba(240,235,227,0.1); }
 }
 
 @keyframes shimmer {

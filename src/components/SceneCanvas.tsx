@@ -193,9 +193,9 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         }
         case 'window':
         case 'windowHigh': {
-          ctx!.fillStyle = color || '#4FC3F7'
+          ctx!.fillStyle = color || '#F0EBE3'
           ctx!.fillRect(x, y, rw, rh)
-          ctx!.fillStyle = 'rgba(79,195,247,0.15)'
+          ctx!.fillStyle = 'rgba(240,235,227,0.15)'
           ctx!.fillRect(x + rw * 0.1, y + rh * 0.1, rw * 0.8, rh * 0.8)
           ctx!.strokeStyle = '#333'
           ctx!.lineWidth = 2
@@ -243,18 +243,18 @@ export default function SceneCanvas({ scene, onDone }: Props) {
           break
         }
         case 'throne': {
-          ctx!.fillStyle = color || '#ffd700'
+          ctx!.fillStyle = color || '#769826'
           ctx!.fillRect(x + rw * 0.2, y + rh * 0.2, rw * 0.6, rh * 0.8)
           ctx!.fillRect(x, y + rh * 0.4, rw, rh * 0.2)
           ctx!.fillRect(x + rw * 0.1, y, rw * 0.8, rh * 0.3)
-          ctx!.fillStyle = '#cc8800'
+          ctx!.fillStyle = '#5a7a1e'
           ctx!.fillRect(x + rw * 0.3, y + rh * 0.6, rw * 0.4, rh * 0.1)
           break
         }
         case 'banner': {
-          ctx!.fillStyle = color || '#cc0000'
+          ctx!.fillStyle = color || '#769826'
           ctx!.fillRect(x, y, rw, rh)
-          ctx!.fillStyle = '#ffd700'
+          ctx!.fillStyle = '#F0EBE3'
           ctx!.fillRect(x + rw * 0.1, y + rh * 0.1, rw * 0.8, rh * 0.15)
           ctx!.fillRect(x + rw * 0.1, y + rh * 0.5, rw * 0.8, rh * 0.15)
           ctx!.strokeStyle = '#333'
@@ -267,7 +267,7 @@ export default function SceneCanvas({ scene, onDone }: Props) {
           ctx!.fillRect(x, y, rw, rh)
           ctx!.fillStyle = '#4a2a1a'
           ctx!.fillRect(x + rw * 0.05, y + rh * 0.05, rw * 0.9, rh * 0.9)
-          ctx!.fillStyle = '#ffd700'
+          ctx!.fillStyle = '#F0EBE3'
           ctx!.fillRect(x + rw * 0.75, y + rh * 0.45, rw * 0.1, rh * 0.1)
           ctx!.strokeStyle = '#333'
           ctx!.lineWidth = 2
@@ -333,7 +333,7 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         const c = hex.replace('#', '')
         const r = parseInt(c.length === 3 ? c[0] + c[0] + c[1] + c[1] + c[2] + c[2] : c.slice(0, 2), 16)
         const g = parseInt(c.length === 3 ? c[1] + c[1] + c[2] + c[2] : c.slice(2, 4), 16)
-        const b = parseInt(c.length === 3 ? c[2] + c[2] + c[0] + c[0] : c.slice(4, 6), 16)
+        const b = parseInt(c.length === 3 ? c[2] + c[2] : c.slice(4, 6), 16)
         return `rgba(${r},${g},${b},${a})`
       }
       ctx!.fillStyle = hexToRgba(scene.wallColor, 0.27)
@@ -382,20 +382,20 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         const boxY = h - boxH
         ctx!.fillStyle = 'rgba(0,0,0,0.85)'
         ctx!.fillRect(0, boxY, w, boxH)
-        ctx!.strokeStyle = 'rgba(79,195,247,0.15)'
+        ctx!.strokeStyle = 'rgba(240,235,227,0.12)'
         ctx!.lineWidth = 2
         ctx!.strokeRect(4, boxY, w - 8, boxH)
 
         if (dialogueSpeaker.current) {
-          ctx!.fillStyle = '#4FC3F7'
-          ctx!.font = `${Math.max(10, Math.floor(scale * 5))}px 'Press Start 2P', monospace`
+          ctx!.fillStyle = '#769826'
+          ctx!.font = `600 ${Math.max(10, Math.floor(scale * 5))}px 'Poppins', sans-serif`
           ctx!.fillText(dialogueSpeaker.current, 16, boxY + 22)
         }
 
         if (dialogueText.current) {
-          ctx!.fillStyle = '#ddd'
+          ctx!.fillStyle = '#F0EBE3'
           const fs = Math.max(10, Math.floor(scale * 4))
-          ctx!.font = `${fs}px 'JetBrains Mono', monospace`
+          ctx!.font = `${fs}px 'Roboto', sans-serif`
           const maxW = w - 40
           const lines: string[] = []
           let line = ''
@@ -414,7 +414,7 @@ export default function SceneCanvas({ scene, onDone }: Props) {
           }
 
           if (dialogueDone.current && !isWaiting.current) {
-            ctx!.fillStyle = '#4FC3F7'
+            ctx!.fillStyle = '#F0EBE3'
             const blinky = Math.sin(frame.current * 0.1) > 0
             if (blinky) {
               ctx!.font = `${fs}px monospace`

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { CodePuzzle } from '../game/types'
 import { evaluateCode } from '../game/codePuzzles'
+import { playSuccess, playError } from '../game/sound'
 
 interface Props {
   puzzle: CodePuzzle
@@ -11,8 +12,16 @@ interface Props {
 export default function CodeTerminal({ puzzle, onSolve, onClose }: Props) {
   const [code, setCode] = useState(puzzle.template)
   const [result, setResult] = useState<{ success: boolean; output: string } | null>(null)
+  const [running, setRunning] = useState(false)
   const [showHint, setShowHint] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    setCode(puzzle.template)
+    setResult(null)
+    setShowHint(false)
+    setRunning(false)
+  }, [puzzle.id, puzzle.template])
 
   useEffect(() => {
     textareaRef.current?.focus()
@@ -22,16 +31,24 @@ export default function CodeTerminal({ puzzle, onSolve, onClose }: Props) {
     }
   }, [puzzle.template])
 
-  function handleSubmit() {
-    const res = evaluateCode(code, puzzle.test)
+  async function handleSubmit() {
+    if (running) return
+    setRunning(true)
+    setResult(null)
+    const res = await evaluateCode(code, puzzle.test)
     setResult(res)
+    setRunning(false)
     if (res.success) {
+      try { playSuccess() } catch {}
       setTimeout(() => onSolve(), 1200)
+    } else {
+      try { playError() } catch {}
     }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {
+      if (e.target instanceof HTMLTextAreaElement) return
       onClose()
     }
   }
@@ -59,8 +76,12 @@ export default function CodeTerminal({ puzzle, onSolve, onClose }: Props) {
           >
             {showHint ? 'HIDE HINT' : 'HINT'}
           </button>
-          <button style={styles.submitBtn} onClick={handleSubmit}>
-            ▶ RUN
+          <button style={{
+            ...styles.submitBtn,
+            opacity: running ? 0.5 : 1,
+            cursor: running ? 'not-allowed' : 'pointer',
+          }} onClick={handleSubmit}>
+            {running ? '⟳ RUNNING' : '▶ RUN'}
           </button>
         </div>
         {showHint && (
@@ -71,10 +92,14 @@ export default function CodeTerminal({ puzzle, onSolve, onClose }: Props) {
         {result && (
           <div style={{
             ...styles.resultBox,
-            borderColor: result.success ? '#4CAF50' : '#F44336',
-            color: result.success ? '#8BC34A' : '#FF5252',
+            borderColor: result.success ? '#769826' : 'rgba(240,235,227,0.2)',
+            color: result.success ? '#769826' : 'rgba(240,235,227,0.6)',
           }}>
-            {result.success ? `✓ ${puzzle.successMessage}` : `✗ Error: ${result.output}`}
+            {result.success
+              ? `✓ ${puzzle.successMessage}`
+              : (result as any).error
+                ? `✗ ${result.output}`
+                : `✗ Test failed:\n${result.output || '(no output)'}`}
           </div>
         )}
       </div>
@@ -92,42 +117,46 @@ const styles: Record<string, React.CSSProperties> = {
   terminal: {
     width: '90%', maxWidth: 640,
     background: '#0a0a0a',
-    border: '2px solid #4FC3F7',
-    padding: 20,
-    fontFamily: "'Press Start 2P', monospace",
+    border: '1px solid rgba(240,235,227,0.12)',
+    borderRadius: 12,
+    padding: 24,
     position: 'relative',
-    boxShadow: '0 0 40px rgba(79,195,247,0.15)',
+    boxShadow: '0 0 40px rgba(0,0,0,0.5)',
   },
   header: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 16,
   },
   title: {
-    color: '#4FC3F7',
+    color: '#F0EBE3',
     fontSize: 14,
+    fontFamily: "'Poppins', sans-serif",
+    fontWeight: 600,
   },
   closeBtn: {
-    background: 'none', border: '1px solid #555', color: '#888',
-    cursor: 'pointer', fontFamily: "'Press Start 2P', monospace",
-    fontSize: 10, padding: '4px 8px',
+    background: 'none', border: '1px solid rgba(240,235,227,0.2)', color: 'rgba(240,235,227,0.5)',
+    cursor: 'pointer', fontFamily: "'Roboto', sans-serif",
+    fontSize: 10, padding: '4px 10px', borderRadius: 6,
   },
   description: {
-    color: '#aaa',
+    color: 'rgba(240,235,227,0.7)',
     fontSize: 9,
     lineHeight: 1.6,
     marginBottom: 12,
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
   },
   editor: {
     width: '100%',
-    background: '#111',
-    border: '1px solid #333',
-    color: '#8BC34A',
-    fontFamily: "'Courier New', monospace",
+    background: '#0d0d0d',
+    border: '1px solid rgba(240,235,227,0.1)',
+    color: '#F0EBE3',
+    fontFamily: "'JetBrains Mono', monospace",
     fontSize: 13,
     padding: 12,
     resize: 'vertical',
-    outline: 'none',
     lineHeight: 1.5,
+    borderRadius: 8,
     boxSizing: 'border-box',
   },
   actions: {
@@ -135,23 +164,26 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 8,
   },
   hintBtn: {
-    background: '#222', border: '1px solid #555', color: '#aaa',
-    cursor: 'pointer', fontFamily: "'Press Start 2P', monospace",
-    fontSize: 9, padding: '8px 16px',
+    background: 'rgba(240,235,227,0.05)', border: '1px solid rgba(240,235,227,0.15)', color: 'rgba(240,235,227,0.6)',
+    cursor: 'pointer', fontFamily: "'Roboto', sans-serif", fontSize: 9, fontWeight: 500,
+    padding: '8px 16px', borderRadius: 8, letterSpacing: 1,
   },
   submitBtn: {
-    background: '#0a2a1a', border: '2px solid #4CAF50', color: '#8BC34A',
-    cursor: 'pointer', fontFamily: "'Press Start 2P', monospace",
-    fontSize: 10, padding: '8px 20px',
+    background: '#F0EBE3', border: 'none', color: '#0a0a0a',
+    cursor: 'pointer', fontFamily: "'Roboto', sans-serif", fontSize: 10, fontWeight: 500,
+    padding: '8px 20px', borderRadius: 8, letterSpacing: 2,
   },
   hintBox: {
     marginTop: 8, padding: 8,
-    background: '#1a1a0a', border: '1px solid #FFD700',
-    color: '#FFD700', fontSize: 9, lineHeight: 1.5,
+    background: 'rgba(118,152,38,0.08)', border: '1px solid rgba(118,152,38,0.2)',
+    color: '#769826', fontSize: 9, lineHeight: 1.5, borderRadius: 6,
+    fontFamily: "'Roboto', sans-serif",
   },
   resultBox: {
     marginTop: 8, padding: 10,
-    background: '#111', border: '1px solid',
+    background: '#0d0d0d', border: '1px solid',
+    borderRadius: 6,
     fontSize: 9, lineHeight: 1.5,
+    fontFamily: "'JetBrains Mono', monospace",
   },
 }

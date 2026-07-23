@@ -87,6 +87,24 @@ const FALLBACKS: Challenge[] = [
     question: 'What is the time complexity of accessing an array element by index?',
     options: ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], correct: 0,
     explanation: 'Array access by index is O(1) — constant time.' },
+
+  { id: -15, type: 'spot-bug', difficulty: 'easy', topic: 'javascript',
+    question: 'What bug is in this code?',
+    code: "function add(a, b) {\n  return a + b;\n}\n\nconsole.log(add(2, '3'));",
+    options: ['Missing return', 'Type coercion bug (string vs number)', 'Undefined variable', 'Syntax error'],
+    correct: 1, explanation: 'Adding a number and a string coerces the number, resulting in "23" instead of 5.' },
+
+  { id: -16, type: 'spot-bug', difficulty: 'medium', topic: 'javascript',
+    question: 'What bug is in this code?',
+    code: "const arr = [1, 2, 3];\nfor (var i = 0; i < arr.length; i++) {\n  setTimeout(() => console.log(arr[i]), 100);\n}",
+    options: ['Array index out of bounds', 'Closure captures final i value', 'var is not defined', 'Missing semicolon'],
+    correct: 1, explanation: 'var i is function-scoped, so all callbacks log arr[3] (undefined) after the loop finishes.' },
+
+  { id: -17, type: 'spot-bug', difficulty: 'hard', topic: 'javascript',
+    question: 'What bug is in this code?',
+    code: "const obj = {\n  name: 'Alice',\n  greet: () => {\n    return `Hello, ${this.name}`;\n  }\n};\nconsole.log(obj.greet());",
+    options: ['Missing comma', 'Arrow function loses this binding', 'Template literal syntax error', 'obj is not defined'],
+    correct: 1, explanation: 'Arrow functions inherit this from the enclosing scope (window/undefined), not from obj.' },
 ]
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }

@@ -9,8 +9,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       <div style={{
         position: 'fixed', inset: 0, zIndex: 200,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#0a0a1a', color: '#4FC3F7',
-        fontFamily: "'Press Start 2P', monospace", fontSize: 10,
+        background: '#0a0a0a', color: '#F0EBE3',
+        fontFamily: "'Roboto', sans-serif", fontSize: 11, fontWeight: 300, letterSpacing: 4,
       }}>
         LOADING...
       </div>

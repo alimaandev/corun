@@ -6,36 +6,37 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base: React.CSSProperties = {
-  fontFamily: "'Press Start 2P', monospace",
+  fontFamily: "'Roboto', sans-serif",
   border: 'none',
   cursor: 'pointer',
   transition: 'all 0.1s ease',
   transformStyle: 'preserve-3d',
   perspective: '200px',
-  letterSpacing: '1px',
+  letterSpacing: '2px',
   textTransform: 'uppercase',
+  fontWeight: 500,
 }
 
 const variants: Record<string, React.CSSProperties> = {
   primary: {
-    background: 'linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 50%, #1a1a2a 100%)',
-    color: '#4FC3F7',
-    boxShadow: '0 4px 0 #0a0a1a, 0 0 12px rgba(79,195,247,0.2)',
+    background: 'linear-gradient(180deg, #2a3a1a 0%, #1a2a0a 50%, #0a1a00 100%)',
+    color: '#F0EBE3',
+    boxShadow: '0 4px 0 #0a0a0a, 0 0 12px rgba(118,152,38,0.2)',
   },
   secondary: {
-    background: 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 50%, #0a0a1a 100%)',
-    color: '#8a8a9a',
-    boxShadow: '0 4px 0 #0a0a1a',
+    background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)',
+    color: 'rgba(240,235,227,0.6)',
+    boxShadow: '0 4px 0 #000',
   },
   danger: {
-    background: 'linear-gradient(180deg, #4a1a1a 0%, #3a0a0a 50%, #2a0000 100%)',
-    color: '#ff4444',
-    boxShadow: '0 4px 0 #1a0000, 0 0 12px rgba(255,68,68,0.2)',
+    background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)',
+    color: '#F0EBE3',
+    boxShadow: '0 4px 0 #000, 0 0 12px rgba(240,235,227,0.15)',
   },
   gold: {
-    background: 'linear-gradient(180deg, #5a4a1a 0%, #4a3a0a 50%, #3a2a00 100%)',
-    color: '#ffd700',
-    boxShadow: '0 4px 0 #2a1a00, 0 0 12px rgba(255,215,0,0.2)',
+    background: 'linear-gradient(180deg, #3a3a1a 0%, #2a2a0a 50%, #1a1a00 100%)',
+    color: '#F0EBE3',
+    boxShadow: '0 4px 0 #000, 0 0 12px rgba(240,235,227,0.2)',
   },
 }
 

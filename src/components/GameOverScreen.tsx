@@ -1,222 +1,163 @@
-import { Topic } from '../game/types'
-
-interface Badge {
-  topic: Topic
-  label: string
-  count: number
-}
-
-interface SavedClip {
-  id: number
-  url: string
-  score: number
-  date: string
-}
-
+import { useRef, useState } from 'react'
+import { Canvas } from '@react-three/fiber'
+import * as THREE from 'three'
+import { useFrame } from '@react-three/fiber'
+import Chamber from './three/Chamber'
+import StoneButton from './StoneButton'
 interface Props {
   score: number
   highScore: number
-  onRestart: () => void
-  badges?: Badge[]
-  clipBlob?: Blob | null
-  savedClips?: SavedClip[]
-  onDeleteClip?: (id: number) => void
+  playerRank: number | null
+  playerName?: string
+  badges?: { topic: string; label: string; count: number }[]
+  savedClips?: { id: number; url: string; score: number; date: string }[]
   levelMode?: boolean
   levelName?: string
+  clipBlob?: Blob | null
+  onRestart?: () => void
   onRetryLevel?: () => void
   onBackToLevels?: () => void
+  onDeleteClip?: (id: number) => void
 }
 
-const BADGE_LABELS: Record<string, string> = {
-  general: 'GENERAL CS',
-  javascript: 'JAVASCRIPT',
-  python: 'PYTHON',
-  web: 'WEB DEV',
-  databases: 'DATABASES',
-  algorithms: 'ALGORITHMS',
-}
+function Slab({ score, highScore, isNewHighScore }: { score: number; highScore: number; isNewHighScore: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null)
 
-const BADGE_COLORS: Record<string, string> = {
-  general: '#9C27B0',
-  javascript: '#FFA000',
-  python: '#4CAF50',
-  web: '#4FC3F7',
-  databases: '#F44336',
-  algorithms: '#00BCD4',
-}
-
-export default function GameOverScreen({ score, highScore, onRestart, badges, clipBlob, savedClips, onDeleteClip, levelMode, levelName, onRetryLevel, onBackToLevels }: Props) {
-  const newHigh = score >= highScore && score > 0
+  useFrame(({ clock }) => {
+    if (meshRef.current) {
+      meshRef.current.position.y = Math.min(0.3, meshRef.current.position.y + 0.02)
+    }
+  })
 
   return (
-    <div style={styles.page}>
-      <div className="gameover-content" style={styles.content}>
-        <div className="screen-title" style={styles.title}>GAME OVER</div>
-        <div style={styles.sub}>{levelMode && levelName ? `${levelName} — ` : ''}THE MONSTER CAUGHT YOU</div>
-
-        <div style={styles.scoreBox}>
-          <div style={styles.scoreLabel}>SCORE</div>
-          <div style={styles.scoreVal}>{score.toLocaleString()}</div>
-        </div>
-
-        {newHigh && (
-          <div style={styles.newHigh}>★ NEW HIGH SCORE ★</div>
-        )}
-
-        <div style={styles.bestRow}>
-          <span style={styles.bestLabel}>BEST</span>
-          <span style={styles.bestVal}>{highScore.toLocaleString()}</span>
-        </div>
-
-        {badges && badges.length > 0 && (
-          <div style={styles.badgeSection}>
-            <div style={styles.badgeTitle}>MASTERY BADGES</div>
-            <div style={styles.badgeRow}>
-              {badges.map(b => (
-                <div key={b.topic} style={{ ...styles.badge, borderColor: BADGE_COLORS[b.topic] || '#555' }}>
-                  <span style={{ color: BADGE_COLORS[b.topic] || '#555', fontSize: 10 }}>★</span>
-                  <span style={styles.badgeText}>{BADGE_LABELS[b.topic] || b.topic}</span>
-                  <span style={{ ...styles.badgeCount, color: BADGE_COLORS[b.topic] || '#555' }}>{b.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {savedClips && savedClips.length > 0 && (
-          <div style={styles.badgeSection}>
-            <div style={styles.badgeTitle}>SAVED CLIPS</div>
-            <div style={{ maxHeight: 100, overflowY: 'auto', width: '100%' }}>
-              {savedClips.map(c => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 0', fontSize: 7, fontFamily: "'Press Start 2P', monospace" }}>
-                  <span style={{ color: '#888', width: 32 }}>{c.score}pts</span>
-                  <span style={{ color: '#555', flex: 1 }}>{c.date.slice(5, 10)}</span>
-                  <button onClick={() => { const a = document.createElement('a'); a.href = c.url; a.download = `coderun-${c.score}pts.webm`; a.click() }} style={styles.miniBtn}>▶</button>
-                  <button onClick={() => onDeleteClip?.(c.id)} style={{ ...styles.miniBtn, color: '#F44336' }}>✕</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {clipBlob && (
-          <button
-            onClick={() => {
-              if (navigator.share && clipBlob) {
-                navigator.share({
-title: 'corun - My Score!',
-text: `I scored ${score} points in corun! Can you beat me?`,
-                  files: [new File([clipBlob], 'code-run-clip.webm', { type: 'video/webm' })],
-                }).catch(() => {})
-              }
-            }}
-            style={styles.shareBtn}
-          >
-            🎬 SHARE CLIP
-          </button>
-        )}
-
-        {levelMode ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
-            {onRetryLevel && (
-              <button onClick={onRetryLevel} style={styles.btn}>
-                ↻ RETRY LEVEL
-              </button>
-            )}
-            {onBackToLevels && (
-              <button onClick={onBackToLevels} style={{
-                ...styles.btn, borderColor: 'rgba(79,195,247,0.3)', color: '#4FC3F7',
-              }}>
-                ◀ BACK TO LEVELS
-              </button>
-            )}
-          </div>
-        ) : (
-          <button onClick={onRestart} style={styles.btn}>
-            ↻ PLAY AGAIN
-          </button>
-        )}
-
-        <div style={styles.hint}>PRESS ENTER</div>
-      </div>
-    </div>
+    <group>
+      <mesh ref={meshRef} position={[0, -2, 0]}>
+        <boxGeometry args={[2.5, 0.2, 1.2]} />
+        <meshBasicMaterial color="#2a2a3a" />
+      </mesh>
+      {isNewHighScore && (
+        <mesh position={[0, 0.7, 0]}>
+          <planeGeometry args={[1.5, 0.2]} />
+          <meshBasicMaterial color="#ffd700" transparent opacity={0.8} />
+        </mesh>
+      )}
+    </group>
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    position: 'fixed', inset: 0, zIndex: 200,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 20,
-  },
-  content: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    maxWidth: 340, width: '100%',
-    animation: 'fadeIn 0.3s ease-out',
-    background: 'rgba(0,0,0,0.8)',
-    border: '4px solid rgba(244,67,54,0.3)',
-    padding: '24px 20px 20px',
-    maxHeight: '90vh', overflowY: 'auto' as const,
-  },
-  title: {
-    color: '#F44336', fontSize: 24, fontWeight: 900,
-    letterSpacing: 6, fontFamily: "'Press Start 2P', monospace",
-    marginBottom: 4, textShadow: '3px 3px 0 #3a1a1a',
-  },
-  sub: { color: '#666', fontSize: 8, letterSpacing: 3, fontFamily: "'Press Start 2P', monospace", marginBottom: 16 },
-  scoreBox: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    padding: '10px 28px',
-    border: '3px solid rgba(255,255,255,0.1)',
-    background: 'rgba(255,255,255,0.03)',
-    marginBottom: 8,
-    width: '100%', maxWidth: 200,
-  },
-  scoreLabel: { color: '#888', fontSize: 8, letterSpacing: 3, marginBottom: 4, fontFamily: "'Press Start 2P', monospace" },
-  scoreVal: { color: '#fff', fontSize: 34, fontWeight: 700, lineHeight: 1, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
-  newHigh: { color: '#FFD700', fontSize: 10, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2, marginBottom: 8, textShadow: '2px 2px 0 #3a3a00' },
-  bestRow: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 },
-  bestLabel: { color: '#666', fontSize: 8, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
-  bestVal: { color: '#FFD700', fontSize: 12, fontFamily: "'Press Start 2P', monospace", letterSpacing: 1 },
-  badgeSection: { width: '100%', marginBottom: 12 },
-  badgeTitle: { color: '#888', fontSize: 8, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2, marginBottom: 6, textAlign: 'center' as const },
-  badgeRow: { display: 'flex', flexWrap: 'wrap' as const, gap: 4, justifyContent: 'center' },
-  badge: {
-    display: 'flex', alignItems: 'center', gap: 3,
-    padding: '3px 6px',
-    border: '2px solid',
-    background: 'rgba(255,255,255,0.02)',
-  },
-  badgeText: { color: '#aaa', fontSize: 7, fontFamily: "'Press Start 2P', monospace", letterSpacing: 1 },
-  badgeCount: { fontSize: 7, fontFamily: "'Press Start 2P', monospace" },
-  btn: {
-    padding: '10px 36px',
-    border: '4px solid rgba(244,67,54,0.5)',
-    background: '#1a1a1a',
-    color: '#F44336', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-    letterSpacing: 3, transition: 'all 0.1s',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontFamily: "'Press Start 2P', monospace",
-  },
-  hint: { color: '#444', fontSize: 8, marginTop: 8, fontFamily: "'Press Start 2P', monospace", letterSpacing: 2 },
-  miniBtn: {
-    border: '2px solid #444',
-    background: '#1a1a1a',
-    color: '#aaa',
-    fontSize: 7,
-    cursor: 'pointer',
-    padding: '2px 5px',
-    fontFamily: "'Press Start 2P', monospace",
-    lineHeight: 1,
-  },
-  shareBtn: {
-    padding: '8px 24px',
-    border: '3px solid rgba(79,195,247,0.4)',
-    background: '#1a2a3a',
-    color: '#4FC3F7', fontSize: 9, fontWeight: 700, cursor: 'pointer',
-    letterSpacing: 2, transition: 'all 0.1s',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontFamily: "'Press Start 2P', monospace",
-    marginBottom: 6,
-  },
+function Badge({ position, color }: { position: [number, number, number]; color: string }) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  useFrame(({ clock }) => {
+    if (meshRef.current) {
+      meshRef.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.8 + position[0]) * 0.15
+      meshRef.current.rotation.y += 0.01
+    }
+  })
+
+  return (
+    <mesh ref={meshRef} position={position}>
+      <planeGeometry args={[0.3, 0.3]} />
+      <meshBasicMaterial color={color} transparent opacity={0.6} />
+    </mesh>
+  )
+}
+
+export default function GameOverScreen({
+  score, highScore, playerRank, playerName,
+  badges = [], savedClips = [],
+  levelMode, levelName, clipBlob,
+  onRestart, onRetryLevel, onBackToLevels, onDeleteClip,
+}: Props) {
+  const [canvasKey, setCanvasKey] = useState(0)
+  const isStoryMode = !!levelMode
+  const isNewHighScore = score > 0 && score >= highScore
+  return (
+    <div style={{
+      position: 'fixed', inset: 0,
+      background: '#0a0a0a',
+      color: '#F0EBE3',
+      fontFamily: "'Roboto', sans-serif",
+      zIndex: 100,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <Canvas
+        key={canvasKey}
+        gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
+        camera={{ position: [0, 2, 4.5], fov: 50, near: 0.1, far: 30 }}
+        style={{ position: 'fixed', inset: 0, display: 'block' }}
+        frameloop="demand"
+        onCreated={(state) => {
+          state.gl.domElement.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault()
+            setTimeout(() => setCanvasKey(k => k + 1), 500)
+          }, false)
+          state.gl.domElement.addEventListener('webglcontextrestored', () => {
+            state.invalidate()
+          }, false)
+        }}
+        onError={() => setCanvasKey(k => k + 1)}
+      >
+        <Chamber />
+        <Slab score={score} highScore={highScore} isNewHighScore={isNewHighScore} />
+        {badges.slice(0, 3).map((_, i) => (
+          <Badge
+            key={i}
+            position={[
+              Math.cos((i / 3) * Math.PI * 2) * 1.2,
+              1 + Math.sin((i / 3) * Math.PI * 2) * 0.5,
+              Math.sin((i / 3) * Math.PI * 2) * 0.5,
+            ]}
+            color={['#F0EBE3', '#769826', '#F0EBE3'][i]}
+          />
+        ))}
+      </Canvas>
+
+      <div style={{
+        position: 'absolute', zIndex: 20,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: 12, textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 7, color: 'rgba(240,235,227,0.5)', letterSpacing: 4, fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+          GAME OVER
+        </div>
+        <div style={{ fontSize: 12, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", fontWeight: 300 }}>
+          THE MONSTER CAUGHT YOU
+        </div>
+        <div style={{ fontSize: 28, color: '#F0EBE3', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>
+          {score.toLocaleString()}
+        </div>
+        {isNewHighScore && (
+          <div style={{ fontSize: 7, color: '#F0EBE3', letterSpacing: 2, fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}>
+            NEW HIGH SCORE
+          </div>
+        )}
+        {playerRank !== null && (
+          <div style={{ fontSize: 7, color: '#769826', letterSpacing: 1, fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}>
+            GLOBAL RANK: #{playerRank}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {isStoryMode ? (
+            <>
+              <StoneButton variant="primary" onClick={onRetryLevel ?? onRestart}>
+                RETRY
+              </StoneButton>
+              <StoneButton variant="secondary" onClick={onBackToLevels ?? onRestart}>
+                LEVELS
+              </StoneButton>
+            </>
+          ) : (
+            <StoneButton variant="primary" onClick={onRestart}>
+              PLAY AGAIN
+            </StoneButton>
+          )}
+        </div>
+
+        <div style={{ fontSize: 6, color: '#555', marginTop: 4 }}>
+          PRESS ENTER
+        </div>
+      </div>
+    </div>
+  )
 }

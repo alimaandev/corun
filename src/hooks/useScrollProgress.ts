@@ -28,9 +28,11 @@ export function useScrollProgress() {
       progressRef.current = Math.max(0, Math.min(1, raw))
       const idx = Math.min(SECTION_COUNT - 1, Math.floor(raw * SECTION_COUNT))
       const sp = (raw * SECTION_COUNT) - idx
-      sectionRef.current = idx
       sectionProgressRef.current = Math.max(0, Math.min(1, sp))
-      if (idx !== section) setSection(idx)
+      if (idx !== sectionRef.current) {
+        sectionRef.current = idx
+        setSection(idx)
+      }
     })
 
     function raf(time: number) {
@@ -42,7 +44,7 @@ export function useScrollProgress() {
     return () => {
       lenis.destroy()
     }
-  }, [section])
+  }, [])
 
   return {
     lenis: lenisRef,

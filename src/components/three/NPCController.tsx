@@ -16,7 +16,6 @@ export default function NPCController({ npc }: Props) {
   const xRef = useRef(npc.x * SCALE)
   const dirRef = useRef(npc.dir === 'right' ? 1 : -1)
   const valid = npc.npcId in NPC_DRAWERS
-  if (!valid) console.warn(`NPCController: unknown npcId "${npc.npcId}"`)
   const drawer = valid ? NPC_DRAWERS[npc.npcId as NpcId] : undefined
   const texture = drawer ? spriteToTexture(drawer, npc.npcId, 3) : undefined
   const hasPatrol = npc.patrol !== undefined

@@ -30,10 +30,10 @@ export default function IsometricMap({ progress, onSelectLevel }: Props) {
         const stars = progress.stars[level.id] || 0
         const isCurrent = level.id === progress.unlockedUpTo && !isCompleted
 
-        let color = '#2a2a3a'
-        if (isCompleted) color = '#4CAF50'
-        else if (isCurrent) color = '#4FC3F7'
-        else if (!isUnlocked) color = '#1a1a1a'
+        let color = 'rgba(240,235,227,0.05)'
+        if (isCompleted) color = '#769826'
+        else if (isCurrent) color = '#F0EBE3'
+        else if (!isUnlocked) color = '#0a0a0a'
 
         return (
           <group key={level.id}>
@@ -50,19 +50,19 @@ export default function IsometricMap({ progress, onSelectLevel }: Props) {
             {/* Arch opening */}
             <mesh position={[x, 0.3, 0.42]}>
               <planeGeometry args={[0.6, 0.4]} />
-              <meshBasicMaterial color="#0a0a1a" />
+              <meshBasicMaterial color="#0a0a0a" />
             </mesh>
             {/* Level label */}
             <mesh position={[x, -0.4, 0]}>
               <planeGeometry args={[1, 0.15]} />
-              <meshBasicMaterial color="#0a0a1a" />
+              <meshBasicMaterial color="#0a0a0a" />
             </mesh>
             {/* Connection path to next level */}
             {i < levels.length - 1 && (
               <mesh position={[x + 0.9, 0.05, 0]}>
                 <boxGeometry args={[0.6, 0.1, 0.2]} />
                 <meshBasicMaterial
-                  color={level.id < progress.unlockedUpTo ? '#4CAF50' : '#2a2a3a'}
+                  color={level.id < progress.unlockedUpTo ? '#769826' : 'rgba(240,235,227,0.05)'}
                   transparent
                   opacity={level.id < progress.unlockedUpTo ? 0.6 : 0.3}
                 />
@@ -72,7 +72,7 @@ export default function IsometricMap({ progress, onSelectLevel }: Props) {
             {stars > 0 && (
               <mesh position={[x, 0.7, 0]}>
                 <planeGeometry args={[0.4 * stars, 0.12]} />
-                <meshBasicMaterial color="#ffd700" transparent opacity={0.8} />
+                <meshBasicMaterial color="#F0EBE3" transparent opacity={0.8} />
               </mesh>
             )}
           </group>

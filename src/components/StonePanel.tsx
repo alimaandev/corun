@@ -13,15 +13,16 @@ export default function StonePanel({ children, style, glow, onClick, hover = tru
     <div
       onClick={onClick}
       style={{
-        background: 'linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 50%, #12121e 100%)',
-        border: '1px solid #3a3a4a',
+        background: 'rgba(0,0,0,0.3)',
+        border: '1px solid rgba(240,235,227,0.12)',
         padding: 16,
-        fontFamily: "'Press Start 2P', monospace",
-        transformStyle: 'preserve-3d',
-        perspective: '400px',
+        fontFamily: "'Roboto', sans-serif",
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderRadius: 12,
         boxShadow: glow
           ? `0 0 20px ${glow}, inset 0 0 20px ${glow}22`
-          : '0 4px 0 #0a0a1a',
+          : 'none',
         cursor: onClick ? 'pointer' : undefined,
         transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         ...(hover ? {

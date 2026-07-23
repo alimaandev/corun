@@ -22,7 +22,7 @@ export default function TriggerZone({ x, y, w, h, solved }: Props) {
     <mesh position={[px + pw / 2, py + ph / 2, 0]}>
       <boxGeometry args={[pw, ph, 0.05]} />
       <meshBasicMaterial
-        color="#4FC3F7"
+        color="#F0EBE3"
         transparent
         opacity={0.08}
         side={THREE.DoubleSide}

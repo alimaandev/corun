@@ -13,12 +13,12 @@ export default function Door({ position, label, color, open }: Props) {
       {/* Door frame */}
       <mesh position={[0, 1.2, 0]}>
         <boxGeometry args={[1.4, 2.4, 0.2]} />
-        <meshBasicMaterial color="#2a2a3a" />
+        <meshBasicMaterial color="rgba(240,235,227,0.08)" />
       </mesh>
       {/* Arch cutout visual — a dark inset */}
       <mesh position={[0, 1.1, 0.02]}>
         <planeGeometry args={[1, 2]} />
-        <meshBasicMaterial color={open ? '#4CAF50' : '#0a0a1a'} />
+        <meshBasicMaterial color={open ? '#769826' : '#0a0a0a'} />
       </mesh>
       {/* Door slab */}
       {!open && (

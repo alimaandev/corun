@@ -395,7 +395,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   useEffect(() => {
     topicRef.current = props.topic
-  }, [props.topic])
+    diffRef.current = props.difficulty
+  }, [props.topic, props.difficulty])
 
   useEffect(() => {
     resetState()
@@ -422,11 +423,15 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     if (s.paused) return
     const delay = CHALLENGE_MIN + Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
     challengeTimerRef.current = window.setTimeout(async () => {
-      if (gameRunning.current && !stateRef.current.paused) {
-        const challenge = await getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
-        if (!gameRunning.current || disposedRef.current) return
-        usedChallengeIds.current.add(challenge.id)
-        propsRef.current.onChallenge(challenge)
+      try {
+        if (gameRunning.current && !stateRef.current.paused) {
+          const challenge = await getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
+          if (!gameRunning.current || disposedRef.current) return
+          usedChallengeIds.current.add(challenge.id)
+          propsRef.current.onChallenge(challenge)
+        }
+      } catch (err) {
+        console.error('PixelRunner challenge error:', err)
       }
     }, delay)
   }
@@ -444,6 +449,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     gameInitialized.current = true
     usedChallengeIds.current.clear()
     frameCountRef.current = 0
+    disposedRef.current = false
     clearTimeout(challengeTimerRef.current)
     clearAIPool()
     scheduleChallenge()
@@ -616,116 +622,120 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     window.addEventListener('resize', resize)
 
     function loop(ts: number) {
-      if (disposed) return
-      const s = stateRef.current
-      const dt = lastFrameTimeRef.current ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05) : 0
-      lastFrameTimeRef.current = ts
+      try {
+        if (disposed) return
+        const s = stateRef.current
+        const dt = lastFrameTimeRef.current ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05) : 0
+        lastFrameTimeRef.current = ts
 
-      if (gameRunning.current) {
-        if (!s.paused)  {
-          s.scrollY += s.speed * 4 * dt * 60
+        if (gameRunning.current) {
+          if (!s.paused)  {
+            s.scrollY += s.speed * 4 * dt * 60
 
-          const now = performance.now()
-          if (now < s.boostUntil) {
-            s.speed = BOOST_SPEED
-            s.score += 10 * dt * s.multiplier
-          } else if (now < s.penaltyUntil) {
-            s.speed = PENALTY_SPEED
-            s.score += 3 * dt * s.multiplier
-          } else {
-            s.speed = BASE_SPEED
-            s.score += 6 * dt * s.multiplier
+            const now = performance.now()
+            if (now < s.boostUntil) {
+              s.speed = BOOST_SPEED
+              s.score += 10 * dt * s.multiplier
+            } else if (now < s.penaltyUntil) {
+              s.speed = PENALTY_SPEED
+              s.score += 3 * dt * s.multiplier
+            } else {
+              s.speed = BASE_SPEED
+              s.score += 6 * dt * s.multiplier
+            }
+
+            s.gap -= GAP_DRAIN * s.speed * dt
           }
 
-          s.gap -= GAP_DRAIN * s.speed * dt
+          s.displayLane += (s.currentLane - s.displayLane) * 0.15
+
+          if (s.screenShake > 0) {
+            s.screenShake *= 0.9
+            if (s.screenShake < 0.01) s.screenShake = 0
+          }
+
+          if (s.flashTimer > 0) {
+            s.flashTimer -= dt
+          }
+
+          if (s.gap <= 0) {
+            s.gap = 0
+            gameRunning.current = false
+          }
         }
 
-        s.displayLane += (s.currentLane - s.displayLane) * 0.15
+        const dpr = window.devicePixelRatio || 1
+        const w = canvas.width / dpr
+        const h = canvas.height / dpr
+
+        ctx.save()
 
         if (s.screenShake > 0) {
-          s.screenShake *= 0.9
-          if (s.screenShake < 0.01) s.screenShake = 0
+          ctx.translate(
+            (Math.random() - 0.5) * s.screenShake * 6,
+            (Math.random() - 0.5) * s.screenShake * 6,
+          )
         }
 
         if (s.flashTimer > 0) {
-          s.flashTimer -= dt
+          ctx.fillStyle = s.flashGreen
+            ? `rgba(118,152,38,${s.flashTimer * 0.5})`
+            : `rgba(240,235,227,${s.flashTimer * 0.3})`
+          ctx.fillRect(0, 0, w, h)
         }
 
-        if (s.gap <= 0) {
-          s.gap = 0
-          gameRunning.current = false
+        const theme = themeRef.current
+        const skyH = Math.floor(h * 0.32)
+        const grad = ctx.createLinearGradient(0, 0, 0, skyH)
+        grad.addColorStop(0, theme.skyTop)
+        grad.addColorStop(1, theme.skyBottom)
+        ctx.fillStyle = grad
+        ctx.fillRect(0, 0, w, skyH)
+
+        for (let i = 0; i < 3; i++) {
+          const cx = ((i * w * 0.25 + ts * 0.008 * (1 + i * 0.3)) % (w + 120)) - 60
+          const cy = 10 + i * 25
+          drawPixelCloud(ctx, cx, cy, 50 + i * 10, i)
         }
+
+        ctx.fillStyle = theme.hillColor
+        ctx.beginPath()
+        ctx.moveTo(0, skyH - 8)
+        for (let x = 0; x <= w; x += 8) {
+          ctx.lineTo(x, skyH - 8 + Math.sin(x * 0.006 + 2) * 16 + Math.sin(x * 0.014) * 8)
+        }
+        ctx.lineTo(w, skyH + 20)
+        ctx.lineTo(0, skyH + 20)
+        ctx.closePath()
+        ctx.fill()
+
+        ctx.fillStyle = theme.groundColor
+        ctx.fillRect(0, skyH + 12, w, h - skyH)
+
+        drawRoad(ctx, w, h, s.scrollY, s.speed, theme)
+        drawScenery(ctx, w, h, s.scrollY, theme)
+        drawParticles(ctx, w, h, ts * 0.001, theme)
+
+        const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
+        drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger, theme)
+        drawPixelPlayer(ctx, playerX(), playerY(), ts * 0.001)
+
+        drawSpeedLines(ctx, w, h, s.speed, ts * 0.001)
+
+        if (s.gap < GAP_START * 0.35) {
+          const intense = 1 - s.gap / (GAP_START * 0.35)
+          ctx.fillStyle = `rgba(240,235,227,${intense * 0.06})`
+          ctx.fillRect(0, 0, w, h)
+          const bw = 4 + intense * 8
+          ctx.strokeStyle = `rgba(240,235,227,${intense * 0.2})`
+          ctx.lineWidth = bw
+          ctx.strokeRect(bw / 2, bw / 2, w - bw, h - bw)
+        }
+
+        ctx.restore()
+      } catch (err) {
+        console.error('PixelRunner loop error:', err)
       }
-
-      const dpr = window.devicePixelRatio || 1
-      const w = canvas.width / dpr
-      const h = canvas.height / dpr
-
-      ctx.save()
-
-      if (s.screenShake > 0) {
-        ctx.translate(
-          (Math.random() - 0.5) * s.screenShake * 6,
-          (Math.random() - 0.5) * s.screenShake * 6,
-        )
-      }
-
-      if (s.flashTimer > 0) {
-        ctx.fillStyle = s.flashGreen
-          ? `rgba(76,175,80,${s.flashTimer * 0.5})`
-          : `rgba(244,67,54,${s.flashTimer * 0.4})`
-        ctx.fillRect(0, 0, w, h)
-      }
-
-      const theme = themeRef.current
-      const skyH = Math.floor(h * 0.32)
-      const grad = ctx.createLinearGradient(0, 0, 0, skyH)
-      grad.addColorStop(0, theme.skyTop)
-      grad.addColorStop(1, theme.skyBottom)
-      ctx.fillStyle = grad
-      ctx.fillRect(0, 0, w, skyH)
-
-      for (let i = 0; i < 3; i++) {
-        const cx = ((i * w * 0.25 + ts * 0.008 * (1 + i * 0.3)) % (w + 120)) - 60
-        const cy = 10 + i * 25
-        drawPixelCloud(ctx, cx, cy, 50 + i * 10, i)
-      }
-
-      ctx.fillStyle = theme.hillColor
-      ctx.beginPath()
-      ctx.moveTo(0, skyH - 8)
-      for (let x = 0; x <= w; x += 8) {
-        ctx.lineTo(x, skyH - 8 + Math.sin(x * 0.006 + 2) * 16 + Math.sin(x * 0.014) * 8)
-      }
-      ctx.lineTo(w, skyH + 20)
-      ctx.lineTo(0, skyH + 20)
-      ctx.closePath()
-      ctx.fill()
-
-      ctx.fillStyle = theme.groundColor
-      ctx.fillRect(0, skyH + 12, w, h - skyH)
-
-      drawRoad(ctx, w, h, s.scrollY, s.speed, theme)
-      drawScenery(ctx, w, h, s.scrollY, theme)
-      drawParticles(ctx, w, h, ts * 0.001, theme)
-
-      const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
-      drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger, theme)
-      drawPixelPlayer(ctx, playerX(), playerY(), ts * 0.001)
-
-      drawSpeedLines(ctx, w, h, s.speed, ts * 0.001)
-
-      if (s.gap < GAP_START * 0.35) {
-        const intense = 1 - s.gap / (GAP_START * 0.35)
-        ctx.fillStyle = `rgba(255,0,0,${intense * 0.12})`
-        ctx.fillRect(0, 0, w, h)
-        const bw = 4 + intense * 8
-        ctx.strokeStyle = `rgba(255,0,0,${intense * 0.4})`
-        ctx.lineWidth = bw
-        ctx.strokeRect(bw / 2, bw / 2, w - bw, h - bw)
-      }
-
-      ctx.restore()
 
       anim = requestAnimationFrame(loop)
     }

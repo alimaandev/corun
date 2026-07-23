@@ -133,16 +133,16 @@ export async function submitScore(
 
 export async function flushScoreQueue(): Promise<number> {
   try {
-    const queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
+    let queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
     if (queue.length === 0) return 0
+    const remaining: typeof queue = []
     let flushed = 0
     for (const item of queue) {
       const { error } = await sb().from('scores').insert(item)
       if (!error) flushed++
+      else remaining.push(item)
     }
-    if (flushed > 0) {
-      localStorage.setItem('corun_score_queue', JSON.stringify([]))
-    }
+    localStorage.setItem('corun_score_queue', JSON.stringify(remaining))
     return flushed
   } catch { return 0 }
 }
@@ -156,30 +156,23 @@ export async function getGlobalLeaderboard(
     const from = (page - 1) * limit
 
     let rows: any[] | null = null
-    const { data: rpcData, error: rpcErr } = await sb()
-      .rpc('get_leaderboard', { lim: limit, off: from })
+    const { data: scores } = await sb()
+      .from('scores')
+      .select('profile_id, score, profiles!inner(player_name)')
+      .order('score', { ascending: false })
 
-    if (!rpcErr && rpcData) {
-      rows = rpcData
-    } else {
-      const { data: scores } = await sb()
-        .from('scores')
-        .select('profile_id, score, profiles!inner(player_name)')
-        .order('score', { ascending: false })
-
-      if (scores) {
-        const map = new Map<string, { name: string; score: number }>()
-        for (const s of scores) {
-          const pid = s.profile_id
-          if (!map.has(pid) || s.score > map.get(pid)!.score) {
-            map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
-          }
+    if (scores) {
+      const map = new Map<string, { name: string; score: number }>()
+      for (const s of scores) {
+        const pid = s.profile_id
+        if (!map.has(pid) || s.score > map.get(pid)!.score) {
+          map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
         }
-        rows = Array.from(map.entries())
-          .sort((a, b) => b[1].score - a[1].score)
-          .slice(from, from + limit)
-          .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
       }
+      rows = Array.from(map.entries())
+        .sort((a, b) => b[1].score - a[1].score)
+        .slice(from, from + limit)
+        .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
     }
 
     const entries: LeaderboardEntry[] = (rows || []).map((r: any, i: number) => ({
@@ -221,31 +214,24 @@ export async function getDailyLeaderboard(
     const today = new Date().toISOString().slice(0, 10)
 
     let rows: any[] | null = null
-    const { data: rpcData, error: rpcErr } = await sb()
-      .rpc('get_daily_leaderboard', { day: today })
+    const { data: scores } = await sb()
+      .from('scores')
+      .select('profile_id, score, profiles!inner(player_name)')
+      .gte('created_at', today)
+      .order('score', { ascending: false })
 
-    if (!rpcErr && rpcData) {
-      rows = rpcData
-    } else {
-      const { data: scores } = await sb()
-        .from('scores')
-        .select('profile_id, score, profiles!inner(player_name)')
-        .gte('created_at', today)
-        .order('score', { ascending: false })
-
-      if (scores) {
-        const map = new Map<string, { name: string; score: number }>()
-        for (const s of scores) {
-          const pid = s.profile_id
-          if (!map.has(pid) || s.score > map.get(pid)!.score) {
-            map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
-          }
+    if (scores) {
+      const map = new Map<string, { name: string; score: number }>()
+      for (const s of scores) {
+        const pid = s.profile_id
+        if (!map.has(pid) || s.score > map.get(pid)!.score) {
+          map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
         }
-        rows = Array.from(map.entries())
-          .sort((a, b) => b[1].score - a[1].score)
-          .slice(0, 100)
-          .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
       }
+      rows = Array.from(map.entries())
+        .sort((a, b) => b[1].score - a[1].score)
+        .slice(0, 100)
+        .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
     }
 
     const entries: LeaderboardEntry[] = (rows || []).map((r: any, i: number) => ({

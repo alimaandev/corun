@@ -11,7 +11,7 @@ interface Props {
   isBonus?: boolean
 }
 
-const colors: Record<string, string> = { easy: '#4CAF50', medium: '#FFA000', hard: '#F44336' }
+const colors: Record<string, string> = { easy: '#769826', medium: '#F0EBE3', hard: 'rgba(240,235,227,0.4)' }
 const labels: Record<string, string> = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' }
 const typeLabels: Record<string, string> = {
   'multiple': 'MULTIPLE CHOICE',
@@ -97,7 +97,7 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
 
   return (
     <div style={styles.overlay}>
-      <div className="modal-card" style={{ ...styles.card, borderColor: isBoss ? 'rgba(244,67,54,0.4)' : isBonus ? 'rgba(255,215,0,0.4)' : 'rgba(79,195,247,0.2)' }}>
+      <div className="modal-card" style={{ ...styles.card, borderColor: isBoss ? 'rgba(240,235,227,0.2)' : isBonus ? 'rgba(240,235,227,0.2)' : 'rgba(118,152,38,0.2)' }}>
         <div style={styles.top}>
           <div style={styles.left}>
             <span style={{ ...styles.badge, borderColor: dc, color: dc, background: `${dc}15` }}>
@@ -106,19 +106,19 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
             {!isBoss && !isBonus && (
               <span style={styles.typeLabel}>{typeLabels[challenge.type] || 'CHALLENGE'}</span>
             )}
-            {isBoss && <span style={{ ...styles.typeLabel, color: '#F44336' }}>⚔ BOSS BATTLE</span>}
-            {isBonus && <span style={{ ...styles.typeLabel, color: '#FFD700' }}>⚡ BONUS ROUND</span>}
+            {isBoss &&             <span style={{ ...styles.typeLabel, color: '#F0EBE3' }}>⚔ BOSS BATTLE</span>}
+            {isBonus && <span style={{ ...styles.typeLabel, color: '#F0EBE3' }}>⚡ BONUS ROUND</span>}
           </div>
           <div style={styles.timerBox}>
             <div style={styles.tBar}>
               <div style={{
                 ...styles.tFill, width: `${pct}%`,
-                background: urgent ? '#F44336' : timer <= timeLimit * 0.5 ? '#FFA000' : '#4FC3F7',
+                background: urgent ? 'rgba(240,235,227,0.4)' : timer <= timeLimit * 0.5 ? 'rgba(240,235,227,0.6)' : '#769826',
               }} />
             </div>
             <span style={{
-              color: urgent ? '#F44336' : '#888',
-              fontSize: 11, fontFamily: "'Press Start 2P', monospace",
+              color: 'rgba(240,235,227,0.6)',
+              fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
               minWidth: 30, textAlign: 'right' as const,
             }}>
               {Math.ceil(timer)}s
@@ -148,8 +148,8 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
               style={{
                 ...styles.textInput,
                 borderColor: answered
-                  ? (correct ? '#4CAF50' : '#F44336')
-                  : '#333',
+                  ? (correct ? '#769826' : 'rgba(240,235,227,0.3)')
+                  : 'rgba(240,235,227,0.15)',
               }}
               autoComplete="off"
               spellCheck={false}
@@ -162,8 +162,8 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
             {answered && (
               <div style={{
                 ...styles.fb,
-                borderColor: correct ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)',
-                color: correct ? '#4CAF50' : '#F44336',
+                borderColor: correct ? 'rgba(118,152,38,0.3)' : 'rgba(240,235,227,0.2)',
+                color: correct ? '#769826' : 'rgba(240,235,227,0.6)',
               }}>
                 {correct ? '> CORRECT!' : `> Expected: ${challenge.options[challenge.correct]}. ${challenge.explanation}`}
               </div>
@@ -172,13 +172,13 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
         ) : (
           <div style={styles.opts}>
             {challenge.options.map((opt, i) => {
-              let bg = '#0d0d0d'
-              let border = '#2a2a2a'
+              let bg = 'transparent'
+              let border = 'rgba(240,235,227,0.15)'
               let disabled = false
               if (answered) {
                 disabled = true
-                if (i === challenge.correct) { bg = '#0a1a0a'; border = '#4CAF50' }
-                else if (i === selected) { bg = '#1a0a0a'; border = '#F44336' }
+                if (i === challenge.correct) { bg = 'rgba(118,152,38,0.1)'; border = '#769826' }
+                else if (i === selected) { bg = 'rgba(240,235,227,0.04)'; border = 'rgba(240,235,227,0.3)' }
               }
               return (
                 <button
@@ -186,19 +186,19 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
                   onClick={() => select(i)}
                   disabled={disabled}
                   style={{ ...styles.opt, background: bg, borderColor: border }}
-                  onMouseEnter={e => { if (!disabled) { e.currentTarget.style.background = '#151515'; e.currentTarget.style.borderColor = '#444' } }}
+                  onMouseEnter={e => { if (!disabled) { e.currentTarget.style.background = 'rgba(240,235,227,0.06)'; e.currentTarget.style.borderColor = 'rgba(240,235,227,0.3)' } }}
                   onMouseLeave={e => { if (!disabled) { e.currentTarget.style.background = bg; e.currentTarget.style.borderColor = border } }}
                 >
                   <span style={{
                     ...styles.letter,
-                    color: answered && i === challenge.correct ? '#4CAF50' : answered && i === selected ? '#F44336' : '#4FC3F7',
-                    background: answered && i === challenge.correct ? 'rgba(76,175,80,0.15)' : answered && i === selected ? 'rgba(244,67,54,0.15)' : 'rgba(79,195,247,0.08)',
+                    color: answered && i === challenge.correct ? '#769826' : answered && i === selected ? 'rgba(240,235,227,0.6)' : '#F0EBE3',
+                    background: answered && i === challenge.correct ? 'rgba(118,152,38,0.15)' : answered && i === selected ? 'rgba(240,235,227,0.08)' : 'rgba(240,235,227,0.04)',
                   }}>
                     {String.fromCharCode(65 + i)}
                   </span>
                   <span style={styles.optText}>{opt}</span>
-                  {answered && i === challenge.correct && <span style={{ color: '#4CAF50', fontSize: 14 }}>●</span>}
-                  {answered && i === selected && i !== challenge.correct && <span style={{ color: '#F44336', fontSize: 14 }}>●</span>}
+                  {answered && i === challenge.correct && <span style={{ color: '#769826', fontSize: 14 }}>●</span>}
+                  {answered && i === selected && i !== challenge.correct && <span style={{ color: 'rgba(240,235,227,0.4)', fontSize: 14 }}>●</span>}
                 </button>
               )
             })}
@@ -208,8 +208,8 @@ export default function ChallengeModal({ challenge, timeLimit, onAnswer, onTimeo
         {answered && challenge.type !== 'fill-blank' && (
           <div style={{
             ...styles.fb,
-            borderColor: correct ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)',
-            color: correct ? '#4CAF50' : '#F44336',
+            borderColor: correct ? 'rgba(118,152,38,0.3)' : 'rgba(240,235,227,0.2)',
+            color: correct ? '#769826' : 'rgba(240,235,227,0.6)',
           }}>
             {correct ? '> CORRECT!' : `> ${challenge.explanation}`}
           </div>
@@ -228,7 +228,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     background: '#0a0a0a',
-    border: '4px solid rgba(79,195,247,0.2)',
+    border: '1px solid rgba(240,235,227,0.12)',
+    borderRadius: 12,
     padding: '16px 18px',
     maxWidth: 520, width: '100%',
   },
@@ -240,35 +241,39 @@ const styles: Record<string, React.CSSProperties> = {
   left: { display: 'flex', alignItems: 'center', gap: 8 },
   badge: {
     padding: '2px 8px',
-    border: '3px solid',
+    border: '1px solid',
+    borderRadius: 4,
     fontSize: 8,
-    fontWeight: 700,
+    fontWeight: 500,
     letterSpacing: 2,
     lineHeight: '16px',
-    fontFamily: "'Press Start 2P', monospace",
+    fontFamily: "'Roboto', sans-serif",
   },
   typeLabel: {
-    color: '#888', fontSize: 8,
-    fontFamily: "'Press Start 2P', monospace",
+    color: 'rgba(240,235,227,0.5)', fontSize: 8,
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
     letterSpacing: 1,
   },
   timerBox: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 80 },
-  tBar: { flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.03)' },
+  tBar: { flex: 1, height: 6, background: 'rgba(240,235,227,0.06)', overflow: 'hidden', borderRadius: 3 },
   tFill: { height: '100%', transition: 'width 0.1s linear' },
   q: {
-    color: '#ccc', fontSize: 13,
+    color: '#F0EBE3', fontSize: 13,
     lineHeight: 1.5, marginBottom: 10,
     textAlign: 'center' as const,
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
   },
   codeBlock: {
-    background: '#0d0d1a',
-    border: '2px solid rgba(79,195,247,0.1)',
+    background: '#0d0d0d',
+    border: '1px solid rgba(240,235,227,0.08)',
+    borderRadius: 8,
     padding: '10px 12px',
     marginBottom: 12,
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: 12,
-    color: '#aac',
+    color: '#F0EBE3',
     lineHeight: 1.5,
     overflowX: 'auto' as const,
     whiteSpace: 'pre-wrap' as const,
@@ -283,9 +288,10 @@ const styles: Record<string, React.CSSProperties> = {
   textInput: {
     width: '100%',
     padding: '10px 12px',
-    border: '3px solid',
+    border: '1px solid rgba(240,235,227,0.15)',
+    borderRadius: 8,
     background: '#0d0d0d',
-    color: '#fff',
+    color: '#F0EBE3',
     fontSize: 14,
     fontFamily: "'JetBrains Mono', monospace",
     outline: 'none',
@@ -293,11 +299,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   submitBtn: {
     padding: '8px 20px',
-    border: '3px solid rgba(79,195,247,0.4)',
-    background: '#1a2a3a',
-    color: '#4FC3F7',
+    border: 'none',
+    borderRadius: 8,
+    background: '#F0EBE3',
+    color: '#0a0a0a',
     fontSize: 10,
-    fontFamily: "'Press Start 2P', monospace",
+    fontWeight: 500,
+    fontFamily: "'Roboto', sans-serif",
     cursor: 'pointer',
     letterSpacing: 2,
     alignSelf: 'center',
@@ -306,27 +314,31 @@ const styles: Record<string, React.CSSProperties> = {
   opt: {
     display: 'flex', alignItems: 'center', gap: 8,
     padding: '8px 12px',
-    border: '3px solid',
+    border: '1px solid rgba(240,235,227,0.1)',
+    borderRadius: 8,
     cursor: 'pointer',
-    fontSize: 12, color: '#bbb',
+    fontSize: 12, color: '#F0EBE3',
     textAlign: 'left' as const, width: '100%',
     transition: 'all 0.08s',
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
   },
   letter: {
     width: 22, height: 22,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontWeight: 700, fontSize: 9,
+    fontWeight: 500, fontSize: 9,
     flexShrink: 0,
-    fontFamily: "'Press Start 2P', monospace",
+    borderRadius: 4,
+    fontFamily: "'Roboto', sans-serif",
   },
   optText: { flex: 1, lineHeight: 1.3 },
   fb: {
     marginTop: 6, padding: '6px 10px',
-    border: '3px solid',
+    border: '1px solid',
+    borderRadius: 6,
     fontSize: 10, lineHeight: 1.4,
     textAlign: 'center' as const,
-    fontFamily: "'Press Start 2P', monospace",
+    fontFamily: "'JetBrains Mono', monospace",
     letterSpacing: 1,
   },
 }

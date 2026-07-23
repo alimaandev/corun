@@ -16,7 +16,7 @@ function scene(id: number, ww: number, startX: number, triggers: { x: number; pi
       { x: ww - 18, y: GY - 250, w: 18, h: 250 },
     ],
     triggers: triggers.map(t => ({
-      x: t.x, y: GY - 75, w: 36, h: 55, puzzleId: t.pid, promptText: t.text,
+      x: t.x, y: GY - 75, w: 36, h: 75, puzzleId: t.pid, promptText: t.text,
     })),
     npcs: guards.map(g => ({
       npcId: g.id, x: g.x, y: g.y ?? GY - 40, dir: g.dir ?? 'left', patrol: g.patrol,
@@ -53,12 +53,12 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1140,
   ),
 
-  4: scene(4, 1200, 80,
+   4: scene(4, 1200, 80,
     [
       { x: 260, pid: 'forest-torches', text: 'Light the torches' },
       { x: 680, pid: 'forest-beast', text: 'Calm the beast' },
     ],
-    [],
+    [{ id: 'bandit', x: 550, patrol: [440, 660] }],
     1140,
   ),
 
@@ -67,7 +67,7 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
       { x: 300, pid: 'village-barter', text: 'Barter with merchant' },
       { x: 750, pid: 'village-gate', text: 'Open the gate' },
     ],
-    [{ id: 'bandit', x: 550, patrol: [460, 650] }],
+    [{ id: 'vark', x: 550, patrol: [460, 650] }],
     1240,
   ),
 
@@ -76,7 +76,7 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
       { x: 340, pid: 'bridge-planks', text: 'Repair the bridge' },
       { x: 800, pid: 'bridge-rope', text: 'Cut the rope' },
     ],
-    [],
+    [{ id: 'stoneheart', x: 900, patrol: [780, 1080] }],
     1340,
   ),
 
@@ -98,8 +98,7 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
       { x: 850, pid: 'hall-portcullis', text: 'Raise the portcullis' },
     ],
     [
-      { id: 'vark', x: 550, patrol: [440, 660] },
-      { id: 'stoneheart', x: 1200, patrol: [1080, 1320] },
+      { id: 'draven', x: 550, patrol: [440, 660] },
     ],
     1440,
   ),

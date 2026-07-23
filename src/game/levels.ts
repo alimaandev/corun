@@ -38,7 +38,7 @@ export const ALL_LEVELS: LevelConfig[] = [
     ], [
       ['effect', 'fadeIn'],
       ['playerAnim', 'stand'],
-      ['dialogue', 'GUARD', 'The keys... take them.'],
+      ['dialogue', 'PRISON GUARD', 'The keys... take them.'],
       ['movePlayer', 0.3],
       ['effect', 'flash'],
       ['dialogue', 'YOU', 'Elena... I\'m coming.'],
@@ -313,7 +313,7 @@ export const ALL_LEVELS: LevelConfig[] = [
     enemyType: 'Royal Sorcerer', scoreTarget: 1200,
     boss: { name: 'THE KING', hp: 5, difficulty: 'hard' },
     storyIntro: 'The Throne Room',
-    storyOutro: 'corun — Complete',
+    storyOutro: 'The Throne Room — Complete',
     sceneIntro: sc('#1a0a1a', '#2a0a2a', '#2a1a2a', '#3a1a3a', [
       { type: 'throne', x: 0.65, y: 0.15, w: 0.18, h: 0.35, color: '#ffd700' },
       { type: 'pillar', x: 0.05, y: 0.0, w: 0.08, h: 0.6 },
@@ -386,7 +386,7 @@ export const ENDING_SCENE: SceneConfig = {
     ['dialogue', 'YOU', 'I told you I would.'],
     ['wait', 300],
     ['effect', 'flash'],
-    ['dialogue', 'COMMANDER', 'The people are with you. The King\'s reign is over.'],
+    ['dialogue', 'GATE COMMANDER', 'The people are with you. The King\'s reign is over.'],
     ['wait', 300],
     ['effect', 'fadeOut'],
     ['wait', 400],

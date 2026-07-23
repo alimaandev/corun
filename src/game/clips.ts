@@ -10,6 +10,13 @@ interface ClipRecord {
   url?: string
 }
 
+let createdUrls: string[] = []
+
+function revokeStaleUrls() {
+  createdUrls.forEach(u => URL.revokeObjectURL(u))
+  createdUrls = []
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
@@ -35,6 +42,7 @@ export async function saveClip(blob: Blob, score: number): Promise<void> {
 }
 
 export async function getAllClips(): Promise<ClipRecord[]> {
+  revokeStaleUrls()
   const db = await openDB()
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly')
@@ -43,6 +51,7 @@ export async function getAllClips(): Promise<ClipRecord[]> {
       const records = req.result as ClipRecord[]
       records.forEach(r => {
         r.url = URL.createObjectURL(r.blob)
+        createdUrls.push(r.url!)
       })
       resolve(records.reverse())
     }

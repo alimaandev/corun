@@ -12,9 +12,9 @@ export default function LoginPage() {
   if (error) {
     return (
       <div style={wrap}>
-        <div style={{ color: '#F44336', fontSize: 9, fontFamily: "'Press Start 2P', monospace", textAlign: 'center', lineHeight: 2 }}>
+        <div style={{ color: '#F0EBE3', fontSize: 9, fontFamily: "'Roboto', sans-serif", textAlign: 'center', lineHeight: 2, letterSpacing: 2 }}>
           AUTHENTICATION FAILED<br />
-          <span style={{ color: '#888', fontSize: 8, cursor: 'pointer' }} onClick={() => setError(false)}>TRY AGAIN</span>
+          <span style={{ color: '#769826', fontSize: 8, cursor: 'pointer' }} onClick={() => setError(false)}>TRY AGAIN</span>
         </div>
       </div>
     )
@@ -30,13 +30,13 @@ export default function LoginPage() {
 const wrap: React.CSSProperties = {
   position: 'fixed', inset: 0, zIndex: 200,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: '#0a0a1a',
+  background: '#0a0a0a',
 }
 
 const spinner: React.CSSProperties = {
   width: 24, height: 24,
   border: '3px solid #2a2a2a',
-  borderTop: '3px solid #4FC3F7',
+  borderTop: '3px solid #769826',
   borderRadius: '50%',
   animation: 'spin 0.8s linear infinite',
 }

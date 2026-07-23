@@ -12,7 +12,7 @@ export function drawPlayerSprite(ctx: CanvasRenderingContext2D, x: number, y: nu
   ctx.fillRect(x - 2 * s, y - 10 * s, 1 * s, 1 * s)
   ctx.fillRect(x + 1 * s, y - 10 * s, 1 * s, 1 * s)
   ctx.fillStyle = '#fc0000'
-  ctx.fillRect(x - 6 * s, y - 6 * s, 12 * s, 10 * s)
+  ctx.fillRect(x - 6 * s, y - 6 * s, 12 * s, 12 * s)
   ctx.fillStyle = '#fcb8a0'
   ctx.fillRect(x - 8 * s, y - 4 * s, 3 * s, 7 * s)
   ctx.fillRect(x + 5 * s, y - 4 * s, 3 * s, 7 * s)
@@ -171,7 +171,7 @@ export function drawCommanderSprite(ctx: CanvasRenderingContext2D, x: number, y:
   ctx.fillRect(x - 5 * s, y - 18 * s + b, 2 * s, 3 * s)
   ctx.fillRect(x + 3 * s, y - 18 * s + b, 2 * s, 3 * s)
   ctx.fillStyle = '#999'
-  ctx.fillRect(x - 8 * s, y - 14 * s + b, 16 * s, 14 * s)
+  ctx.fillRect(x - 8 * s, y - 14 * s + b, 16 * s, 16 * s)
   ctx.fillStyle = '#888'
   ctx.fillRect(x - 7 * s, y - 4 * s + b, 14 * s, 3 * s)
   ctx.fillStyle = '#777'

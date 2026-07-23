@@ -128,14 +128,13 @@ export default function Scene3D({ levelId, onComplete }: Props) {
         onCreated={(state) => {
           state.gl.domElement.addEventListener('webglcontextlost', (e) => {
             e.preventDefault()
-            console.warn('[WebGL] Context lost, forcing remount...')
             setTimeout(() => setCanvasKey(k => k + 1), 500)
           }, false)
           state.gl.domElement.addEventListener('webglcontextrestored', () => {
-            console.log('[WebGL] Context restored')
             state.invalidate()
           }, false)
         }}
+        onError={() => setCanvasKey(k => k + 1)}
       >
         <color attach="background" args={[theme.skyTop]} />
         <ambientLight color={theme.ambientLight} intensity={0.6} />
@@ -192,10 +191,11 @@ export default function Scene3D({ levelId, onComplete }: Props) {
 
       <div style={{
         position: 'fixed', top: 8, left: 8,
-        color: '#555', fontSize: 8,
-        fontFamily: "'Press Start 2P', monospace",
+        color: 'rgba(240,235,227,0.4)', fontSize: 8,
+        fontFamily: "'Roboto', sans-serif",
+        fontWeight: 300,
         zIndex: 210,
-        letterSpacing: 1,
+        letterSpacing: 2,
       }}>
         &larr; &rarr; MOVE &nbsp;|&nbsp; E INTERACT
       </div>
@@ -212,11 +212,11 @@ export default function Scene3D({ levelId, onComplete }: Props) {
               right: isLeft || isRight ? undefined : 16,
               width: isLeft || isRight ? 64 : 56,
               height: isLeft || isRight ? 64 : 56,
-              background: 'rgba(79,195,247,0.25)',
-              border: '2px solid rgba(79,195,247,0.5)',
+              background: 'rgba(240,235,227,0.08)',
+              border: '1px solid rgba(240,235,227,0.2)',
               borderRadius: isLeft || isRight ? 12 : '50%',
-              color: '#4FC3F7', fontSize: isLeft || isRight ? 24 : 12,
-              fontFamily: "'Press Start 2P', monospace",
+              color: '#F0EBE3', fontSize: isLeft || isRight ? 24 : 12,
+              fontFamily: "'Roboto', sans-serif", fontWeight: 300,
               zIndex: 220, cursor: 'pointer',
               touchAction: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -264,10 +264,10 @@ export default function Scene3D({ levelId, onComplete }: Props) {
       {showComplete && (
         <div style={{
           position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
-          color: '#4CAF50', fontSize: 14,
-          fontFamily: "'Press Start 2P', monospace",
+          color: '#769826', fontSize: 14,
+          fontFamily: "'Poppins', sans-serif", fontWeight: 700, letterSpacing: 3,
           zIndex: 300,
-          textShadow: '0 0 20px rgba(76,175,80,0.5)',
+          textShadow: '0 0 20px rgba(118,152,38,0.3)',
         }}>
           LEVEL COMPLETE
         </div>

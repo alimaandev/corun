@@ -19,21 +19,22 @@ export default function NameDialog({ onSubmit }: Props) {
       background: 'rgba(0,0,0,0.9)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000,
-      fontFamily: "'Press Start 2P', monospace",
     }}>
       <div style={{
-        background: '#0a0a1a',
-        border: '2px solid #4FC3F7',
+        background: 'rgba(0,0,0,0.3)',
+        border: '1px solid rgba(240,235,227,0.15)',
+        borderRadius: 16,
         padding: 32,
         maxWidth: 400,
         width: '90%',
         textAlign: 'center',
-        boxShadow: '0 0 40px rgba(79,195,247,0.15)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
       }}>
-        <div style={{ color: '#4FC3F7', fontSize: 14, marginBottom: 16 }}>
-          ENTER YOUR NAME
+        <div style={{ color: '#F0EBE3', fontSize: 20, marginBottom: 8, fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+          NAME YOURSELF
         </div>
-        <div style={{ color: '#888', fontSize: 8, marginBottom: 20, lineHeight: 1.6 }}>
+        <div style={{ color: 'rgba(240,235,227,0.5)', fontSize: 9, marginBottom: 20, lineHeight: 1.6, fontFamily: "'Roboto', sans-serif", fontWeight: 300 }}>
           This name will appear on the global leaderboard.
         </div>
         <input
@@ -45,9 +46,9 @@ export default function NameDialog({ onSubmit }: Props) {
           placeholder="Runner"
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: '#111', border: '1px solid #333',
-            color: '#8BC34A', padding: '12px 16px',
-            fontSize: 14, fontFamily: "'Press Start 2P', monospace",
+            background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(240,235,227,0.15)',
+            color: '#F0EBE3', padding: '12px 16px', borderRadius: 10,
+            fontSize: 16, fontFamily: "'Poppins', sans-serif", fontWeight: 500,
             outline: 'none', textAlign: 'center',
             marginBottom: 16,
           }}
@@ -55,11 +56,11 @@ export default function NameDialog({ onSubmit }: Props) {
         <button
           onClick={handleSubmit}
           style={{
-            background: '#4FC3F7', border: 'none',
-            color: '#0a0a1a', padding: '10px 24px',
-            fontSize: 10, cursor: 'pointer',
-            fontFamily: "'Press Start 2P', monospace",
-            opacity: name.trim().length < 1 ? 0.5 : 1,
+            background: '#F0EBE3', border: 'none', borderRadius: 10,
+            color: '#0a0a0a', padding: '10px 24px',
+            fontSize: 9, cursor: 'pointer', letterSpacing: 2,
+            fontFamily: "'Roboto', sans-serif", fontWeight: 500,
+            opacity: name.trim().length < 1 ? 0.35 : 1,
           }}
         >
           CONFIRM
