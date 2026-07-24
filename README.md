@@ -1,268 +1,472 @@
-..<div align="center">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white" />
-  <br/>
-  <img src="https://img.shields.io/github/actions/workflow/status/alimaandev/corun/.github/workflows/ci.yml?style=flat-square&logo=github&label=CI" />
-  <img src="https://img.shields.io/github/license/alimaandev/corun?style=flat-square" />
-  <img src="https://img.shields.io/github/stars/alimaandev/corun?style=flat-square&logo=github" />
-</div>
-
-<br />
-
 <div align="center">
-  <h1>🏃 CORUN</h1>
-  <h3>ESCAPE THE MONSTER</h3>
-  <p><em>A pixel-art coding adventure — story mode + endless runner.</em></p>
+
+# 🏃 CORUN
+
+### Learn JavaScript by Escaping a Monster.
+
+A modern pixel-art coding adventure where every challenge determines whether you survive.
+
+<p>
+  <a href="https://corun-zeta.vercel.app">🎮 Play Demo</a> •
+  <a href="#quick-start">⚡ Quick Start</a> •
+  <a href="#roadmap">🛣 Roadmap</a>
+</p>
+
+<img src="public/demo.gif" width="900" alt="CORUN Gameplay"/>
+
+<br>
+
+<img src="https://img.shields.io/github/stars/alimaandev/corun?style=for-the-badge&logo=github" />
+<img src="https://img.shields.io/github/license/alimaandev/corun?style=for-the-badge" />
+<img src="https://img.shields.io/github/actions/workflow/status/alimaandev/corun/.github/workflows/ci.yml?style=for-the-badge&label=CI" />
+
 </div>
 
-<br />
+---
 
-<div align="center">
-  <a href="https://corun-zeta.vercel.app">
-    <img src="public/demo.gif" alt="Corun gameplay demo" width="720" />
-  </a>
-</div>
+# 🎮 Why CORUN?
 
-<br />
+Most coding platforms feel like homework.
 
-## ✦ Overview
+**CORUN turns programming into survival.**
 
-**CORUN** is a 2D pixel-art coding game with two modes:
+Every JavaScript challenge changes the gameplay.
 
-| Mode | Description |
-|------|-------------|
-| **Story Mode** | Walk through 9 themed levels as a pixel character, interact with NPCs, solve real JavaScript code puzzles to unlock the path, and experience a narrative with cutscenes. |
-| **Freeplay / Endless** | Classic auto-runner on a 3-lane highway. Dodge a chasing monster by answering programming challenges. Speed increases, combos stack, boss battles test your skills. |
+Answer correctly.
 
-```
-┌─────────────────────────────────────────┐
-│                                         │
-│  STORY MODE                             │
-│                                         │
-│   ┌─────────────────────────┐           │
-│   │  [NPC]        [CODE]    │           │
-│   │       🧑──►──⚡         │           │
-│   │                     🚪  │           │
-│   │  ═══════════════════    │           │
-│   └─────────────────────────┘           │
-│   Walk · interact · solve · escape      │
-│                                         │
-│  FREEPLAY MODE                          │
-│   ┌────┐                                │
-│   │ 👾 │  ← MONSTER                     │
-│   └────┘                                │
-│   ════════ ════════ ════════  ← 3 lanes│
-│   ┌────┐                                │
-│   │ 🏃 │  ← YOU                         │
-│   └────┘                                │
-│                                         │
-└─────────────────────────────────────────┘
-```
+Escape.
 
-<br />
+Answer incorrectly...
 
-## ✦ Story Mode — 9 Levels
+The monster gets closer.
 
-Navigate a 2D side-scrolling world. Move left/right with arrow keys, press **E** to interact with glowing terminals and NPCs.
+Whether you're solving algorithms in Story Mode or surviving endless waves in Arcade Mode, every decision matters.
 
-| # | Level | Theme | Puzzle |
-|---|-------|-------|--------|
-| 1 | **Escape the Prison** | Dark prison walls, torches | `if` statements, guard patrol logic |
-| 2 | **The Sewers** | Green-lit pipes, toxic air | Loops, array filtering |
-| 3 | **The Forest** | Tall trees, hidden paths | String manipulation, recursion |
-| 4 | **The Village** | Warm huts, suspicious villagers | Object manipulation, data transformation |
-| 5 | **The Bandit Camp** | Tents, campfires | Sorting algorithms, comparison |
-| 6 | **The Mountain Pass** | Rocky cliffs, bridges | Math utilities, coordinate geometry |
-| 7 | **The Fortress Walls** | Guard towers, portcullis | Stack/queue logic, validation |
-| 8 | **The Throne Room** | Grand hall, king's court | State machines, complex conditions |
-| 9 | **The Final Escape** | Collapsing castle | Everything combined + final boss |
+---
 
-Each level contains:
-- **2 code puzzles** — write real JavaScript in a retro terminal overlay, `new Function()` sandbox evaluates your answer
-- **NPC interactions** — guards, wardens, forest spirits, villagers, bandits, stone guardians, commanders, king, and elena
-- **Cutscenes** — intro/outro with typed dialogue, screen effects (shake, flash, fade), torch flicker
-- **Exit zones** — reach the end to progress
+# ✨ Features
 
-After beating all 9 levels, an **ending cutscene** plays followed by a credits overlay.
+## 📖 Story Mode
 
-<br />
+Explore handcrafted pixel worlds while learning JavaScript.
 
-## ✦ Freeplay / Endless Mode
+- 🌲 9 handcrafted levels
+- 👥 Interactive NPCs
+- 💬 Animated cutscenes
+- 💻 Real JavaScript puzzles
+- 🚪 Unlock new areas by solving code
+- 👑 Final boss battle
 
-The original arcade experience: control a runner on a 3-lane highway while being chased by a scaling monster.
+---
 
-### Features
+## 🏃 Endless Runner
 
-| Feature | Description |
-|---------|-------------|
-| **Real-time Coding** | Challenges pop up mid-run — answer fast or the monster closes in |
-| **4 Question Types** | Multiple choice, fill-in-the-blank, output prediction, spot the bug |
-| **Adaptive Difficulty** | 3 correct = harder, 2 wrong = easier |
-| **Combo Multiplier** | 3+ streak → 1.5x, 5+ → 2x, 7+ → 3x, 10+ → 4x score |
-| **Boss Battles** | Every ~150 pts — coding bosses with hard questions, big rewards |
-| **Bonus Rounds** | Every ~80 pts — 5-second lightning round, 2x points |
-| **Daily Challenges** | One shot per day, compare via leaderboard |
-| **Mastery Badges** | 5+ correct in a topic = badge on game-over screen |
-| **Monster Proximity** | Grows, glows redder, screen pulses as gap shrinks |
-| **Screen Recording** | Built-in canvas recording, save/share your runs |
+A fast-paced arcade mode where coding is your weapon.
 
-<br />
+- 👾 Monster chase mechanics
+- ⚡ Adaptive difficulty
+- 🔥 Combo multipliers
+- 🏆 Boss battles
+- 🎯 Daily challenges
+- 🥇 Leaderboards
 
-## ✦ Controls
+---
 
-### Story Mode
+## 💻 Learn While Playing
 
-| Key | Action |
-|-----|--------|
-| `←` / `→` | Move left / right |
-| `E` | Interact with terminal / NPC |
-| `Enter` | Advance dialogue |
+Practice real programming concepts.
 
-### Freeplay Mode
+- Variables
+- Conditions
+- Loops
+- Arrays
+- Objects
+- Functions
+- Recursion
+- Algorithms
+- Debugging
+- Output prediction
 
-| Key | Action |
-|-----|--------|
-| `←` / `A` | Move left lane |
-| `→` / `D` | Move right lane |
-| `Swipe` (mobile) | Swipe or tap sides |
-| `1` – `4` | Select answer |
-| `Enter` | Start / Restart |
-| `Type & Submit` | Fill-in-the-blank answers |
+No fake coding.
 
-<br />
+No drag-and-drop blocks.
 
-## ✦ Tech Stack
+Real JavaScript.
 
-```
-Frontend   │ React 18 · TypeScript · Vite 6 · HTML5 Canvas
-Auth       │ Auth0 (hosted Universal Login)
-State      │ React hooks + localStorage
-Storage    │ localStorage (progress, leaderboard) · IndexedDB (clips)
-Fonts      │ Poppins · Roboto · JetBrains Mono
-Deploy     │ Vercel (SPA)
+---
+
+# 📸 Gameplay
+
+## Story Mode
+
+Walk through a handcrafted pixel world.
+
+Talk with NPCs.
+
+Discover secrets.
+
+Solve puzzles.
+
+Unlock the next area.
+
+> *(Insert Story Mode Screenshot Here)*
+
+---
+
+## JavaScript Challenges
+
+Real coding questions appear throughout your adventure.
+
+```js
+function double(arr) {
+  return arr.map(x => x * 2)
+}
 ```
 
-<br />
+Correct answers unlock doors.
 
-## ✦ Project Structure
+Wrong answers cost you time.
 
+> *(Insert Coding Challenge Screenshot Here)*
+
+---
+
+## Endless Runner
+
+Run.
+
+Dodge.
+
+Think.
+
+Code.
+
+Survive.
+
+> *(Insert Endless Runner Screenshot Here)*
+
+---
+
+# ⚡ Core Gameplay Loop
+
+```text
+Explore
+     ↓
+Meet NPCs
+     ↓
+Receive Challenge
+     ↓
+Write JavaScript
+     ↓
+Pass
+     ↓
+Continue Adventure
+
+        OR
+
+Fail
+     ↓
+Monster Gets Closer
 ```
-src/
-├── game/
-│   ├── PixelRunner.tsx      — Endless runner game loop (3-lane, monster, challenges)
-│   ├── sceneEngine.tsx      — 2D adventure engine (walk, NPC patrol, triggers)
-│   ├── sceneCanvas.tsx      — Cutscene renderer (typed dialogue, effects, sprites)
-│   ├── codeTerminal.tsx     — In-game code editor (textarea, sandbox eval, feedback)
-│   ├── codePuzzles.ts       — 18 story-mode coding puzzles + evaluateCode sandbox
-│   ├── levelScenes.ts       — 9 level 2D layouts (ground, walls, NPCs, triggers)
-│   ├── levels.ts            — All 9 level configs + ENDING_SCENE + progress helpers
-│   ├── themes.ts            — 9 visual themes (sky, ground, road, scenery, particles)
-│   ├── sprites.ts           — 10 NPC pixel-art drawing functions
-│   ├── challenges.ts        — 17 built-in challenges, daily challenge, leaderboard
-│   └── types.ts             — Shared TypeScript types
-├── components/
-│   ├── Game.tsx             — Screen state machine, routing, auth integration
-│   ├── ChallengeModal.tsx   — Question UI (4 types)
-│   ├── HUD.tsx              — Score bar, gap meter, streak display
-│   ├── LevelSelect.tsx      — Level grid with lock/star/replay states
-│   ├── StartScreen.tsx      — Mode select, topic/difficulty, leaderboard
-│   ├── GameOverScreen.tsx   — Final score, badges, saved clips
-│   ├── PixelBackground.tsx  — Animated pixel-art landscape
-│   └── ProtectedRoute.tsx   — Auth0 route guard
-├── pages/
-│   ├── LandingPage.tsx      — Marketing homepage with parallax hero
-│   ├── LoginPage.tsx        — Auth0 login redirect
-│   └── RegisterPage.tsx     — Auth0 signup redirect
-├── main.tsx                 — Entry point + Auth0Provider
-├── App.tsx                  — Router setup
-└── index.css                — Global styles & animations
-```
 
-<br />
+---
 
-## ✦ Getting Started
+# 🚀 Quick Start
+
+Clone the repository
 
 ```bash
-# Clone & install
 git clone https://github.com/alimaandev/corun.git
 cd corun
+```
+
+Install dependencies
+
+```bash
 npm install
+```
 
-# Set up Auth0
+Configure Auth0
+
+```bash
 cp .env.example .env
-# Edit .env with your Auth0 domain and client ID
+```
 
-# Run dev server
+Fill in
+
+```env
+VITE_AUTH0_DOMAIN=
+VITE_AUTH0_CLIENT_ID=
+```
+
+Start the development server
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open
 
-<br />
-
-## ✦ Build
-
-```bash
-npm run build    # Output → dist/
+```
+http://localhost:3000
 ```
 
-The production build uses `tsc -b && vite build` for type-checking before bundling.
+You're ready to play.
 
-<br />
+---
 
-## ✦ Auth0 Setup
+# 🎯 Game Modes
 
-1. Create an application at [manage.auth0.com](https://manage.auth0.com) → **Single Page Application**
-2. Add to **Allowed Callback URLs**:
-   ```
-   http://localhost:3000/game, https://your-app.vercel.app/game
-   ```
-3. Add to **Allowed Logout URLs**:
-   ```
-   http://localhost:3000, https://your-app.vercel.app
-   ```
-4. Copy your **Domain** and **Client ID** into `.env`:
-   ```
-   VITE_AUTH0_DOMAIN=your-tenant.us.auth0.com
-   VITE_AUTH0_CLIENT_ID=your-client-id
-   ```
+| Mode | Description |
+|------|-------------|
+| 📖 Story | Narrative adventure with JavaScript puzzles |
+| 🏃 Endless | Infinite runner with adaptive coding challenges |
+| 🏆 Daily Challenge | Compete once per day |
+| 👑 Boss Battles | High difficulty coding encounters |
 
-<br />
+---
 
-## ✦ Deploy
+# 🧠 Built With
+
+- React
+- TypeScript
+- Vite
+- HTML5 Canvas
+- Auth0
+- localStorage
+- IndexedDB
+
+---
+
+# 📂 Project Preview
+
+```text
+src
+├── game
+├── components
+├── pages
+├── assets
+├── hooks
+└── utils
+```
+
+The full architecture is documented inside the source code to keep this README clean.
+---
+
+# 🛠 Tech Stack
+
+CORUN is built with modern web technologies for speed, scalability, and an enjoyable development experience.
+
+| Category | Technology |
+|-----------|------------|
+| **Frontend** | React 18 + TypeScript |
+| **Build Tool** | Vite |
+| **Rendering** | HTML5 Canvas |
+| **Authentication** | Auth0 |
+| **State Management** | React Hooks |
+| **Storage** | localStorage + IndexedDB |
+| **Deployment** | Vercel |
+
+---
+
+# 🧩 Project Structure
+
+```text
+src/
+├── assets/                 # Images, sprites, sounds
+├── components/             # Shared React components
+├── game/                   # Game engine
+│   ├── story/              # Story mode
+│   ├── endless/            # Endless runner
+│   ├── puzzles/            # JavaScript challenges
+│   ├── bosses/             # Boss encounters
+│   └── engine/             # Core gameplay logic
+├── hooks/                  # Custom React hooks
+├── pages/                  # Landing, Login, Game
+├── utils/                  # Helper utilities
+├── App.tsx
+└── main.tsx
+```
+
+The repository is organized to keep gameplay logic separate from the UI, making it easy to extend with new worlds, mechanics, and challenges.
+
+---
+
+# 🌍 Deployment
+
+Deploy your own copy in minutes.
+
+### Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-Set these environment variables in Vercel:
+Set the following environment variables:
 
-| Variable | Value |
-|----------|-------|
-| `VITE_AUTH0_DOMAIN` | Your Auth0 domain |
-| `VITE_AUTH0_CLIENT_ID` | Your Auth0 client ID |
+```env
+VITE_AUTH0_DOMAIN=your-domain
+VITE_AUTH0_CLIENT_ID=your-client-id
+```
 
-<br />
+Build locally
 
-## ✦ Gameplay
+```bash
+npm run build
+```
 
-<!--
-Replace with an actual demo GIF recorded from the game:
-  - Record ~15 seconds of gameplay (OBS, ShareX, or your tool of choice)
-  - Save as assets/demo.gif
-  - The GIF is already referenced at the top of this README
--->
+Preview production build
 
-To record a demo:
-1. Open the game at `http://localhost:3000` or the deployed URL
-2. Capture ~15 seconds showing both story mode and challenges
-3. Convert to GIF (max ~5 MB) and place at `public/demo.gif`
+```bash
+npm run preview
+```
 
-<br />
+---
 
-<br />
+# 🚧 Upcoming Features
 
-## ✦ License
+## Version 1.1
 
-MIT © [alimaandev](https://github.com/alimaandev)
+- Better animations
+- More NPC interactions
+- Improved mobile controls
+- More JavaScript questions
+
+---
+
+## Version 1.2
+
+- New environments
+- Soundtrack overhaul
+- Achievement system
+- Save slots
+
+---
+
+## Version 2.0
+
+- Multiplayer races
+- Custom level editor
+- Community challenges
+- Daily events
+- Steam release
+
+---
+
+# 💡 Why Open Source?
+
+CORUN isn't just a game.
+
+It's a project built for developers who love games and gamers who want to learn programming.
+
+Whether you want to:
+
+- Improve gameplay
+- Add new levels
+- Create monsters
+- Design pixel art
+- Write puzzles
+- Optimize performance
+
+You're welcome here.
+
+---
+
+# 🤝 Contributing
+
+We'd love your help.
+
+1. Fork the repository
+
+```bash
+git checkout -b feature/amazing-feature
+```
+
+2. Commit your changes
+
+```bash
+git commit -m "feat: add amazing feature"
+```
+
+3. Push
+
+```bash
+git push origin feature/amazing-feature
+```
+
+4. Open a Pull Request
+
+Every contribution—big or small—is appreciated.
+
+---
+
+# 📝 Issue Ideas
+
+Looking for something to work on?
+
+- 🎨 New pixel worlds
+- 👾 New monster AI
+- 💻 JavaScript challenges
+- 🌍 Language support
+- 📱 Mobile improvements
+- 🎵 Sound effects
+- ⚡ Performance optimizations
+- 🎮 Accessibility improvements
+
+---
+
+# ❤️ Support the Project
+
+If CORUN made you smile, taught you something, or inspired you...
+
+please consider giving the repository a ⭐.
+
+It helps more developers discover the project and motivates future updates.
+
+---
+
+<div align="center">
+
+# ⭐ Star the Repository
+
+If you enjoy CORUN,
+
+leave a ⭐ and share it with your friends.
+
+Every star helps this project grow.
+
+<br>
+
+<a href="https://github.com/alimaandev/corun">
+<img src="https://img.shields.io/github/stars/alimaandev/corun?style=for-the-badge&logo=github" />
+</a>
+
+</div>
+
+---
+
+# 📜 License
+
+Distributed under the **MIT License**.
+
+You are free to use, modify, and distribute this project in accordance with the license terms.
+
+See the **LICENSE** file for more information.
+
+---
+
+<div align="center">
+
+## Built with ❤️ by **alimaandev**
+
+### Learn JavaScript.
+
+### Escape the Monster.
+
+### Beat the Boss.
+
+### Become a Better Developer.
+
+<br>
+
+**Happy Coding! 🚀**
+
+</div>
