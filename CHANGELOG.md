@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/alimaandev/corun/compare/v1.0.0...v1.1.0) (2026-07-26)
+
+
+### Features
+
+* complete Phase 3-4 polish and outstanding items ([9c9bf75](https://github.com/alimaandev/corun/commit/9c9bf755070de347b791880efe258a585fe4521f))
+
 # 1.0.0 (2026-07-23)
 
 
