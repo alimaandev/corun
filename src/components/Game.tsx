@@ -745,7 +745,7 @@ export default function Game() {
   useEffect(() => {
     const imported = importPuzzleFromUrl()
     if (imported) {
-      const p: CodePuzzle = { id: 'url_import', levelId: imported.levelId || 1, ...imported }
+      const p: CodePuzzle = { id: 'url_import', ...imported }
       setCustomPuzzle(p)
       const url = new URL(window.location.href)
       url.searchParams.delete('puzzle')

@@ -7,7 +7,7 @@ import GlassPanel from './GlassPanel'
 import { TOPICS, isDailyCompleted, getSavedBadges } from '../game/challenges'
 import { getGlobalLeaderboard, getDailyLeaderboard } from '../lib/leaderboard'
 import { Topic, Difficulty } from '../game/types'
-import { setLocale, getLocale, getSupportedLocales } from '../lib/i18n'
+import { setLocale, getLocale, getSupportedLocales, type Locale } from '../lib/i18n'
 
 interface Props {
   highScore: number
@@ -28,6 +28,10 @@ export default function StartScreen({
   highScore,
   onStart,
   onStoryMode,
+  onSpeedRun,
+  onSurvival,
+  onPuzzleEditor,
+  onCustomPuzzles,
   playerName,
   profileId,
 }: Props) {

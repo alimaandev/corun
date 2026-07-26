@@ -97,12 +97,20 @@ function decorateType(type: string, ww: number, theme: LevelTheme): React.ReactN
     case 'pipes': {
       for (let px = 0.3; px < w; px += 0.8) {
         els.push(
-          <mesh key={`pi-${px}`} position={[px, 0.5, -CORRIDOR_Z + 0.15]}>
-            <cylinderGeometry args={[0.04, 0.04, 0.3, 6]} rotation={[0, 0, Math.PI / 2]} />
+          <mesh
+            key={`pi-${px}`}
+            position={[px, 0.5, -CORRIDOR_Z + 0.15]}
+            rotation={[0, 0, Math.PI / 2]}
+          >
+            <cylinderGeometry args={[0.04, 0.04, 0.3, 6]} />
             <meshBasicMaterial color={theme.sceneryColor2} />
           </mesh>,
-          <mesh key={`pib-${px}`} position={[px, 0.5, CORRIDOR_Z - 0.15]}>
-            <cylinderGeometry args={[0.04, 0.04, 0.3, 6]} rotation={[0, 0, Math.PI / 2]} />
+          <mesh
+            key={`pib-${px}`}
+            position={[px, 0.5, CORRIDOR_Z - 0.15]}
+            rotation={[0, 0, Math.PI / 2]}
+          >
+            <cylinderGeometry args={[0.04, 0.04, 0.3, 6]} />
             <meshBasicMaterial color={theme.sceneryColor2} />
           </mesh>,
         )
@@ -188,8 +196,8 @@ export default function LevelEnvironment({ ground, blockers, theme, worldWidth: 
       <points geometry={starsGeo}>
         <pointsMaterial size={0.03} color="#F0EBE3" transparent opacity={0.5} />
       </points>
-      <mesh position={[0, -0.01, 0]}>
-        <planeGeometry args={[ww * SCALE + 2, 0.5]} rotation={[-Math.PI / 2, 0, 0]} />
+      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[ww * SCALE + 2, 0.5]} />
         <meshBasicMaterial color={theme.hillColor} />
       </mesh>
       {decorations}

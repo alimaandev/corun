@@ -22,7 +22,7 @@ export function emitBurst(x: number, y: number, z: number, count = 30) {
 }
 
 export default function Particles3D() {
-  const geoRef = useRef<THREE.BufferGeometry>(null)
+  const ptsRef = useRef<THREE.Points>(null)
   const particles = useRef<ParticleData[]>([])
   const burstQueue = useRef<{ x: number; y: number; z: number; count: number }[]>([])
 
@@ -121,16 +121,16 @@ export default function Particles3D() {
       }
     }
 
-    const geo = geoRef.current
-    if (geo) {
-      geo.attributes.position.needsUpdate = true
-      geo.attributes.color.needsUpdate = true
-      geo.attributes.size.needsUpdate = true
-      geo.setDrawRange(0, activeCount)
+    const pts = ptsRef.current
+    if (pts?.geometry) {
+      pts.geometry.attributes.position.needsUpdate = true
+      pts.geometry.attributes.color.needsUpdate = true
+      pts.geometry.attributes.size.needsUpdate = true
+      pts.geometry.setDrawRange(0, activeCount)
     }
   })
 
-  const geo = useMemo(() => {
+  const bufGeo = useMemo(() => {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3))
@@ -139,7 +139,7 @@ export default function Particles3D() {
   }, [positions, colors, sizes])
 
   return (
-    <points ref={geoRef} geometry={geo}>
+    <points ref={ptsRef} geometry={bufGeo}>
       <pointsMaterial
         size={0.15}
         vertexColors
