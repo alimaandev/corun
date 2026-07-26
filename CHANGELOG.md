@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/alimaandev/corun/compare/v1.1.0...v1.1.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* resolve tsc -b type errors ([61853dd](https://github.com/alimaandev/corun/commit/61853dd9a060aa9bcf89465270df8c2b4e5cbf5c))
+
 # [1.1.0](https://github.com/alimaandev/corun/compare/v1.0.0...v1.1.0) (2026-07-26)
 
 
