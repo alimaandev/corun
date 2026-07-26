@@ -1,0 +1,41 @@
+name: ✨ Feature Request
+description: Suggest an idea for Corun
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for suggesting an idea!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is.
+      placeholder: I'm always frustrated when...
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: What do you want to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions you've considered?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: What part of the game does this affect?
+      options:
+        - Gameplay / Mechanics
+        - Puzzles / Challenges
+        - Story / Levels
+        - UI / Visual
+        - Audio
+        - Performance
+        - Accessibility
+        - i18n / Localization
+        - Documentation
+        - Other

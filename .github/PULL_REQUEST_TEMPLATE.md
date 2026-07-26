@@ -2,20 +2,27 @@
 
 <!-- Briefly describe what this PR does -->
 
-## Related Issue
-
-<!-- Link to the issue if applicable -->
-
 ## Type of Change
 
 - [ ] Bug fix
 - [ ] New feature
-- [ ] Refactor / code cleanup
-- [ ] Documentation
+- [ ] Refactor
+- [ ] Performance improvement
+- [ ] Documentation update
 
 ## Checklist
 
-- [ ] `tsc -b` passes
-- [ ] `npx vite build` passes
-- [ ] Code follows the project's style (fonts, colors, conventions)
-- [ ] No new console.log/warn in production code
+- [ ] `npm run typecheck` passes (no TypeScript errors)
+- [ ] `npm run build` passes (Vite build succeeds)
+- [ ] `npm run test` passes (all Vitest tests)
+- [ ] `npm run lint` passes (no ESLint warnings)
+- [ ] Changes are focused — one feature/fix per PR
+- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+## Screenshots (if applicable)
+
+<!-- Add screenshots to help explain your changes -->
+
+## Additional context
+
+<!-- Add any other context about the PR here -->

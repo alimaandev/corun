@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../lib/auth'
 import type { PixelRunnerHandle } from '../game/PixelRunner'
 const PixelRunner = lazy(() => import('../game/PixelRunner'))
@@ -970,265 +971,274 @@ export default function Game() {
   }
 
   return (
-    <div style={styles.root}>
-      {screen === 'playing' && !activeLevel && (
-        <Suspense fallback={null}>
-          <PixelRunner
-            ref={gameRef}
-            topic={selectedTopic ?? undefined}
-            difficulty={selectedDifficulty}
-            onChallenge={handleChallenge}
-            onGameOver={handleGameOver}
-            onHUDUpdate={setHudData}
-          />
-        </Suspense>
-      )}
-
-      {screen === 'playing' && activeLevel && (
-        <Suspense fallback={null}>
-          <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
-        </Suspense>
-      )}
-
-      {screen === 'playing' && !activeLevel && (
-        <button
-          className="rec-btn"
-          onClick={() => {
-            if (gameRef.current?.isRecording()) {
-              gameRef.current.stopRecording().then((blob) => {
-                if (blob) {
-                  downloadClip(blob, hudData.score)
-                  saveClip(blob, hudData.score)
-                  setClipBlob(blob)
-                }
-              })
-              setRecording(false)
-            } else {
-              gameRef.current?.startRecording()
-              setRecording(true)
-            }
-          }}
-          style={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            zIndex: 100,
-            padding: '6px 12px',
-            fontSize: 11,
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 500,
-            border: `1px solid ${recording ? '#769826' : 'rgba(240,235,227,0.2)'}`,
-            background: recording ? 'rgba(118,152,38,0.15)' : 'rgba(240,235,227,0.05)',
-            color: recording ? '#769826' : 'rgba(240,235,227,0.5)',
-            cursor: 'pointer',
-            borderRadius: 4,
-          }}
-        >
-          {recording ? '● STOP' : '○ REC'}
-        </button>
-      )}
-
-      {screen === 'playing' && !activeLevel && (
-        <HUD
-          {...hudData}
-          isBoss={mode === 'boss'}
-          isBonus={mode === 'bonus'}
-          levelName={undefined}
-          speedRunTime={mode === 'speedrun' ? speedRunTime : undefined}
-          survivalLives={mode === 'survival' ? survivalLives : undefined}
+    <>
+      <Helmet>
+        <title>Corun — Play</title>
+        <meta
+          name="description"
+          content="Play Corun — a free open-source coding game. Story mode with 12 levels, endless runner, speed run, and survival modes."
         />
-      )}
+      </Helmet>
+      <div style={styles.root}>
+        {screen === 'playing' && !activeLevel && (
+          <Suspense fallback={null}>
+            <PixelRunner
+              ref={gameRef}
+              topic={selectedTopic ?? undefined}
+              difficulty={selectedDifficulty}
+              onChallenge={handleChallenge}
+              onGameOver={handleGameOver}
+              onHUDUpdate={setHudData}
+            />
+          </Suspense>
+        )}
 
-      {screen === 'playing' && currentChallenge && !activeLevel && (
-        <Suspense fallback={null}>
-          <ChallengeModal
-            challenge={currentChallenge}
-            timeLimit={timeLimit}
-            onAnswer={handleAnswer}
-            onTimeout={handleTimeout}
-            isBoss={mode === 'boss'}
-            isBonus={mode === 'bonus'}
-          />
-        </Suspense>
-      )}
+        {screen === 'playing' && activeLevel && (
+          <Suspense fallback={null}>
+            <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
+          </Suspense>
+        )}
 
-      {screen === 'playing' && !activeLevel && renderBossBar()}
-      {screen === 'playing' && !activeLevel && renderBonusTimer()}
-      {renderComboNotification()}
-
-      {screen === 'start' && (
-        <>
-          <PixelBackground />
-          <StartScreen
-            highScore={highScore}
-            onStart={handleStart}
-            onStoryMode={goToLevelSelect}
-            onSpeedRun={handleSpeedRun}
-            onSurvival={handleSurvival}
-            onPuzzleEditor={() => setShowPuzzleEditor(true)}
-            onCustomPuzzles={() => setShowCustomPuzzles(true)}
-            playerName={profile?.player_name}
-            profileId={profile?.id}
-          />
-        </>
-      )}
-
-      {screen === 'levelselect' && (
-        <LevelSelect
-          progress={levelProgress}
-          onSelectLevel={handleSelectLevel}
-          onBack={() => setScreen('start')}
-        />
-      )}
-
-      {screen === 'levelintro' && activeLevel?.sceneIntro && (
-        <SceneCanvas scene={activeLevel.sceneIntro} onDone={handleStoryDone} />
-      )}
-
-      {screen === 'leveloutro' && activeLevel?.sceneOutro && (
-        <SceneCanvas scene={activeLevel.sceneOutro} onDone={handleOutroDone} />
-      )}
-
-      {screen === 'ending' && showEndingScene && (
-        <SceneCanvas scene={ENDING_SCENE} onDone={handleEndingDone} />
-      )}
-
-      {screen === 'ending' && !showEndingScene && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#0a0a0a',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 300,
-            fontFamily: "'Roboto', sans-serif",
-            padding: 20,
-            overflow: 'auto',
-          }}
-        >
-          <div
-            style={{
-              color: '#F0EBE3',
-              fontSize: 16,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 700,
-              letterSpacing: 6,
-              marginBottom: 30,
-            }}
-          >
-            ✦ THE END ✦
-          </div>
-          <div
-            style={{
-              color: 'rgba(240,235,227,0.6)',
-              fontSize: 10,
-              lineHeight: 2,
-              marginBottom: 30,
-              textAlign: 'center' as const,
-              fontFamily: "'Roboto', sans-serif",
-              fontWeight: 300,
-            }}
-          >
-            <div style={{ color: '#769826', marginBottom: 12, fontWeight: 500 }}>
-              STORY COMPLETE
-            </div>
-            <div>Created by — Ali Sher</div>
-            <div style={{ marginTop: 8, color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>
-              Built with React · TypeScript · Vite
-            </div>
-            <div
-              style={{
-                marginTop: 16,
-                color: 'rgba(240,235,227,0.4)',
-                fontSize: 11,
-                fontStyle: 'italic',
-              }}
-            >
-              "Every line of code brought you home."
-            </div>
-          </div>
+        {screen === 'playing' && !activeLevel && (
           <button
+            className="rec-btn"
             onClick={() => {
-              setShowEndingScene(true)
-              setScreen('start')
+              if (gameRef.current?.isRecording()) {
+                gameRef.current.stopRecording().then((blob) => {
+                  if (blob) {
+                    downloadClip(blob, hudData.score)
+                    saveClip(blob, hudData.score)
+                    setClipBlob(blob)
+                  }
+                })
+                setRecording(false)
+              } else {
+                gameRef.current?.startRecording()
+                setRecording(true)
+              }
             }}
             style={{
-              background: 'transparent',
-              border: '1px solid rgba(240,235,227,0.3)',
-              color: '#F0EBE3',
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              zIndex: 100,
+              padding: '6px 12px',
+              fontSize: 11,
               fontFamily: "'Roboto', sans-serif",
               fontWeight: 500,
-              fontSize: 10,
-              padding: '12px 24px',
+              border: `1px solid ${recording ? '#769826' : 'rgba(240,235,227,0.2)'}`,
+              background: recording ? 'rgba(118,152,38,0.15)' : 'rgba(240,235,227,0.05)',
+              color: recording ? '#769826' : 'rgba(240,235,227,0.5)',
               cursor: 'pointer',
               borderRadius: 4,
             }}
           >
-            ◀ BACK TO MENU
+            {recording ? '● STOP' : '○ REC'}
           </button>
-        </div>
-      )}
+        )}
 
-      {screen === 'gameover' && (
-        <>
-          <PixelBackground />
-          <GameOverScreen
-            score={finalScore}
-            highScore={highScore}
-            onRestart={handleRestart}
-            badges={finalBadges}
-            clipBlob={clipBlob}
-            savedClips={savedClips}
-            onDeleteClip={(id) => {
-              deleteClip(id).catch(() => console.debug('[Game] deleteClip failed'))
-              setSavedClips((prev) => prev.filter((c) => c.id !== id))
-            }}
-            levelMode={!!activeLevelRef.current}
-            levelName={activeLevelRef.current?.name}
-            onRetryLevel={handleRetryLevel}
-            onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
-            playerRank={playerRank}
-            playerName={profile?.player_name}
+        {screen === 'playing' && !activeLevel && (
+          <HUD
+            {...hudData}
+            isBoss={mode === 'boss'}
+            isBonus={mode === 'bonus'}
+            levelName={undefined}
+            speedRunTime={mode === 'speedrun' ? speedRunTime : undefined}
+            survivalLives={mode === 'survival' ? survivalLives : undefined}
           />
-        </>
-      )}
+        )}
 
-      {showNameDialog && <NameDialog onSubmit={handleNameSubmit} />}
+        {screen === 'playing' && currentChallenge && !activeLevel && (
+          <Suspense fallback={null}>
+            <ChallengeModal
+              challenge={currentChallenge}
+              timeLimit={timeLimit}
+              onAnswer={handleAnswer}
+              onTimeout={handleTimeout}
+              isBoss={mode === 'boss'}
+              isBonus={mode === 'bonus'}
+            />
+          </Suspense>
+        )}
 
-      {showPuzzleEditor && (
-        <Suspense fallback={null}>
-          <PuzzleEditor
-            onClose={() => setShowPuzzleEditor(false)}
-            onSave={(p) => {
-              setShowPuzzleEditor(false)
-              setCustomPuzzle(p)
-            }}
+        {screen === 'playing' && !activeLevel && renderBossBar()}
+        {screen === 'playing' && !activeLevel && renderBonusTimer()}
+        {renderComboNotification()}
+
+        {screen === 'start' && (
+          <>
+            <PixelBackground />
+            <StartScreen
+              highScore={highScore}
+              onStart={handleStart}
+              onStoryMode={goToLevelSelect}
+              onSpeedRun={handleSpeedRun}
+              onSurvival={handleSurvival}
+              onPuzzleEditor={() => setShowPuzzleEditor(true)}
+              onCustomPuzzles={() => setShowCustomPuzzles(true)}
+              playerName={profile?.player_name}
+              profileId={profile?.id}
+            />
+          </>
+        )}
+
+        {screen === 'levelselect' && (
+          <LevelSelect
+            progress={levelProgress}
+            onSelectLevel={handleSelectLevel}
+            onBack={() => setScreen('start')}
           />
-        </Suspense>
-      )}
+        )}
 
-      {showCustomPuzzles && (
-        <Suspense fallback={null}>
-          <CommunityPuzzles
-            onSelect={(p) => {
-              setShowCustomPuzzles(false)
-              setCustomPuzzle(p)
+        {screen === 'levelintro' && activeLevel?.sceneIntro && (
+          <SceneCanvas scene={activeLevel.sceneIntro} onDone={handleStoryDone} />
+        )}
+
+        {screen === 'leveloutro' && activeLevel?.sceneOutro && (
+          <SceneCanvas scene={activeLevel.sceneOutro} onDone={handleOutroDone} />
+        )}
+
+        {screen === 'ending' && showEndingScene && (
+          <SceneCanvas scene={ENDING_SCENE} onDone={handleEndingDone} />
+        )}
+
+        {screen === 'ending' && !showEndingScene && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: '#0a0a0a',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 300,
+              fontFamily: "'Roboto', sans-serif",
+              padding: 20,
+              overflow: 'auto',
             }}
-            onClose={() => setShowCustomPuzzles(false)}
-          />
-        </Suspense>
-      )}
+          >
+            <div
+              style={{
+                color: '#F0EBE3',
+                fontSize: 16,
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 700,
+                letterSpacing: 6,
+                marginBottom: 30,
+              }}
+            >
+              ✦ THE END ✦
+            </div>
+            <div
+              style={{
+                color: 'rgba(240,235,227,0.6)',
+                fontSize: 10,
+                lineHeight: 2,
+                marginBottom: 30,
+                textAlign: 'center' as const,
+                fontFamily: "'Roboto', sans-serif",
+                fontWeight: 300,
+              }}
+            >
+              <div style={{ color: '#769826', marginBottom: 12, fontWeight: 500 }}>
+                STORY COMPLETE
+              </div>
+              <div>Created by — Ali Sher</div>
+              <div style={{ marginTop: 8, color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>
+                Built with React · TypeScript · Vite
+              </div>
+              <div
+                style={{
+                  marginTop: 16,
+                  color: 'rgba(240,235,227,0.4)',
+                  fontSize: 11,
+                  fontStyle: 'italic',
+                }}
+              >
+                "Every line of code brought you home."
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setShowEndingScene(true)
+                setScreen('start')
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(240,235,227,0.3)',
+                color: '#F0EBE3',
+                fontFamily: "'Roboto', sans-serif",
+                fontWeight: 500,
+                fontSize: 10,
+                padding: '12px 24px',
+                cursor: 'pointer',
+                borderRadius: 4,
+              }}
+            >
+              ◀ BACK TO MENU
+            </button>
+          </div>
+        )}
 
-      {customPuzzle && (
-        <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
-      )}
-    </div>
+        {screen === 'gameover' && (
+          <>
+            <PixelBackground />
+            <GameOverScreen
+              score={finalScore}
+              highScore={highScore}
+              onRestart={handleRestart}
+              badges={finalBadges}
+              clipBlob={clipBlob}
+              savedClips={savedClips}
+              onDeleteClip={(id) => {
+                deleteClip(id).catch(() => console.debug('[Game] deleteClip failed'))
+                setSavedClips((prev) => prev.filter((c) => c.id !== id))
+              }}
+              levelMode={!!activeLevelRef.current}
+              levelName={activeLevelRef.current?.name}
+              onRetryLevel={handleRetryLevel}
+              onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
+              playerRank={playerRank}
+              playerName={profile?.player_name}
+            />
+          </>
+        )}
+
+        {showNameDialog && <NameDialog onSubmit={handleNameSubmit} />}
+
+        {showPuzzleEditor && (
+          <Suspense fallback={null}>
+            <PuzzleEditor
+              onClose={() => setShowPuzzleEditor(false)}
+              onSave={(p) => {
+                setShowPuzzleEditor(false)
+                setCustomPuzzle(p)
+              }}
+            />
+          </Suspense>
+        )}
+
+        {showCustomPuzzles && (
+          <Suspense fallback={null}>
+            <CommunityPuzzles
+              onSelect={(p) => {
+                setShowCustomPuzzles(false)
+                setCustomPuzzle(p)
+              }}
+              onClose={() => setShowCustomPuzzles(false)}
+            />
+          </Suspense>
+        )}
+
+        {customPuzzle && (
+          <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
+        )}
+      </div>
+    </>
   )
 }
 

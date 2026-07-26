@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import Sitemap from 'vite-plugin-sitemap'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
@@ -11,6 +12,11 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    Sitemap({
+      hostname: 'https://corun-zeta.vercel.app',
+      dynamicRoutes: ['/', '/sign-in', '/sign-up', '/game'],
+      readable: true,
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.svg'],
@@ -30,8 +36,8 @@ export default defineConfig({
         prefer_related_applications: false,
         screenshots: [
           {
-            src: 'icons/screenshot-720.png',
-            sizes: '720x1280',
+            src: 'icons/Corun.png',
+            sizes: '512x512',
             type: 'image/png',
             form_factor: 'narrow',
           },

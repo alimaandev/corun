@@ -17,6 +17,10 @@
   <img src="https://img.shields.io/github/license/alimaandev/corun?style=flat-square" />
   <img src="https://img.shields.io/github/stars/alimaandev/corun?style=flat-square&logo=github" />
   <img src="https://img.shields.io/github/v/release/alimaandev/corun?style=flat-square&logo=semantic-release" />
+  <img src="https://img.shields.io/github/contributors/alimaandev/corun?style=flat-square&logo=github" />
+  <img src="https://img.shields.io/github/issues/alimaandev/corun?style=flat-square&logo=github" />
+  <img src="https://img.shields.io/badge/PRs-welcome-769826?style=flat-square&logo=github" />
+  <img src="https://img.shields.io/github/last-commit/alimaandev/corun?style=flat-square&logo=github" />
 </div>
 
 <br />
