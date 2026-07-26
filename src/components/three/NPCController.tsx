@@ -15,23 +15,35 @@ export default function NPCController({ npc }: Props) {
   const meshRef = useRef<THREE.Mesh>(null)
   const xRef = useRef(npc.x * SCALE)
   const dirRef = useRef(npc.dir === 'right' ? 1 : -1)
+  const timeRef = useRef(Math.random() * 100)
   const valid = npc.npcId in NPC_DRAWERS
   const drawer = valid ? NPC_DRAWERS[npc.npcId as NpcId] : undefined
   const texture = drawer ? spriteToTexture(drawer, npc.npcId, 3) : undefined
   const hasPatrol = npc.patrol !== undefined
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    timeRef.current += delta
     if (!meshRef.current) return
 
-    if (hasPatrol && npc.patrol) {
+    const moving = hasPatrol && npc.patrol !== undefined
+
+    if (moving && npc.patrol) {
       const [lo, hi] = npc.patrol
       const speed = 0.5 * SCALE
       xRef.current += dirRef.current * speed
-      if (xRef.current >= hi * SCALE) { xRef.current = hi * SCALE; dirRef.current = -1 }
-      if (xRef.current <= lo * SCALE) { xRef.current = lo * SCALE; dirRef.current = 1 }
+      if (xRef.current >= hi * SCALE) {
+        xRef.current = hi * SCALE
+        dirRef.current = -1
+      }
+      if (xRef.current <= lo * SCALE) {
+        xRef.current = lo * SCALE
+        dirRef.current = 1
+      }
     }
 
     meshRef.current.position.x = xRef.current
+    meshRef.current.position.y =
+      0.6 + Math.sin(timeRef.current * (moving ? 6 : 2.5)) * (moving ? 0.02 : 0.008)
     meshRef.current.scale.x = dirRef.current < 0 ? -1 : 1
   })
 
@@ -42,10 +54,7 @@ export default function NPCController({ npc }: Props) {
   const w = h * aspect
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[xRef.current, 0.6, 0]}
-    >
+    <mesh ref={meshRef} position={[xRef.current, 0.6, 0]}>
       <planeGeometry args={[w, h]} />
       <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} depthTest />
     </mesh>

@@ -24,6 +24,18 @@ export default defineConfig({
         background_color: '#0a0a0a',
         display: 'standalone',
         orientation: 'any',
+        categories: ['game', 'education', 'programming'],
+        lang: 'en',
+        dir: 'ltr',
+        prefer_related_applications: false,
+        screenshots: [
+          {
+            src: 'icons/screenshot-720.png',
+            sizes: '720x1280',
+            type: 'image/png',
+            form_factor: 'narrow',
+          },
+        ],
         icons: [
           { src: 'icons/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' },
           { src: 'icons/icon-512.svg', sizes: '512x512', type: 'image/svg+xml' },
@@ -46,6 +58,14 @@ export default defineConfig({
               expiration: { maxEntries: 10, maxAgeSeconds: 86400 * 365 },
             },
           },
+          {
+            urlPattern: /\/assets\/sandbox\.worker-.*\.js$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'sandbox-worker',
+              expiration: { maxEntries: 3, maxAgeSeconds: 86400 * 30 },
+            },
+          },
         ],
       },
     }),
@@ -57,7 +77,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          three: ['three', '@react-three/fiber'],
+          three: ['three'],
+          fiber: ['@react-three/fiber'],
         },
       },
     },

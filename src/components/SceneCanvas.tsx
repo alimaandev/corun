@@ -40,6 +40,10 @@ export default function SceneCanvas({ scene, onDone }: Props) {
   const userDoneRef = useRef(onDone)
   const timeoutIds = useRef<number[]>([])
   const disposedRef = useRef(false)
+  const choiceOptions = useRef<[string, number][] | null>(null)
+  const choiceSpeaker = useRef('')
+  const choiceText = useRef('')
+  const hoveredChoice = useRef(-1)
   userDoneRef.current = onDone
 
   function clearTimeouts() {
@@ -84,13 +88,13 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         }
         case 'addNpc': {
           const [, id, x, dir] = action
-          npcs.current = npcs.current.filter(n => n.id !== id)
+          npcs.current = npcs.current.filter((n) => n.id !== id)
           npcs.current.push({ id, x, dir })
           break
         }
         case 'moveNpc': {
           const [, id, toX] = action
-          const npc = npcs.current.find(n => n.id === id)
+          const npc = npcs.current.find((n) => n.id === id)
           if (npc) npc.x = toX
           break
         }
@@ -106,26 +110,55 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         }
         case 'effect': {
           const [, kind] = action
-          if (kind === 'shake') { shakeIntensity.current = 8 }
-          else if (kind === 'flash') { flashAlpha.current = 1 }
-          else if (kind === 'fadeOut') { fadeDir.current = 1; fadeAlpha.current = 0 }
-          else if (kind === 'fadeIn') { fadeDir.current = -1; fadeAlpha.current = 1 }
+          if (kind === 'shake') {
+            shakeIntensity.current = 8
+          } else if (kind === 'flash') {
+            flashAlpha.current = 1
+          } else if (kind === 'fadeOut') {
+            fadeDir.current = 1
+            fadeAlpha.current = 0
+          } else if (kind === 'fadeIn') {
+            fadeDir.current = -1
+            fadeAlpha.current = 1
+          }
           isWaiting.current = true
-          const effectId = window.setTimeout(() => { if (!disposedRef.current) { isWaiting.current = false; advance() } }, kind === 'fadeOut' || kind === 'fadeIn' ? 600 : 300)
+          const effectId = window.setTimeout(
+            () => {
+              if (!disposedRef.current) {
+                isWaiting.current = false
+                advance()
+              }
+            },
+            kind === 'fadeOut' || kind === 'fadeIn' ? 600 : 300,
+          )
           timeoutIds.current.push(effectId)
           return
         }
         case 'wait': {
           const [, ms] = action
           isWaiting.current = true
-          const waitId = window.setTimeout(() => { if (!disposedRef.current) { isWaiting.current = false; advance() } }, ms)
+          const waitId = window.setTimeout(() => {
+            if (!disposedRef.current) {
+              isWaiting.current = false
+              advance()
+            }
+          }, ms)
           timeoutIds.current.push(waitId)
           return
         }
         case 'transition': {
           doneRef.current = true
-          const transId = window.setTimeout(() => { if (!disposedRef.current) userDoneRef.current() }, 200)
+          const transId = window.setTimeout(() => {
+            if (!disposedRef.current) userDoneRef.current()
+          }, 200)
           timeoutIds.current.push(transId)
+          return
+        }
+        case 'choice': {
+          const [, speaker, text, options] = action
+          choiceSpeaker.current = speaker
+          choiceText.current = text
+          choiceOptions.current = options
           return
         }
       }
@@ -152,7 +185,14 @@ export default function SceneCanvas({ scene, onDone }: Props) {
     resize()
     window.addEventListener('resize', resize)
 
-    function drawElement(type: string, ex: number, ey: number, ew: number, eh: number, color: string | undefined) {
+    function drawElement(
+      type: string,
+      ex: number,
+      ey: number,
+      ew: number,
+      eh: number,
+      color: string | undefined,
+    ) {
       const w = canvas!.width / (window.devicePixelRatio || 1)
       const h = canvas!.height / (window.devicePixelRatio || 1)
       const x = ex * w
@@ -331,7 +371,10 @@ export default function SceneCanvas({ scene, onDone }: Props) {
       // Wall color on upper portion
       const hexToRgba = (hex: string, a: number) => {
         const c = hex.replace('#', '')
-        const r = parseInt(c.length === 3 ? c[0] + c[0] + c[1] + c[1] + c[2] + c[2] : c.slice(0, 2), 16)
+        const r = parseInt(
+          c.length === 3 ? c[0] + c[0] + c[1] + c[1] + c[2] + c[2] : c.slice(0, 2),
+          16,
+        )
         const g = parseInt(c.length === 3 ? c[1] + c[1] + c[2] + c[2] : c.slice(2, 4), 16)
         const b = parseInt(c.length === 3 ? c[2] + c[2] : c.slice(4, 6), 16)
         return `rgba(${r},${g},${b},${a})`
@@ -374,6 +417,41 @@ export default function SceneCanvas({ scene, onDone }: Props) {
         ctx!.fillRect(0, 0, w, h)
         if (fadeDir.current === 1) fadeAlpha.current = Math.min(1, fadeAlpha.current + 0.03)
         else if (fadeDir.current === -1) fadeAlpha.current = Math.max(0, fadeAlpha.current - 0.03)
+      }
+
+      // Choices
+      if (choiceOptions.current) {
+        const opts = choiceOptions.current
+        const boxH = h * 0.18
+        const boxY = h - boxH - (dialogueSpeaker.current || dialogueText.current ? h * 0.22 : 0) - 8
+        ctx!.fillStyle = 'rgba(0,0,0,0.85)'
+        ctx!.fillRect(0, boxY, w, boxH)
+        ctx!.strokeStyle = 'rgba(118,152,38,0.3)'
+        ctx!.lineWidth = 2
+        ctx!.strokeRect(4, boxY, w - 8, boxH)
+
+        if (choiceSpeaker.current) {
+          ctx!.fillStyle = '#769826'
+          ctx!.font = `600 ${Math.max(10, Math.floor(scale * 5))}px 'Poppins', sans-serif`
+          ctx!.fillText(choiceSpeaker.current, 16, boxY + 22)
+        }
+        if (choiceText.current) {
+          ctx!.fillStyle = '#F0EBE3'
+          const fs = Math.max(10, Math.floor(scale * 3.5))
+          ctx!.font = `${fs}px 'Roboto', sans-serif`
+          ctx!.fillText(choiceText.current, 16, boxY + (choiceSpeaker.current ? 40 : 24))
+        }
+
+        for (let i = 0; i < opts.length; i++) {
+          const optY = boxY + 54 + i * 26
+          const hovered = hoveredChoice.current === i
+          ctx!.fillStyle = hovered ? 'rgba(118,152,38,0.2)' : 'transparent'
+          ctx!.fillRect(12, optY - 2, w - 24, 22)
+          ctx!.fillStyle = '#769826'
+          ctx!.font = `500 ${Math.max(9, Math.floor(scale * 3))}px 'Roboto', sans-serif`
+          const label = `${String.fromCharCode(65 + i)}) ${opts[i][0]}`
+          ctx!.fillText(label, 20, optY + 13)
+        }
       }
 
       // Dialogue box
@@ -433,9 +511,33 @@ export default function SceneCanvas({ scene, onDone }: Props) {
 
     advance()
 
-    function handleClick() {
+    function handleChoice(index: number) {
+      const opts = choiceOptions.current
+      if (!opts || index < 0 || index >= opts.length) return
+      const jumpTo = opts[index][1]
+      choiceOptions.current = null
+      choiceSpeaker.current = ''
+      choiceText.current = ''
+      scriptIdx.current = jumpTo
+      advance()
+    }
+
+    function handleClick(e: MouseEvent) {
       if (doneRef.current) return
       if (isWaiting.current) return
+      if (choiceOptions.current) {
+        const dpr = window.devicePixelRatio || 1
+        const w = canvas!.width / dpr
+        const h = canvas!.height / dpr
+        const boxH = h * 0.18
+        const boxY = h - boxH - (dialogueSpeaker.current || dialogueText.current ? h * 0.22 : 0) - 8
+        const relY = e.clientY - boxY - 54
+        if (relY >= 0) {
+          const idx = Math.floor(relY / 26)
+          if (idx >= 0 && idx < choiceOptions.current.length) handleChoice(idx)
+        }
+        return
+      }
       if (dialogueDone.current) advance()
       else {
         const actions = scene.script
@@ -452,12 +554,58 @@ export default function SceneCanvas({ scene, onDone }: Props) {
       }
     }
 
+    function handleMouseMove(e: MouseEvent) {
+      if (!choiceOptions.current) {
+        hoveredChoice.current = -1
+        return
+      }
+      const dpr = window.devicePixelRatio || 1
+      const w = canvas!.width / dpr
+      const h = canvas!.height / dpr
+      const boxH = h * 0.18
+      const boxY = h - boxH - (dialogueSpeaker.current || dialogueText.current ? h * 0.22 : 0) - 8
+      const relY = e.clientY - boxY - 54
+      hoveredChoice.current = relY >= 0 ? Math.floor(relY / 26) : -1
+    }
+
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Enter') handleClick()
+      if (choiceOptions.current) {
+        const idx = '1234'.indexOf(e.key)
+        if (idx >= 0) {
+          handleChoice(idx)
+          return
+        }
+        if (e.key === 'Enter' && choiceOptions.current.length > 0) {
+          handleChoice(0)
+          return
+        }
+      }
+      if (e.key === 'Enter') {
+        if (isWaiting.current) return
+        if (choiceOptions.current) {
+          handleChoice(0)
+          return
+        }
+        if (dialogueDone.current) advance()
+        else {
+          const actions = scene.script
+          if (scriptIdx.current > 0) {
+            const prev = actions[scriptIdx.current - 1]
+            if (prev && prev[0] === 'dialogue') {
+              clearTimeout(typingTimer.current)
+              const fullText = (prev as any)[2]
+              dialogueText.current = fullText
+              typingIdx.current = fullText.length
+              dialogueDone.current = true
+            }
+          }
+        }
+      }
     }
 
     window.addEventListener('click', handleClick)
     window.addEventListener('keydown', handleKey)
+    window.addEventListener('mousemove', handleMouseMove)
 
     return () => {
       disposed = true
@@ -467,6 +615,7 @@ export default function SceneCanvas({ scene, onDone }: Props) {
       window.removeEventListener('resize', resize)
       window.removeEventListener('click', handleClick)
       window.removeEventListener('keydown', handleKey)
+      window.removeEventListener('mousemove', handleMouseMove)
       clearTimeout(typingTimer.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -476,8 +625,12 @@ export default function SceneCanvas({ scene, onDone }: Props) {
     <canvas
       ref={canvasRef}
       style={{
-        display: 'block', position: 'fixed', top: 0, left: 0,
-        width: '100%', height: '100%',
+        display: 'block',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
         imageRendering: 'pixelated',
         cursor: 'pointer',
         zIndex: 300,

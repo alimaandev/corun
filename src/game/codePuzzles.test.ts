@@ -2,15 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { ALL_PUZZLES, getPuzzlesForLevel, getPuzzle } from './codePuzzles'
 
 describe('ALL_PUZZLES', () => {
-  it('has 18 puzzles (2 per level for 9 levels)', () => {
-    expect(Object.keys(ALL_PUZZLES)).toHaveLength(18)
+  it('has 52 quality puzzles', () => {
+    expect(Object.keys(ALL_PUZZLES)).toHaveLength(52)
   })
 
   it('every puzzle has required fields', () => {
     for (const [id, puzzle] of Object.entries(ALL_PUZZLES)) {
       expect(puzzle.id).toBe(id)
-      expect(puzzle.levelId).toBeGreaterThanOrEqual(1)
-      expect(puzzle.levelId).toBeLessThanOrEqual(9)
       expect(puzzle.title).toBeTruthy()
       expect(puzzle.description).toBeTruthy()
       expect(puzzle.template).toContain('function')
@@ -20,14 +18,19 @@ describe('ALL_PUZZLES', () => {
     }
   })
 
-  it('each level has exactly 2 puzzles', () => {
+  it('each level has at least 2 puzzles, with levels 1-9 having bonus puzzles and levels 10-12 added', () => {
     const counts = new Map<number, number>()
     for (const puzzle of Object.values(ALL_PUZZLES)) {
       counts.set(puzzle.levelId, (counts.get(puzzle.levelId) || 0) + 1)
     }
-    for (let i = 1; i <= 9; i++) {
-      expect(counts.get(i)).toBe(2)
+    for (let i = 1; i <= 12; i++) {
+      expect(counts.get(i)).toBeGreaterThanOrEqual(2)
     }
+  })
+
+  it('covers 12 levels', () => {
+    const levels = new Set(Object.values(ALL_PUZZLES).map((p) => p.levelId))
+    expect(levels.size).toBe(12)
   })
 
   it('puzzle ids are unique', () => {
@@ -39,14 +42,20 @@ describe('ALL_PUZZLES', () => {
 describe('getPuzzlesForLevel', () => {
   it('returns correct puzzles for level 1', () => {
     const puzzles = getPuzzlesForLevel(1)
-    expect(puzzles).toHaveLength(2)
+    expect(puzzles.length).toBeGreaterThanOrEqual(4)
     expect(puzzles[0].levelId).toBe(1)
   })
 
   it('returns correct puzzles for level 9', () => {
     const puzzles = getPuzzlesForLevel(9)
-    expect(puzzles).toHaveLength(2)
+    expect(puzzles.length).toBeGreaterThanOrEqual(4)
     expect(puzzles.every((p) => p.levelId === 9)).toBe(true)
+  })
+
+  it('returns correct puzzles for level 12', () => {
+    const puzzles = getPuzzlesForLevel(12)
+    expect(puzzles.length).toBeGreaterThanOrEqual(4)
+    expect(puzzles.every((p) => p.levelId === 12)).toBe(true)
   })
 
   it('returns empty array for non-existent level', () => {

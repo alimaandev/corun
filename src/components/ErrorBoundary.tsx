@@ -30,23 +30,45 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: '#0a0a0a',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: 20,
-          fontFamily: "'Roboto', sans-serif",
-        }}>
-      <div style={{ fontSize: 48, marginBottom: 20 }}>⚠</div>
-          <div style={{ color: '#F0EBE3', fontSize: 14, marginBottom: 12, textAlign: 'center', fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0a0a0a',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+            fontFamily: "'Roboto', sans-serif",
+          }}
+        >
+          <div style={{ fontSize: 48, marginBottom: 20 }}>⚠</div>
+          <div
+            style={{
+              color: '#F0EBE3',
+              fontSize: 14,
+              marginBottom: 12,
+              textAlign: 'center',
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600,
+            }}
+          >
             SOMETHING WENT WRONG
           </div>
-          <div style={{
-            color: 'rgba(240,235,227,0.6)', fontSize: 9, marginBottom: 24,
-            textAlign: 'center', maxWidth: 400, lineHeight: 1.6,
-            wordBreak: 'break-word', fontFamily: "'Roboto', sans-serif", fontWeight: 300,
-          }}>
+          <div
+            style={{
+              color: 'rgba(240,235,227,0.6)',
+              fontSize: 11,
+              marginBottom: 24,
+              textAlign: 'center',
+              maxWidth: 400,
+              lineHeight: 1.6,
+              wordBreak: 'break-word',
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+            }}
+          >
             {this.state.error?.message}
           </div>
           <button
@@ -55,10 +77,16 @@ export default class ErrorBoundary extends Component<Props, State> {
               location.href = '/game'
             }}
             style={{
-              background: '#F0EBE3', border: 'none',
-              color: '#0a0a0a', padding: '12px 24px',
-              fontSize: 10, cursor: 'pointer', fontWeight: 500, letterSpacing: 2,
-              fontFamily: "'Roboto', sans-serif", borderRadius: 10,
+              background: '#F0EBE3',
+              border: 'none',
+              color: '#0a0a0a',
+              padding: '12px 24px',
+              fontSize: 10,
+              cursor: 'pointer',
+              fontWeight: 500,
+              letterSpacing: 2,
+              fontFamily: "'Roboto', sans-serif",
+              borderRadius: 10,
             }}
           >
             RESTART

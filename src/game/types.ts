@@ -11,9 +11,22 @@ export type SceneAction =
   | ['effect', kind: 'shake' | 'flash' | 'fadeOut' | 'fadeIn']
   | ['wait', ms: number]
   | ['transition']
+  | ['choice', speaker: string, text: string, options: [label: string, jumpToLine: number][]]
 
 export interface SceneElement {
-  type: 'bars' | 'torch' | 'window' | 'bed' | 'chain' | 'pipe' | 'table' | 'pillar' | 'throne' | 'banner' | 'door' | 'windowHigh'
+  type:
+    | 'bars'
+    | 'torch'
+    | 'window'
+    | 'bed'
+    | 'chain'
+    | 'pipe'
+    | 'table'
+    | 'pillar'
+    | 'throne'
+    | 'banner'
+    | 'door'
+    | 'windowHigh'
   x: number
   y: number
   w?: number
@@ -31,28 +44,28 @@ export interface SceneConfig {
 }
 
 export interface Challenge {
-  id: number;
-  type: QuestionType;
-  question: string;
-  options: string[];
-  correct: number;
-  explanation: string;
-  difficulty: Difficulty;
-  topic: Topic;
-  code?: string;
+  id: number
+  type: QuestionType
+  question: string
+  options: string[]
+  correct: number
+  explanation: string
+  difficulty: Difficulty
+  topic: Topic
+  code?: string
 }
 
 export interface TopicOption {
-  id: Topic;
-  label: string;
-  description: string;
+  id: Topic
+  label: string
+  description: string
 }
 
 export interface HUDData {
-  score: number;
-  gap: number;
-  speed: number;
-  streak: number;
+  score: number
+  gap: number
+  speed: number
+  streak: number
 }
 
 export interface LevelBoss {
@@ -128,8 +141,4 @@ export interface LevelSceneData {
   triggers: TriggerZone[]
   npcs: SceneNpc[]
   exitZone?: { x: number; y: number; w: number; h: number }
-}
-
-export interface SceneEngineHandle {
-  startLevel: (levelId: number) => void
 }

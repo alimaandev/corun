@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth, IS_AUTH_CONFIGURED } from '../lib/auth'
 import TerminalScene from './three/TerminalScene'
 import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
-import { TOPICS, isDailyCompleted } from '../game/challenges'
+import { TOPICS, isDailyCompleted, getSavedBadges } from '../game/challenges'
 import { getGlobalLeaderboard, getDailyLeaderboard } from '../lib/leaderboard'
 import { Topic, Difficulty } from '../game/types'
+import { setLocale, getLocale, getSupportedLocales } from '../lib/i18n'
 
 interface Props {
   highScore: number
   onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
   onStoryMode: () => void
+  onSpeedRun: () => void
+  onSurvival: () => void
+  onPuzzleEditor: () => void
+  onCustomPuzzles: () => void
   playerName?: string
   profileId?: string
 }
@@ -19,8 +24,14 @@ interface Props {
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 const LEADERBOARD_TABS = ['ALL TIME', 'TODAY']
 
-export default function StartScreen({ highScore, onStart, onStoryMode, playerName, profileId }: Props) {
-  const { logout } = useAuth0()
+export default function StartScreen({
+  highScore,
+  onStart,
+  onStoryMode,
+  playerName,
+  profileId,
+}: Props) {
+  const { logout } = useAuth()
   const [subject, setSubject] = useState<Topic | 'all'>('all')
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [lbTab, setLbTab] = useState(0)
@@ -28,21 +39,34 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
   const [dailyLeaderboard, setDailyLeaderboard] = useState<any[]>([])
   const [playerRank, setPlayerRank] = useState<number | null>(null)
   const [dailyDone, setDailyDone] = useState(false)
+  const [savedBadges, setSavedBadges] = useState<string[]>([])
 
-  useEffect(() => { setDailyDone(isDailyCompleted()) }, [])
+  useEffect(() => {
+    setSavedBadges(getSavedBadges())
+  }, [])
+  useEffect(() => {
+    setDailyDone(isDailyCompleted())
+  }, [])
 
   useEffect(() => {
     if (!profileId) return
-    getGlobalLeaderboard(profileId).then(res => {
-      if (res) { setLeaderboard(res.entries || []); setPlayerRank(res.yourRank ?? null) }
-    }).catch(() => setLeaderboard([]))
+    getGlobalLeaderboard(profileId)
+      .then((res) => {
+        if (res) {
+          setLeaderboard(res.entries || [])
+          setPlayerRank(res.yourRank ?? null)
+        }
+      })
+      .catch(() => setLeaderboard([]))
   }, [profileId])
 
   useEffect(() => {
     if (!profileId) return
-    getDailyLeaderboard(profileId).then(res => {
-      if (res) setDailyLeaderboard(res.entries || [])
-    }).catch(() => setDailyLeaderboard([]))
+    getDailyLeaderboard(profileId)
+      .then((res) => {
+        if (res) setDailyLeaderboard(res.entries || [])
+      })
+      .catch(() => setDailyLeaderboard([]))
   }, [profileId])
 
   const entries = lbTab === 0 ? leaderboard : dailyLeaderboard
@@ -57,81 +81,341 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
         <TerminalScene />
       </Canvas>
 
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 10,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '40px 16px', overflow: 'auto',
-      }}>
-        <div style={{ fontSize: 48, fontWeight: 800, letterSpacing: 2, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", textShadow: '0 0 40px rgba(240,235,227,0.15)', marginBottom: 8 }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '40px 16px',
+          overflow: 'auto',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 48,
+            fontWeight: 800,
+            letterSpacing: 2,
+            color: '#F0EBE3',
+            fontFamily: "'Poppins', sans-serif",
+            textShadow: '0 0 40px rgba(240,235,227,0.15)',
+            marginBottom: 8,
+          }}
+        >
           CORUN
         </div>
-        <div style={{ fontSize: 9, fontWeight: 300, letterSpacing: 6, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", marginBottom: 32 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 300,
+            letterSpacing: 6,
+            color: 'rgba(240,235,227,0.5)',
+            fontFamily: "'Roboto', sans-serif",
+            marginBottom: 32,
+          }}
+        >
           SELECT YOUR MODE
         </div>
 
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
-          <GlassPanel onClick={onStoryMode} style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>01</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>STORY</div>
-            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            marginBottom: 24,
+          }}
+        >
+          <GlassPanel
+            onClick={onStoryMode}
+            style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(240,235,227,0.4)',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              01
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F0EBE3',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              STORY
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.6,
+              }}
+            >
               9 levels. Escape the monster.
             </div>
           </GlassPanel>
 
-          <GlassPanel onClick={() => onStart(subject === 'all' ? null : subject, difficulty)} style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>02</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>FREE PLAY</div>
-            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+          <GlassPanel
+            onClick={() => onStart(subject === 'all' ? null : subject, difficulty)}
+            style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(240,235,227,0.4)',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              02
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F0EBE3',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              FREE PLAY
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.6,
+              }}
+            >
               Endless challenges. Build your streak.
             </div>
           </GlassPanel>
 
           <GlassPanel
             onClick={dailyDone ? undefined : () => onStart(null, 'medium', true)}
-            style={{ width: 160, padding: '20px 16px', textAlign: 'center', opacity: dailyDone ? 0.4 : 1 }}
+            style={{
+              width: 160,
+              padding: '20px 16px',
+              textAlign: 'center',
+              opacity: dailyDone ? 0.4 : 1,
+            }}
             glow={dailyDone ? undefined : '#F0EBE3'}
           >
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(240,235,227,0.4)', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>03</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#F0EBE3', fontFamily: "'Poppins', sans-serif", marginBottom: 8 }}>DAILY</div>
-            <div style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", lineHeight: 1.6 }}>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(240,235,227,0.4)',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              03
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F0EBE3',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              DAILY
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.6,
+              }}
+            >
               {dailyDone ? 'COMPLETED TODAY' : 'One shot. One score.'}
+            </div>
+          </GlassPanel>
+
+          <GlassPanel
+            onClick={onSpeedRun}
+            style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(240,235,227,0.4)',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              04
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F0EBE3',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              SPEED RUN
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.6,
+              }}
+            >
+              60s. Maximum pace.
+            </div>
+          </GlassPanel>
+
+          <GlassPanel
+            onClick={onSurvival}
+            style={{ width: 160, padding: '20px 16px', textAlign: 'center' }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(240,235,227,0.4)',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              05
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F0EBE3',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: 8,
+              }}
+            >
+              SURVIVAL
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.6,
+              }}
+            >
+              3 lives. Gets harder.
             </div>
           </GlassPanel>
         </div>
 
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+          <GlassButton size="sm" variant="secondary" onClick={onPuzzleEditor}>
+            PUZZLE EDITOR
+          </GlassButton>
+          <GlassButton size="sm" variant="secondary" onClick={onCustomPuzzles}>
+            CUSTOM PUZZLES
+          </GlassButton>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 16,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            marginBottom: 24,
+            alignItems: 'center',
+          }}
+        >
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", letterSpacing: 1 }}>TOPIC</span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.5)',
+                fontFamily: "'Roboto', sans-serif",
+                letterSpacing: 1,
+              }}
+            >
+              TOPIC
+            </span>
             <select
               value={subject}
-              onChange={e => setSubject(e.target.value as Topic | 'all')}
+              onChange={(e) => setSubject(e.target.value as Topic | 'all')}
               style={{
-                background: 'rgba(0,0,0,0.4)', color: '#F0EBE3',
+                background: 'rgba(0,0,0,0.4)',
+                color: '#F0EBE3',
                 border: '1px solid rgba(240,235,227,0.15)',
-                borderRadius: 8, padding: '6px 10px', outline: 'none',
-                fontFamily: "'Roboto', sans-serif", fontSize: 9, cursor: 'pointer',
+                borderRadius: 8,
+                padding: '6px 10px',
+                outline: 'none',
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: 11,
+                cursor: 'pointer',
               }}
             >
               <option value="all">ALL</option>
-              {TOPICS.map(t => (
-                <option key={t.id} value={t.id}>{t.label.toUpperCase()}</option>
+              {TOPICS.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label.toUpperCase()}
+                </option>
               ))}
             </select>
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif", letterSpacing: 1 }}>DIFF</span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.5)',
+                fontFamily: "'Roboto', sans-serif",
+                letterSpacing: 1,
+              }}
+            >
+              DIFF
+            </span>
             <div style={{ display: 'flex', gap: 4 }}>
-              {DIFFICULTIES.map(d => (
+              {DIFFICULTIES.map((d) => (
                 <button
                   key={d}
                   onClick={() => setDifficulty(d)}
                   style={{
                     background: difficulty === d ? 'rgba(240,235,227,0.1)' : 'transparent',
                     color: difficulty === d ? '#F0EBE3' : 'rgba(240,235,227,0.4)',
-                    border: difficulty === d ? '1px solid rgba(240,235,227,0.3)' : '1px solid rgba(240,235,227,0.1)',
-                    borderRadius: 8, padding: '4px 12px', cursor: 'pointer',
-                    fontFamily: "'Roboto', sans-serif", fontSize: 10, fontWeight: 500,
-                    textTransform: 'capitalize', transition: 'all 0.2s',
+                    border:
+                      difficulty === d
+                        ? '1px solid rgba(240,235,227,0.3)'
+                        : '1px solid rgba(240,235,227,0.1)',
+                    borderRadius: 8,
+                    padding: '4px 12px',
+                    cursor: 'pointer',
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    textTransform: 'capitalize',
+                    transition: 'all 0.2s',
                   }}
                 >
                   {d}
@@ -152,8 +436,12 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
                   background: lbTab === i ? 'rgba(240,235,227,0.08)' : 'transparent',
                   color: lbTab === i ? '#F0EBE3' : 'rgba(240,235,227,0.3)',
                   border: '1px solid rgba(240,235,227,0.1)',
-                  fontFamily: "'Roboto', sans-serif", fontSize: 8, fontWeight: 300,
-                  padding: '8px 0', cursor: 'pointer', transition: 'all 0.2s',
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 300,
+                  padding: '8px 0',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
                 }}
               >
                 {tab}
@@ -161,27 +449,62 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
             ))}
           </div>
 
-          <div style={{ display: 'flex', fontSize: 7, color: 'rgba(240,235,227,0.3)', fontFamily: "'Roboto', sans-serif", padding: '0 4px 4px', borderBottom: '1px solid rgba(240,235,227,0.08)' }}>
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 11,
+              color: 'rgba(240,235,227,0.3)',
+              fontFamily: "'Roboto', sans-serif",
+              padding: '0 4px 4px',
+              borderBottom: '1px solid rgba(240,235,227,0.08)',
+            }}
+          >
             <span style={{ width: 30 }}>RANK</span>
             <span style={{ flex: 1 }}>NAME</span>
             <span style={{ width: 60, textAlign: 'right' }}>SCORE</span>
           </div>
 
-          {entries.slice(0, 10).map(entry => (
-            <div key={entry.rank} style={{
-              display: 'flex', alignItems: 'center', padding: '5px 4px',
-              borderBottom: '1px solid rgba(240,235,227,0.04)',
-              fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.6)',
-              fontFamily: "'Roboto', sans-serif",
-              background: playerRank === entry.rank ? 'rgba(240,235,227,0.04)' : 'transparent',
-            }}>
-              <span style={{ width: 30, color: entry.rank <= 3 ? '#F0EBE3' : 'rgba(240,235,227,0.4)' }}>
+          {entries.slice(0, 10).map((entry) => (
+            <div
+              key={entry.rank}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '5px 4px',
+                borderBottom: '1px solid rgba(240,235,227,0.04)',
+                fontSize: 11,
+                fontWeight: 300,
+                color: 'rgba(240,235,227,0.6)',
+                fontFamily: "'Roboto', sans-serif",
+                background: playerRank === entry.rank ? 'rgba(240,235,227,0.04)' : 'transparent',
+              }}
+            >
+              <span
+                style={{ width: 30, color: entry.rank <= 3 ? '#F0EBE3' : 'rgba(240,235,227,0.4)' }}
+              >
                 #{entry.rank}
               </span>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span
+                style={{
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {entry.player_name}
                 {playerRank === entry.rank && (
-                  <span style={{ fontWeight: 300, color: 'rgba(240,235,227,0.7)', fontFamily: "'Roboto', sans-serif", fontSize: 7, marginLeft: 6 }}>(you)</span>
+                  <span
+                    style={{
+                      fontWeight: 300,
+                      color: 'rgba(240,235,227,0.7)',
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: 11,
+                      marginLeft: 6,
+                    }}
+                  >
+                    (you)
+                  </span>
                 )}
               </span>
               <span style={{ width: 60, textAlign: 'right', color: '#F0EBE3' }}>
@@ -192,21 +515,110 @@ export default function StartScreen({ highScore, onStart, onStoryMode, playerNam
 
           {playerRank !== null && (
             <div style={{ textAlign: 'center', marginTop: 12 }}>
-              <span style={{ fontSize: 8, fontWeight: 300, color: 'rgba(240,235,227,0.7)', fontFamily: "'Roboto', sans-serif" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 300,
+                  color: 'rgba(240,235,227,0.7)',
+                  fontFamily: "'Roboto', sans-serif",
+                }}
+              >
                 YOUR RANK: #{playerRank}
               </span>
             </div>
           )}
         </GlassPanel>
+
+        {savedBadges.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginTop: 8,
+            }}
+          >
+            {savedBadges.map((topic) => (
+              <span
+                key={topic}
+                style={{
+                  padding: '2px 8px',
+                  border: '1px solid rgba(118,152,38,0.3)',
+                  borderRadius: 4,
+                  fontSize: 11,
+                  color: '#769826',
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 500,
+                  letterSpacing: 1,
+                  background: 'rgba(118,152,38,0.08)',
+                }}
+              >
+                ★ {topic}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 12 }}>
+          <select
+            value={getLocale()}
+            onChange={(e) => {
+              setLocale(e.target.value as Locale)
+              window.location.reload()
+            }}
+            style={{
+              background: 'rgba(0,0,0,0.4)',
+              color: '#F0EBE3',
+              border: '1px solid rgba(240,235,227,0.15)',
+              borderRadius: 6,
+              padding: '4px 8px',
+              outline: 'none',
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: 11,
+              cursor: 'pointer',
+            }}
+            aria-label="Select language"
+          >
+            {getSupportedLocales().map((locale) => (
+              <option key={locale} value={locale}>
+                {locale.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 20, display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 9, fontWeight: 300, color: 'rgba(240,235,227,0.5)', fontFamily: "'Roboto', sans-serif" }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 12,
+          right: 12,
+          zIndex: 20,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 300,
+            color: 'rgba(240,235,227,0.5)',
+            fontFamily: "'Roboto', sans-serif",
+          }}
+        >
           {playerName || 'RUNNER'}
         </span>
-        <GlassButton size="sm" variant="secondary" onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
-          EXIT
-        </GlassButton>
+        {IS_AUTH_CONFIGURED && (
+          <GlassButton
+            size="sm"
+            variant="secondary"
+            onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+          >
+            EXIT
+          </GlassButton>
+        )}
       </div>
     </div>
   )

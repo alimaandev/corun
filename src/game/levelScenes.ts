@@ -5,7 +5,20 @@ const GH = 50
 const PW = 20
 const PH = 30
 
-function scene(id: number, ww: number, startX: number, triggers: { x: number; pid: string; text: string }[], guards: { id: string; x: number; patrol?: [number, number]; y?: number; dir?: 'left' | 'right' }[], exitX: number): LevelSceneData {
+function scene(
+  id: number,
+  ww: number,
+  startX: number,
+  triggers: { x: number; pid: string; text: string }[],
+  guards: {
+    id: string
+    x: number
+    patrol?: [number, number]
+    y?: number
+    dir?: 'left' | 'right'
+  }[],
+  exitX: number,
+): LevelSceneData {
   return {
     levelId: id,
     worldWidth: ww,
@@ -15,18 +28,30 @@ function scene(id: number, ww: number, startX: number, triggers: { x: number; pi
       { x: 0, y: GY - 250, w: 18, h: 250 },
       { x: ww - 18, y: GY - 250, w: 18, h: 250 },
     ],
-    triggers: triggers.map(t => ({
-      x: t.x, y: GY - 75, w: 36, h: 75, puzzleId: t.pid, promptText: t.text,
+    triggers: triggers.map((t) => ({
+      x: t.x,
+      y: GY - 75,
+      w: 36,
+      h: 75,
+      puzzleId: t.pid,
+      promptText: t.text,
     })),
-    npcs: guards.map(g => ({
-      npcId: g.id, x: g.x, y: g.y ?? GY - 40, dir: g.dir ?? 'left', patrol: g.patrol,
+    npcs: guards.map((g) => ({
+      npcId: g.id,
+      x: g.x,
+      y: g.y ?? GY - 40,
+      dir: g.dir ?? 'left',
+      patrol: g.patrol,
     })),
     exitZone: { x: exitX, y: GY - 75, w: 36, h: 75 },
   }
 }
 
 export const LEVEL_SCENES: Record<number, LevelSceneData> = {
-  1: scene(1, 900, 80,
+  1: scene(
+    1,
+    900,
+    80,
     [
       { x: 200, pid: 'cell-distract', text: 'Distract the guard' },
       { x: 420, pid: 'cell-lockpick', text: 'Pick the lock' },
@@ -35,7 +60,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     840,
   ),
 
-  2: scene(2, 1100, 80,
+  2: scene(
+    2,
+    1100,
+    80,
     [
       { x: 260, pid: 'dungeon-trap', text: 'Disarm the trap' },
       { x: 620, pid: 'dungeon-gate', text: 'Open the gate' },
@@ -44,7 +72,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1040,
   ),
 
-  3: scene(3, 1200, 80,
+  3: scene(
+    3,
+    1200,
+    80,
     [
       { x: 280, pid: 'sewer-valve', text: 'Reverse the flow' },
       { x: 650, pid: 'sewer-exit', text: 'Find the exit' },
@@ -53,7 +84,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1140,
   ),
 
-   4: scene(4, 1200, 80,
+  4: scene(
+    4,
+    1200,
+    80,
     [
       { x: 260, pid: 'forest-torches', text: 'Light the torches' },
       { x: 680, pid: 'forest-beast', text: 'Calm the beast' },
@@ -62,7 +96,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1140,
   ),
 
-  5: scene(5, 1300, 80,
+  5: scene(
+    5,
+    1300,
+    80,
     [
       { x: 300, pid: 'village-barter', text: 'Barter with merchant' },
       { x: 750, pid: 'village-gate', text: 'Open the gate' },
@@ -71,7 +108,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1240,
   ),
 
-  6: scene(6, 1400, 80,
+  6: scene(
+    6,
+    1400,
+    80,
     [
       { x: 340, pid: 'bridge-planks', text: 'Repair the bridge' },
       { x: 800, pid: 'bridge-rope', text: 'Cut the rope' },
@@ -80,7 +120,10 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1340,
   ),
 
-  7: scene(7, 1400, 80,
+  7: scene(
+    7,
+    1400,
+    80,
     [
       { x: 320, pid: 'courtyard-patrol', text: 'Time the patrol' },
       { x: 900, pid: 'courtyard-cipher', text: 'Crack the cipher' },
@@ -92,18 +135,22 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
     1340,
   ),
 
-  8: scene(8, 1500, 100,
+  8: scene(
+    8,
+    1500,
+    100,
     [
       { x: 300, pid: 'hall-riddle', text: 'Solve the riddle' },
       { x: 850, pid: 'hall-portcullis', text: 'Raise the portcullis' },
     ],
-    [
-      { id: 'draven', x: 550, patrol: [440, 660] },
-    ],
+    [{ id: 'draven', x: 550, patrol: [440, 660] }],
     1440,
   ),
 
-  9: scene(9, 1600, 100,
+  9: scene(
+    9,
+    1600,
+    100,
     [
       { x: 380, pid: 'throne-shield', text: 'Shatter the shield' },
       { x: 1100, pid: 'throne-final', text: 'Final strike' },
@@ -114,6 +161,45 @@ export const LEVEL_SCENES: Record<number, LevelSceneData> = {
       { id: 'elena', x: 1300, patrol: [1240, 1380] },
     ],
     1520,
+  ),
+
+  10: scene(
+    10,
+    1600,
+    100,
+    [
+      { x: 350, pid: 'library-catalog', text: 'Sort the shelves' },
+      { x: 900, pid: 'library-index', text: 'Find the book' },
+    ],
+    [{ id: 'librarian', x: 700, patrol: [600, 800] }],
+    1520,
+  ),
+
+  11: scene(
+    11,
+    1700,
+    100,
+    [
+      { x: 400, pid: 'lab-formula', text: 'Decode the formula' },
+      { x: 1050, pid: 'lab-sequence', text: 'Calibrate sequence' },
+    ],
+    [{ id: 'alchemist', x: 750, patrol: [640, 880] }],
+    1620,
+  ),
+
+  12: scene(
+    12,
+    1800,
+    100,
+    [
+      { x: 400, pid: 'tower-key', text: 'Find the key' },
+      { x: 1100, pid: 'tower-lift', text: 'Activate the lift' },
+    ],
+    [
+      { id: 'sentinel', x: 750, patrol: [640, 900] },
+      { id: 'guardian', x: 1400, y: GY - 50, dir: 'left' },
+    ],
+    1720,
   ),
 }
 

@@ -1,25 +1,54 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
-import PixelRunner, { PixelRunnerHandle } from '../game/PixelRunner'
-import ChallengeModal from './ChallengeModal'
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react'
+import { useAuth } from '../lib/auth'
+import type { PixelRunnerHandle } from '../game/PixelRunner'
+const PixelRunner = lazy(() => import('../game/PixelRunner'))
+const ChallengeModal = lazy(() => import('./ChallengeModal'))
+const Scene3D = lazy(() => import('./Scene3D'))
+const PuzzleEditor = lazy(() => import('./PuzzleEditor'))
+const CommunityPuzzles = lazy(() => import('./CommunityPuzzles'))
 import HUD from './HUD'
 import StartScreen from './StartScreen'
 import GameOverScreen from './GameOverScreen'
 import PixelBackground from './PixelBackground'
 import LevelSelect from './LevelSelect'
 import SceneCanvas from './SceneCanvas'
-import Scene3D from './Scene3D'
 import { playGameOver, playBossAppear, playSuccess, playError } from '../game/sound'
-import { Challenge, HUDData, Difficulty, Topic, LevelConfig, LevelProgress } from '../game/types'
-import { getRandomChallenge, getDailyChallenge, markDailyCompleted, addToLeaderboard } from '../game/challenges'
+import {
+  Challenge,
+  HUDData,
+  Difficulty,
+  Topic,
+  LevelConfig,
+  LevelProgress,
+  CodePuzzle,
+} from '../game/types'
+import {
+  getRandomChallenge,
+  getDailyChallenge,
+  markDailyCompleted,
+  addToLeaderboard,
+  saveBadge,
+} from '../game/challenges'
 import { ALL_LEVELS, ENDING_SCENE, getLevelProgress, saveLevelProgress } from '../game/levels'
 import { getLevelScene } from '../game/levelScenes'
 import { saveClip, downloadClip, getAllClips, deleteClip } from '../game/clips'
-import { initSession, submitScore, flushScoreQueue, updatePlayerName, getLocalPlayerName, setLocalPlayerName, getGlobalLeaderboard, PlayerProfile } from '../lib/leaderboard'
+import {
+  initSession,
+  submitScore,
+  flushScoreQueue,
+  updatePlayerName,
+  getLocalPlayerName,
+  setLocalPlayerName,
+  getGlobalLeaderboard,
+  PlayerProfile,
+} from '../lib/leaderboard'
 import NameDialog from './NameDialog'
+import CodePuzzlePlaytest from './CodePuzzlePlaytest'
+import { importPuzzleFromUrl } from '../game/puzzleShare'
 
-type Screen = 'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
-type Mode = 'normal' | 'boss' | 'bonus'
+type Screen =
+  'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
+type Mode = 'normal' | 'boss' | 'bonus' | 'speedrun' | 'survival'
 
 interface BossState {
   hp: number
@@ -52,10 +81,14 @@ const BOSS_NAMES = [
 
 function getTimeLimit(difficulty: Difficulty): number {
   switch (difficulty) {
-    case 'easy':   return 4
-    case 'medium': return 6
-    case 'hard':   return 8
-    default:       return 5
+    case 'easy':
+      return 4
+    case 'medium':
+      return 6
+    case 'hard':
+      return 8
+    default:
+      return 5
   }
 }
 
@@ -64,10 +97,12 @@ function getComboMultiplier(streak: number): number {
   return COMBO_MULTIPLIERS[streak] ?? 1
 }
 
-function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
 
 export default function Game() {
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const [screen, setScreen] = useState<Screen>('start')
   const [hudData, setHudData] = useState<HUDData>({ score: 0, gap: 70, speed: 1, streak: 0 })
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
@@ -81,8 +116,9 @@ export default function Game() {
     try {
       const v = parseInt(localStorage.getItem('coderun_highscore') || '0', 10)
       return isNaN(v) ? 0 : v
+    } catch {
+      return 0
     }
-    catch { return 0 }
   })
   const [finalScore, setFinalScore] = useState(0)
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
@@ -90,7 +126,9 @@ export default function Game() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
   const [recording, setRecording] = useState(false)
   const [clipBlob, setClipBlob] = useState<Blob | null>(null)
-  const [savedClips, setSavedClips] = useState<{id: number; url: string; score: number; date: string}[]>([])
+  const [savedClips, setSavedClips] = useState<
+    { id: number; url: string; score: number; date: string }[]
+  >([])
 
   // Level state
   const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null)
@@ -113,11 +151,23 @@ export default function Game() {
   const dailyTimeoutRef = useRef<number>(0)
   const streakRef = useRef(0)
   const isDailyRef = useRef(false)
+  const [speedRunTime, setSpeedRunTime] = useState(60)
+  const [survivalLives, setSurvivalLives] = useState(3)
+  const speedRunTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const gameOverRef = useRef<(score: number) => void>(() => {})
+  const hudScoreRef = useRef(0)
+  const survivalLivesRef = useRef(3)
+  useEffect(() => {
+    hudScoreRef.current = hudData.score
+  }, [hudData.score])
   // Supabase
   const [profile, setProfile] = useState<PlayerProfile | null>(null)
   const profileRef = useRef<PlayerProfile | null>(null)
   const [showNameDialog, setShowNameDialog] = useState(false)
   const [playerRank, setPlayerRank] = useState(0)
+  const [showPuzzleEditor, setShowPuzzleEditor] = useState(false)
+  const [showCustomPuzzles, setShowCustomPuzzles] = useState(false)
+  const [customPuzzle, setCustomPuzzle] = useState<CodePuzzle | null>(null)
 
   // Level refs
   const activeLevelRef = useRef<LevelConfig | null>(null)
@@ -125,7 +175,9 @@ export default function Game() {
   const levelTargetReached = useRef(false)
   const hudDataRef = useRef<HUDData>(hudData)
 
-  useEffect(() => { hudDataRef.current = hudData }, [hudData])
+  useEffect(() => {
+    hudDataRef.current = hudData
+  }, [hudData])
 
   const goToLevelSelect = useCallback(() => {
     setScreen('levelselect')
@@ -141,7 +193,7 @@ export default function Game() {
   }, [])
 
   const handleSelectLevel = useCallback((levelId: number) => {
-    const level = ALL_LEVELS.find(l => l.id === levelId)
+    const level = ALL_LEVELS.find((l) => l.id === levelId)
     if (!level) return
     activeLevelRef.current = level
     setActiveLevel(level)
@@ -150,7 +202,10 @@ export default function Game() {
 
   const handleStoryDone = useCallback(() => {
     const level = activeLevelRef.current
-    if (!level) { setScreen('levelselect'); return }
+    if (!level) {
+      setScreen('levelselect')
+      return
+    }
     isLevelBossRef.current = false
     levelTargetReached.current = false
     setScreen('playing')
@@ -186,10 +241,12 @@ export default function Game() {
     let stars = 3
     if (correctCount !== undefined) {
       const scene = getLevelScene(level.id)
-      const total = scene?.triggers.length ?? 2
-      const ratio = correctCount / total
-      if (ratio >= 0.8) stars = 3
-      else if (ratio >= 0.5) stars = 2
+      const total = Math.max(1, scene?.triggers.length ?? 1)
+      const accuracy = correctCount / total
+      const scoreRatio = Math.min(1, hudDataRef.current.score / level.scoreTarget)
+      const combined = (accuracy + scoreRatio) / 2
+      if (combined >= 0.8) stars = 3
+      else if (combined >= 0.5) stars = 2
       else stars = 1
     }
     const progress = getLevelProgress()
@@ -206,21 +263,64 @@ export default function Game() {
 
   const handleOutroDone = useCallback(() => {
     const isLast = activeLevelRef.current?.id === ALL_LEVELS.length
-    if (isLast) { setShowEndingScene(true); setScreen('ending') }
-    else goToLevelSelectWithProgress(getLevelProgress())
+    if (isLast) {
+      setShowEndingScene(true)
+      setScreen('ending')
+    } else goToLevelSelectWithProgress(getLevelProgress())
   }, [goToLevelSelectWithProgress])
 
   const handleEndingDone = useCallback(() => {
     setShowEndingScene(false)
   }, [])
 
-  const handleStart = useCallback((topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => {
-    setSelectedTopic(topic)
-    setSelectedDifficulty(difficulty)
+  const handleStart = useCallback(
+    (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => {
+      setSelectedTopic(topic)
+      setSelectedDifficulty(difficulty)
+      setScreen('playing')
+      setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
+      setCurrentChallenge(null)
+      setMode('normal')
+      setBoss(null)
+      setBonusTimeLeft(0)
+      setShowCombo(false)
+      setComboText('')
+      setRecording(false)
+      setClipBlob(null)
+      setSavedClips([])
+      challengeRef.current = false
+      lastBossScore.current = 0
+      lastBonusScore.current = 0
+      recentCorrect.current = []
+      topicCounts.current = {}
+      earnedBadges.current = new Set()
+      modeRef.current = 'normal'
+      bossRef.current = null
+      streakRef.current = 0
+      clearTimeout(bonusTimerRef.current)
+      clearTimeout(comboTimeoutRef.current)
+      if (isDaily) {
+        isDailyRef.current = true
+        const dc = getDailyChallenge()
+        dailyTimeoutRef.current = window.setTimeout(() => {
+          challengeRef.current = true
+          setCurrentChallenge(dc)
+          setTimeLimit(8)
+        }, 200)
+      } else {
+        isDailyRef.current = false
+      }
+    },
+    [],
+  )
+
+  const handleSpeedRun = useCallback(() => {
+    setSelectedTopic(null)
+    setSelectedDifficulty('easy')
     setScreen('playing')
     setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
     setCurrentChallenge(null)
-    setMode('normal')
+    setMode('speedrun')
     setBoss(null)
     setBonusTimeLeft(0)
     setShowCombo(false)
@@ -234,30 +334,63 @@ export default function Game() {
     recentCorrect.current = []
     topicCounts.current = {}
     earnedBadges.current = new Set()
-    modeRef.current = 'normal'
+    modeRef.current = 'speedrun'
     bossRef.current = null
     streakRef.current = 0
+    isDailyRef.current = false
+    setSpeedRunTime(60)
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
-    if (isDaily) {
-      isDailyRef.current = true
-      const dc = getDailyChallenge()
-      dailyTimeoutRef.current = window.setTimeout(() => {
-        challengeRef.current = true
-        setCurrentChallenge(dc)
-        setTimeLimit(8)
-      }, 200)
-    } else {
-      isDailyRef.current = false
-    }
+    if (speedRunTimerRef.current) clearInterval(speedRunTimerRef.current)
+    speedRunTimerRef.current = setInterval(() => {
+      setSpeedRunTime((t) => {
+        if (t <= 1) {
+          if (speedRunTimerRef.current) clearInterval(speedRunTimerRef.current)
+          speedRunTimerRef.current = null
+          gameOverRef.current(hudScoreRef.current)
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+  }, [])
+
+  const handleSurvival = useCallback(() => {
+    setSelectedTopic(null)
+    setSelectedDifficulty('easy')
+    setScreen('playing')
+    setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
+    setCurrentChallenge(null)
+    setMode('survival')
+    setBoss(null)
+    setBonusTimeLeft(0)
+    setShowCombo(false)
+    setComboText('')
+    setRecording(false)
+    setClipBlob(null)
+    setSavedClips([])
+    challengeRef.current = false
+    lastBossScore.current = 0
+    lastBonusScore.current = 0
+    recentCorrect.current = []
+    topicCounts.current = {}
+    earnedBadges.current = new Set()
+    modeRef.current = 'survival'
+    bossRef.current = null
+    streakRef.current = 0
+    isDailyRef.current = false
+    setSurvivalLives(3)
+    survivalLivesRef.current = 3
+    clearTimeout(bonusTimerRef.current)
+    clearTimeout(comboTimeoutRef.current)
   }, [])
 
   function getAdaptiveDifficulty(base: Difficulty): Difficulty | undefined {
     const recent = recentCorrect.current
     if (recent.length >= 3) {
       const last3 = recent.slice(-3)
-      const allCorrect = last3.every(r => r)
-      const allWrong = last3.every(r => !r)
+      const allCorrect = last3.every((r) => r)
+      const allWrong = last3.every((r) => !r)
       const baseIdx = DIFFICULTY_ORDER.indexOf(base)
       if (allCorrect && baseIdx < DIFFICULTY_ORDER.length - 1) return DIFFICULTY_ORDER[baseIdx + 1]
       if (allWrong && baseIdx > 0) return DIFFICULTY_ORDER[baseIdx - 1]
@@ -279,7 +412,18 @@ export default function Game() {
 
   function showComboNotification(level: number) {
     clearTimeout(comboTimeoutRef.current)
-    const texts = ['', '', '', '🔥 COMBO x1.5', '', '🔥🔥 COMBO x2', '', '🔥🔥🔥 COMBO x3', '', '🔥🔥🔥🔥 COMBO x4']
+    const texts = [
+      '',
+      '',
+      '',
+      '🔥 COMBO x1.5',
+      '',
+      '🔥🔥 COMBO x2',
+      '',
+      '🔥🔥🔥 COMBO x3',
+      '',
+      '🔥🔥🔥🔥 COMBO x4',
+    ]
     setComboText(texts[level] || '')
     setShowCombo(true)
     comboTimeoutRef.current = window.setTimeout(() => setShowCombo(false), 1200)
@@ -287,7 +431,13 @@ export default function Game() {
 
   function triggerBossBattle() {
     const b = pick(BOSS_NAMES)
-    const bs: BossState = { hp: b.hp, maxHp: b.hp, name: b.name, questionsLeft: b.hp, correctCount: 0 }
+    const bs: BossState = {
+      hp: b.hp,
+      maxHp: b.hp,
+      name: b.name,
+      questionsLeft: b.hp,
+      correctCount: 0,
+    }
     bossRef.current = bs
     setBoss(bs)
     modeRef.current = 'boss'
@@ -299,10 +449,19 @@ export default function Game() {
 
   function triggerLevelBoss() {
     const lev = activeLevelRef.current
-    if (!lev) { triggerBossBattle(); return }
+    if (!lev) {
+      triggerBossBattle()
+      return
+    }
     isLevelBossRef.current = true
     const bossCfg = lev.boss
-    const bs: BossState = { hp: bossCfg.hp, maxHp: bossCfg.hp, name: bossCfg.name, questionsLeft: bossCfg.hp, correctCount: 0 }
+    const bs: BossState = {
+      hp: bossCfg.hp,
+      maxHp: bossCfg.hp,
+      name: bossCfg.name,
+      questionsLeft: bossCfg.hp,
+      correctCount: 0,
+    }
     bossRef.current = bs
     setBoss(bs)
     modeRef.current = 'boss'
@@ -324,9 +483,15 @@ export default function Game() {
   async function handleBossAnswer(correct: boolean) {
     const bs = bossRef.current
     if (!bs) return
-    if (correct) { bs.hp--; bs.correctCount++ }
+    if (correct) {
+      bs.hp--
+      bs.correctCount++
+    }
     bs.questionsLeft--
-    if (bs.questionsLeft <= 0) { finishBossBattle(bs); return }
+    if (bs.questionsLeft <= 0) {
+      finishBossBattle(bs)
+      return
+    }
     setBoss({ ...bs })
     const diff = activeLevelRef.current?.boss.difficulty ?? 'hard'
     const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, diff)
@@ -368,13 +533,16 @@ export default function Game() {
   async function scheduleBonusQuestion() {
     const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
     setCurrentChallenge(q)
-    setTimeLimit(BONUS_DURATION - (bonusQuestionsRef.current * 0.3))
+    setTimeLimit(BONUS_DURATION - bonusQuestionsRef.current * 0.3)
     challengeRef.current = true
   }
 
   async function handleBonusAnswer(correct: boolean) {
     if (correct) bonusQuestionsRef.current++
-    if (bonusTimeLeftRef.current <= 0 || bonusQuestionsRef.current >= 6) { finishBonusRound(); return }
+    if (bonusTimeLeftRef.current <= 0 || bonusQuestionsRef.current >= 6) {
+      finishBonusRound()
+      return
+    }
     const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
     setCurrentChallenge(q)
     setTimeLimit(Math.max(2, bonusTimeLeftRef.current - 0.5))
@@ -390,39 +558,81 @@ export default function Game() {
     gameRef.current?.setPaused(false)
   }
 
-  const handleAnswer = useCallback((answerIndex: number) => {
-    if (!currentChallenge) return
-    const correct = answerIndex === currentChallenge.correct
+  const handleAnswer = useCallback(
+    (answerIndex: number) => {
+      if (!currentChallenge) return
+      const correct = answerIndex === currentChallenge.correct
 
-    if (modeRef.current === 'boss') { handleBossAnswer(correct); finishChallenge(); return }
-    if (modeRef.current === 'bonus') { handleBonusAnswer(correct); finishChallenge(); return }
-
-    gameRef.current?.handleAnswer(correct)
-    if (correct) playSuccess(); else playError()
-    recentCorrect.current.push(correct)
-    if (recentCorrect.current.length > 6) recentCorrect.current.shift()
-    const adaptDiff = getAdaptiveDifficulty(selectedDifficulty)
-    gameRef.current?.setPreferredDifficulty(adaptDiff)
-
-    const topic = currentChallenge.topic
-    if (correct) {
-      topicCounts.current[topic] = (topicCounts.current[topic] || 0) + 1
-      if (topicCounts.current[topic] >= 5 && !earnedBadges.current.has(topic)) {
-        earnedBadges.current.add(topic)
+      if (modeRef.current === 'boss') {
+        handleBossAnswer(correct)
+        finishChallenge()
+        return
       }
-    }
+      if (modeRef.current === 'bonus') {
+        handleBonusAnswer(correct)
+        finishChallenge()
+        return
+      }
 
-    streakRef.current = correct ? streakRef.current + 1 : 0
-    const mult = getComboMultiplier(streakRef.current)
-    gameRef.current?.setMultiplier(mult)
-    if (mult >= 1.5 && correct) showComboNotification(streakRef.current)
+      if (modeRef.current === 'survival') {
+        if (!correct) {
+          survivalLivesRef.current--
+          setSurvivalLives(survivalLivesRef.current)
+          if (survivalLivesRef.current <= 0) {
+            handleGameOver(hudScoreRef.current)
+            finishChallenge()
+            return
+          }
+        }
+        gameRef.current?.handleAnswer(correct)
+        finishChallenge()
+        return
+      }
 
-    finishChallenge()
-  }, [currentChallenge, selectedDifficulty, finishChallenge])
+      if (modeRef.current === 'speedrun') {
+        gameRef.current?.handleAnswer(correct)
+        finishChallenge()
+        return
+      }
+
+      gameRef.current?.handleAnswer(correct)
+      if (correct) playSuccess()
+      else playError()
+      recentCorrect.current.push(correct)
+      if (recentCorrect.current.length > 6) recentCorrect.current.shift()
+      const adaptDiff = getAdaptiveDifficulty(selectedDifficulty)
+      gameRef.current?.setPreferredDifficulty(adaptDiff)
+
+      const topic = currentChallenge.topic
+      if (correct) {
+        topicCounts.current[topic] = (topicCounts.current[topic] || 0) + 1
+        if (topicCounts.current[topic] >= 5 && !earnedBadges.current.has(topic)) {
+          earnedBadges.current.add(topic)
+          saveBadge(topic)
+        }
+      }
+
+      streakRef.current = correct ? streakRef.current + 1 : 0
+      const mult = getComboMultiplier(streakRef.current)
+      gameRef.current?.setMultiplier(mult)
+      if (mult >= 1.5 && correct) showComboNotification(streakRef.current)
+
+      finishChallenge()
+    },
+    [currentChallenge, selectedDifficulty, finishChallenge],
+  )
 
   const handleTimeout = useCallback(() => {
-    if (modeRef.current === 'boss') { handleBossAnswer(false); finishChallenge(); return }
-    if (modeRef.current === 'bonus') { handleBonusAnswer(false); finishChallenge(); return }
+    if (modeRef.current === 'boss') {
+      handleBossAnswer(false)
+      finishChallenge()
+      return
+    }
+    if (modeRef.current === 'bonus') {
+      handleBonusAnswer(false)
+      finishChallenge()
+      return
+    }
     gameRef.current?.handleTimeout()
     recentCorrect.current.push(false)
     if (recentCorrect.current.length > 6) recentCorrect.current.shift()
@@ -432,45 +642,63 @@ export default function Game() {
     finishChallenge()
   }, [finishChallenge])
 
-  const handleNameSubmit = useCallback(async (name: string) => {
-    setShowNameDialog(false)
-    if (profileRef.current) {
-      const ok = await updatePlayerName(profileRef.current.id, name, user?.sub)
-      if (ok) { profileRef.current.player_name = name; setProfile({ ...profileRef.current }) }
-    }
-  }, [user?.sub])
+  const handleNameSubmit = useCallback(
+    async (name: string) => {
+      setShowNameDialog(false)
+      if (profileRef.current) {
+        const ok = await updatePlayerName(profileRef.current.id, name, user?.sub)
+        if (ok) {
+          profileRef.current.player_name = name
+          setProfile({ ...profileRef.current })
+        }
+      }
+    },
+    [user?.sub],
+  )
 
   const handleGameOver = useCallback((score: number) => {
     playGameOver()
     setFinalScore(score)
-    setFinalBadges(Array.from(earnedBadges.current).map(t => ({
-      topic: t as Topic,
-      label: t,
-      count: topicCounts.current[t] || 0,
-    })))
+    setFinalBadges(
+      Array.from(earnedBadges.current).map((t) => ({
+        topic: t as Topic,
+        label: t,
+        count: topicCounts.current[t] || 0,
+      })),
+    )
     setScreen('gameover')
     challengeRef.current = false
     setCurrentChallenge(null)
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
-    setHighScore(prev => {
+    setHighScore((prev) => {
       const safePrev = isNaN(prev) ? 0 : prev
       const nh = Math.max(safePrev, score)
-      if (nh > safePrev && !isNaN(nh)) { try { localStorage.setItem('coderun_highscore', String(nh)) } catch {} }
+      if (nh > safePrev && !isNaN(nh)) {
+        try {
+          localStorage.setItem('coderun_highscore', String(nh))
+        } catch {}
+      }
       return nh
     })
     if (score > 0) addToLeaderboard(Math.floor(score))
     if (isDailyRef.current && score > 0) markDailyCompleted()
     getAllClips()
-      .then(clips => {
-        setSavedClips(clips.map(c => ({ id: c.id ?? 0, url: c.url ?? '', score: c.score, date: c.date })))
+      .then((clips) => {
+        setSavedClips(
+          clips.map((c) => ({ id: c.id ?? 0, url: c.url ?? '', score: c.score, date: c.date })),
+        )
       })
       .catch(() => console.debug('[Game] getAllClips failed'))
     if (import.meta.env.VITE_SUPABASE_URL && profileRef.current && score > 0) {
-      const mode = activeLevelRef.current ? 'story' : isDailyRef.current ? 'daily' : 'freeplay' as const
+      const mode = activeLevelRef.current
+        ? 'story'
+        : isDailyRef.current
+          ? 'daily'
+          : ('freeplay' as const)
       submitScore(profileRef.current.id, Math.floor(score), mode, activeLevelRef.current?.id || 0)
         .then(() => getGlobalLeaderboard(profileRef.current!.id))
-        .then(res => setPlayerRank(res.yourRank))
+        .then((res) => setPlayerRank(res.yourRank))
         .catch(() => console.debug('[Game] leaderboard submit failed'))
     }
   }, [])
@@ -492,18 +720,38 @@ export default function Game() {
   }, [handleSelectLevel])
 
   useEffect(() => {
+    gameOverRef.current = handleGameOver
+  }, [handleGameOver])
+
+  useEffect(() => {
     const auth0Id = user?.sub
     const local = getLocalPlayerName(auth0Id)
     if (!local || local === 'Runner') {
       setShowNameDialog(true)
     }
     if (import.meta.env.VITE_SUPABASE_URL && auth0Id) {
-      initSession(auth0Id).then(p => {
-        if (p) { profileRef.current = p; setProfile(p) }
-        flushScoreQueue()
-      }).catch(() => console.debug('[Game] initSession failed'))
+      initSession(auth0Id)
+        .then((p) => {
+          if (p) {
+            profileRef.current = p
+            setProfile(p)
+          }
+          flushScoreQueue()
+        })
+        .catch(() => console.debug('[Game] initSession failed'))
     }
   }, [user?.sub])
+
+  useEffect(() => {
+    const imported = importPuzzleFromUrl()
+    if (imported) {
+      const p: CodePuzzle = { id: 'url_import', levelId: imported.levelId || 1, ...imported }
+      setCustomPuzzle(p)
+      const url = new URL(window.location.href)
+      url.searchParams.delete('puzzle')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -522,15 +770,21 @@ export default function Game() {
       if (bonusTimeLeftRef.current <= 0) finishBonusRound()
     }, 300)
     bonusTimerRef.current = id
-    return () => { clearInterval(id); bonusTimerRef.current = 0 }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      clearInterval(id)
+      bonusTimerRef.current = 0
+    }
   }, [mode])
 
   useEffect(() => {
     if (screen !== 'playing' || hudData.score <= 0) return
     if (mode !== 'normal') return
 
-    if (activeLevelRef.current && !levelTargetReached.current && hudData.score >= activeLevelRef.current.scoreTarget) {
+    if (
+      activeLevelRef.current &&
+      !levelTargetReached.current &&
+      hudData.score >= activeLevelRef.current.scoreTarget
+    ) {
       levelTargetReached.current = true
       triggerLevelBoss()
       return
@@ -558,13 +812,18 @@ export default function Game() {
           const level = activeLevelRef.current
           if (level) handleRetryLevel()
           else handleRestart()
-        }
-        else if (screen === 'levelintro') handleStoryDone()
+        } else if (screen === 'levelintro') handleStoryDone()
         else if (screen === 'leveloutro') handleOutroDone()
       }
       if (e.key === 'Escape') {
-        if (currentChallenge) { setCurrentChallenge(null); return }
-        if (showNameDialog) { setShowNameDialog(false); return }
+        if (currentChallenge) {
+          setCurrentChallenge(null)
+          return
+        }
+        if (showNameDialog) {
+          setShowNameDialog(false)
+          return
+        }
       }
       if (!currentChallenge || !gameRef.current) return
       if (currentChallenge.type === 'fill-blank') return
@@ -575,37 +834,72 @@ export default function Game() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [screen, handleStart, handleRestart, handleRetryLevel, handleStoryDone, handleOutroDone, currentChallenge, handleAnswer, showNameDialog])
+  }, [
+    screen,
+    handleStart,
+    handleRestart,
+    handleRetryLevel,
+    handleStoryDone,
+    handleOutroDone,
+    currentChallenge,
+    handleAnswer,
+    showNameDialog,
+  ])
 
   function renderBossBar() {
     if (!boss) return null
     const pct = (boss.hp / boss.maxHp) * 100
     return (
-      <div style={{
-        position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
-        zIndex: 90, textAlign: 'center', width: '90%', maxWidth: 400,
-      }}>
-        <div style={{
-          color: '#F0EBE3', fontSize: 12, fontFamily: "'Poppins', sans-serif", fontWeight: 600,
-          letterSpacing: 2, marginBottom: 6,
-        }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 60,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 90,
+          textAlign: 'center',
+          width: '90%',
+          maxWidth: 400,
+        }}
+      >
+        <div
+          style={{
+            color: '#F0EBE3',
+            fontSize: 12,
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            letterSpacing: 2,
+            marginBottom: 6,
+          }}
+        >
           ⚔ {boss.name}
         </div>
-        <div style={{
-          height: 8, background: 'rgba(240,235,227,0.05)',
-          border: '1px solid rgba(240,235,227,0.2)',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            width: `${pct}%`, height: '100%',
-            background: '#769826',
-            transition: 'width 0.3s',
-          }} />
+        <div
+          style={{
+            height: 8,
+            background: 'rgba(240,235,227,0.05)',
+            border: '1px solid rgba(240,235,227,0.2)',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              width: `${pct}%`,
+              height: '100%',
+              background: '#769826',
+              transition: 'width 0.3s',
+            }}
+          />
         </div>
-        <div style={{
-          color: 'rgba(240,235,227,0.5)', fontSize: 10, fontFamily: "'JetBrains Mono', monospace",
-          marginTop: 3, letterSpacing: 1,
-        }}>
+        <div
+          style={{
+            color: 'rgba(240,235,227,0.5)',
+            fontSize: 10,
+            fontFamily: "'JetBrains Mono', monospace",
+            marginTop: 3,
+            letterSpacing: 1,
+          }}
+        >
           {boss.hp}/{boss.maxHp} HP
         </div>
       </div>
@@ -615,20 +909,36 @@ export default function Game() {
   function renderBonusTimer() {
     if (mode !== 'bonus') return null
     return (
-      <div style={{
-        position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
-        zIndex: 90, textAlign: 'center',
-      }}>
-        <div style={{
-          color: '#769826', fontSize: 10, fontFamily: "'Poppins', sans-serif", fontWeight: 700,
-          letterSpacing: 3,
-        }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 60,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 90,
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            color: '#769826',
+            fontSize: 10,
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 700,
+            letterSpacing: 3,
+          }}
+        >
           ⚡ BONUS ROUND x2 ⚡
         </div>
-        <div style={{
-          color: '#F0EBE3', fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
-          marginTop: 4, letterSpacing: 1,
-        }}>
+        <div
+          style={{
+            color: '#F0EBE3',
+            fontSize: 11,
+            fontFamily: "'JetBrains Mono', monospace",
+            marginTop: 4,
+            letterSpacing: 1,
+          }}
+        >
           {Math.ceil(bonusTimeLeft)}s LEFT
         </div>
       </div>
@@ -638,14 +948,22 @@ export default function Game() {
   function renderComboNotification() {
     if (!showCombo) return null
     return (
-      <div style={{
-        position: 'fixed', top: '45%', left: '50%', transform: 'translateX(-50%)',
-        zIndex: 150, pointerEvents: 'none',
-        color: '#F0EBE3', fontSize: 18,
-        fontFamily: "'Poppins', sans-serif", fontWeight: 700,
-        textShadow: '0 0 20px rgba(240,235,227,0.3)',
-        animation: 'fadeIn 0.3s ease-out',
-      }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: '45%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 150,
+          pointerEvents: 'none',
+          color: '#F0EBE3',
+          fontSize: 18,
+          fontFamily: "'Poppins', sans-serif",
+          fontWeight: 700,
+          textShadow: '0 0 20px rgba(240,235,227,0.3)',
+          animation: 'fadeIn 0.3s ease-out',
+        }}
+      >
         {comboText}
       </div>
     )
@@ -654,28 +972,30 @@ export default function Game() {
   return (
     <div style={styles.root}>
       {screen === 'playing' && !activeLevel && (
-        <PixelRunner
-          ref={gameRef}
-          topic={selectedTopic ?? undefined}
-          difficulty={selectedDifficulty}
-          onChallenge={handleChallenge}
-          onGameOver={handleGameOver}
-          onHUDUpdate={setHudData}
-        />
+        <Suspense fallback={null}>
+          <PixelRunner
+            ref={gameRef}
+            topic={selectedTopic ?? undefined}
+            difficulty={selectedDifficulty}
+            onChallenge={handleChallenge}
+            onGameOver={handleGameOver}
+            onHUDUpdate={setHudData}
+          />
+        </Suspense>
       )}
 
       {screen === 'playing' && activeLevel && (
-        <Scene3D
-          levelId={activeLevel.id}
-          onComplete={handleLevelComplete}
-        />
+        <Suspense fallback={null}>
+          <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
+        </Suspense>
       )}
 
       {screen === 'playing' && !activeLevel && (
-        <button className="rec-btn"
+        <button
+          className="rec-btn"
           onClick={() => {
             if (gameRef.current?.isRecording()) {
-              gameRef.current.stopRecording().then(blob => {
+              gameRef.current.stopRecording().then((blob) => {
                 if (blob) {
                   downloadClip(blob, hudData.score)
                   saveClip(blob, hudData.score)
@@ -689,9 +1009,14 @@ export default function Game() {
             }
           }}
           style={{
-            position: 'fixed', bottom: 16, right: 16, zIndex: 100,
-            padding: '6px 12px', fontSize: 9,
-            fontFamily: "'Roboto', sans-serif", fontWeight: 500,
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            zIndex: 100,
+            padding: '6px 12px',
+            fontSize: 11,
+            fontFamily: "'Roboto', sans-serif",
+            fontWeight: 500,
             border: `1px solid ${recording ? '#769826' : 'rgba(240,235,227,0.2)'}`,
             background: recording ? 'rgba(118,152,38,0.15)' : 'rgba(240,235,227,0.05)',
             color: recording ? '#769826' : 'rgba(240,235,227,0.5)',
@@ -704,18 +1029,27 @@ export default function Game() {
       )}
 
       {screen === 'playing' && !activeLevel && (
-        <HUD {...hudData} isBoss={mode === 'boss'} isBonus={mode === 'bonus'} levelName={undefined} />
+        <HUD
+          {...hudData}
+          isBoss={mode === 'boss'}
+          isBonus={mode === 'bonus'}
+          levelName={undefined}
+          speedRunTime={mode === 'speedrun' ? speedRunTime : undefined}
+          survivalLives={mode === 'survival' ? survivalLives : undefined}
+        />
       )}
 
       {screen === 'playing' && currentChallenge && !activeLevel && (
-        <ChallengeModal
-          challenge={currentChallenge}
-          timeLimit={timeLimit}
-          onAnswer={handleAnswer}
-          onTimeout={handleTimeout}
-          isBoss={mode === 'boss'}
-          isBonus={mode === 'bonus'}
-        />
+        <Suspense fallback={null}>
+          <ChallengeModal
+            challenge={currentChallenge}
+            timeLimit={timeLimit}
+            onAnswer={handleAnswer}
+            onTimeout={handleTimeout}
+            isBoss={mode === 'boss'}
+            isBonus={mode === 'bonus'}
+          />
+        </Suspense>
       )}
 
       {screen === 'playing' && !activeLevel && renderBossBar()}
@@ -729,6 +1063,10 @@ export default function Game() {
             highScore={highScore}
             onStart={handleStart}
             onStoryMode={goToLevelSelect}
+            onSpeedRun={handleSpeedRun}
+            onSurvival={handleSurvival}
+            onPuzzleEditor={() => setShowPuzzleEditor(true)}
+            onCustomPuzzles={() => setShowCustomPuzzles(true)}
             playerName={profile?.player_name}
             profileId={profile?.id}
           />
@@ -736,7 +1074,11 @@ export default function Game() {
       )}
 
       {screen === 'levelselect' && (
-        <LevelSelect progress={levelProgress} onSelectLevel={handleSelectLevel} onBack={() => setScreen('start')} />
+        <LevelSelect
+          progress={levelProgress}
+          onSelectLevel={handleSelectLevel}
+          onBack={() => setScreen('start')}
+        />
       )}
 
       {screen === 'levelintro' && activeLevel?.sceneIntro && (
@@ -752,39 +1094,80 @@ export default function Game() {
       )}
 
       {screen === 'ending' && !showEndingScene && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: '#0a0a0a', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', zIndex: 300,
-          fontFamily: "'Roboto', sans-serif",
-          padding: 20, overflow: 'auto',
-        }}>
-          <div style={{
-            color: '#F0EBE3', fontSize: 16, fontFamily: "'Poppins', sans-serif", fontWeight: 700,
-            letterSpacing: 6,
-            marginBottom: 30,
-          }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: '#0a0a0a',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 300,
+            fontFamily: "'Roboto', sans-serif",
+            padding: 20,
+            overflow: 'auto',
+          }}
+        >
+          <div
+            style={{
+              color: '#F0EBE3',
+              fontSize: 16,
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 700,
+              letterSpacing: 6,
+              marginBottom: 30,
+            }}
+          >
             ✦ THE END ✦
           </div>
-          <div style={{
-            color: 'rgba(240,235,227,0.6)', fontSize: 10, lineHeight: 2, marginBottom: 30,
-            textAlign: 'center' as const, fontFamily: "'Roboto', sans-serif", fontWeight: 300,
-          }}>
-            <div style={{ color: '#769826', marginBottom: 12, fontWeight: 500 }}>STORY COMPLETE</div>
+          <div
+            style={{
+              color: 'rgba(240,235,227,0.6)',
+              fontSize: 10,
+              lineHeight: 2,
+              marginBottom: 30,
+              textAlign: 'center' as const,
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            <div style={{ color: '#769826', marginBottom: 12, fontWeight: 500 }}>
+              STORY COMPLETE
+            </div>
             <div>Created by — Ali Sher</div>
-            <div style={{ marginTop: 8, color: 'rgba(240,235,227,0.3)', fontSize: 8 }}>
+            <div style={{ marginTop: 8, color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>
               Built with React · TypeScript · Vite
             </div>
-            <div style={{ marginTop: 16, color: 'rgba(240,235,227,0.4)', fontSize: 9, fontStyle: 'italic' }}>
+            <div
+              style={{
+                marginTop: 16,
+                color: 'rgba(240,235,227,0.4)',
+                fontSize: 11,
+                fontStyle: 'italic',
+              }}
+            >
               "Every line of code brought you home."
             </div>
           </div>
           <button
-            onClick={() => { setShowEndingScene(true); setScreen('start') }}
+            onClick={() => {
+              setShowEndingScene(true)
+              setScreen('start')
+            }}
             style={{
-              background: 'transparent', border: '1px solid rgba(240,235,227,0.3)',
-              color: '#F0EBE3', fontFamily: "'Roboto', sans-serif", fontWeight: 500,
-              fontSize: 10, padding: '12px 24px', cursor: 'pointer', borderRadius: 4,
+              background: 'transparent',
+              border: '1px solid rgba(240,235,227,0.3)',
+              color: '#F0EBE3',
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 500,
+              fontSize: 10,
+              padding: '12px 24px',
+              cursor: 'pointer',
+              borderRadius: 4,
             }}
           >
             ◀ BACK TO MENU
@@ -804,7 +1187,7 @@ export default function Game() {
             savedClips={savedClips}
             onDeleteClip={(id) => {
               deleteClip(id).catch(() => console.debug('[Game] deleteClip failed'))
-              setSavedClips(prev => prev.filter(c => c.id !== id))
+              setSavedClips((prev) => prev.filter((c) => c.id !== id))
             }}
             levelMode={!!activeLevelRef.current}
             levelName={activeLevelRef.current?.name}
@@ -817,6 +1200,34 @@ export default function Game() {
       )}
 
       {showNameDialog && <NameDialog onSubmit={handleNameSubmit} />}
+
+      {showPuzzleEditor && (
+        <Suspense fallback={null}>
+          <PuzzleEditor
+            onClose={() => setShowPuzzleEditor(false)}
+            onSave={(p) => {
+              setShowPuzzleEditor(false)
+              setCustomPuzzle(p)
+            }}
+          />
+        </Suspense>
+      )}
+
+      {showCustomPuzzles && (
+        <Suspense fallback={null}>
+          <CommunityPuzzles
+            onSelect={(p) => {
+              setShowCustomPuzzles(false)
+              setCustomPuzzle(p)
+            }}
+            onClose={() => setShowCustomPuzzles(false)}
+          />
+        </Suspense>
+      )}
+
+      {customPuzzle && (
+        <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
+      )}
     </div>
   )
 }

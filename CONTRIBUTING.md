@@ -42,6 +42,20 @@ Check existing labels before opening an issue:
 | `good first issue` | Beginner-friendly |
 | `priority: high/medium/low` | Urgency |
 
+## Commit Messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat:` — new feature
+- `fix:` — bug fix
+- `refactor:` — code restructure
+- `perf:` — performance improvement
+- `docs:` — documentation only
+- `chore:` — tooling, CI, dependencies
+
+Format: `type(scope?): description` (e.g. `feat(runner): add collision detection`)
+
+PR titles must also follow this format and the CI will validate them.
+
 ## Pull Requests
 
 - Run `tsc -b && npx vite build` before submitting.

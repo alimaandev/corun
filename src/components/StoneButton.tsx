@@ -41,12 +41,18 @@ const variants: Record<string, React.CSSProperties> = {
 }
 
 const sizes: Record<string, React.CSSProperties> = {
-  sm: { padding: '6px 12px', fontSize: 8 },
+  sm: { padding: '6px 12px', fontSize: 11 },
   md: { padding: '10px 20px', fontSize: 10 },
   lg: { padding: '14px 28px', fontSize: 12 },
 }
 
-export default function StoneButton({ variant = 'primary', size = 'md', style, children, ...rest }: Props) {
+export default function StoneButton({
+  variant = 'primary',
+  size = 'md',
+  style,
+  children,
+  ...rest
+}: Props) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const downRef = useRef(false)
   const handlers = useRef(rest)

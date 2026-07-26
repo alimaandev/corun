@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import Chamber from './three/Chamber'
-import StoneButton from './StoneButton'
+import GlassButton from './GlassButton'
 interface Props {
   score: number
   highScore: number
@@ -20,7 +20,15 @@ interface Props {
   onDeleteClip?: (id: number) => void
 }
 
-function Slab({ score, highScore, isNewHighScore }: { score: number; highScore: number; isNewHighScore: boolean }) {
+function Slab({
+  score,
+  highScore,
+  isNewHighScore,
+}: {
+  score: number
+  highScore: number
+  isNewHighScore: boolean
+}) {
   const meshRef = useRef<THREE.Mesh>(null)
 
   useFrame(({ clock }) => {
@@ -49,7 +57,8 @@ function Badge({ position, color }: { position: [number, number, number]; color:
   const meshRef = useRef<THREE.Mesh>(null)
   useFrame(({ clock }) => {
     if (meshRef.current) {
-      meshRef.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.8 + position[0]) * 0.15
+      meshRef.current.position.y =
+        position[1] + Math.sin(clock.elapsedTime * 0.8 + position[0]) * 0.15
       meshRef.current.rotation.y += 0.01
     }
   })
@@ -63,23 +72,38 @@ function Badge({ position, color }: { position: [number, number, number]; color:
 }
 
 export default function GameOverScreen({
-  score, highScore, playerRank, playerName,
-  badges = [], savedClips = [],
-  levelMode, levelName, clipBlob,
-  onRestart, onRetryLevel, onBackToLevels, onDeleteClip,
+  score,
+  highScore,
+  playerRank,
+  playerName,
+  badges = [],
+  savedClips = [],
+  levelMode,
+  levelName,
+  clipBlob,
+  onRestart,
+  onRetryLevel,
+  onBackToLevels,
+  onDeleteClip,
 }: Props) {
   const [canvasKey, setCanvasKey] = useState(0)
   const isStoryMode = !!levelMode
   const isNewHighScore = score > 0 && score >= highScore
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: '#0a0a0a',
-      color: '#F0EBE3',
-      fontFamily: "'Roboto', sans-serif",
-      zIndex: 100,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0a0a0a',
+        color: '#F0EBE3',
+        fontFamily: "'Roboto', sans-serif",
+        zIndex: 100,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Canvas
         key={canvasKey}
         gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
@@ -87,15 +111,23 @@ export default function GameOverScreen({
         style={{ position: 'fixed', inset: 0, display: 'block' }}
         frameloop="demand"
         onCreated={(state) => {
-          state.gl.domElement.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault()
-            setTimeout(() => setCanvasKey(k => k + 1), 500)
-          }, false)
-          state.gl.domElement.addEventListener('webglcontextrestored', () => {
-            state.invalidate()
-          }, false)
+          state.gl.domElement.addEventListener(
+            'webglcontextlost',
+            (e) => {
+              e.preventDefault()
+              setTimeout(() => setCanvasKey((k) => k + 1), 500)
+            },
+            false,
+          )
+          state.gl.domElement.addEventListener(
+            'webglcontextrestored',
+            () => {
+              state.invalidate()
+            },
+            false,
+          )
         }}
-        onError={() => setCanvasKey(k => k + 1)}
+        onError={() => setCanvasKey((k) => k + 1)}
       >
         <Chamber />
         <Slab score={score} highScore={highScore} isNewHighScore={isNewHighScore} />
@@ -112,51 +144,129 @@ export default function GameOverScreen({
         ))}
       </Canvas>
 
-      <div style={{
-        position: 'absolute', zIndex: 20,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 12, textAlign: 'center',
-      }}>
-        <div style={{ fontSize: 7, color: 'rgba(240,235,227,0.5)', letterSpacing: 4, fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+      <div
+        style={{
+          position: 'absolute',
+          zIndex: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 12,
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            color: 'rgba(240,235,227,0.5)',
+            letterSpacing: 4,
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+          }}
+        >
           GAME OVER
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(240,235,227,0.6)', fontFamily: "'Roboto', sans-serif", fontWeight: 300 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: 'rgba(240,235,227,0.6)',
+            fontFamily: "'Roboto', sans-serif",
+            fontWeight: 300,
+          }}
+        >
           THE MONSTER CAUGHT YOU
         </div>
-        <div style={{ fontSize: 28, color: '#F0EBE3', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>
+        <div
+          style={{
+            fontSize: 28,
+            color: '#F0EBE3',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700,
+          }}
+        >
           {score.toLocaleString()}
         </div>
         {isNewHighScore && (
-          <div style={{ fontSize: 7, color: '#F0EBE3', letterSpacing: 2, fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: '#F0EBE3',
+              letterSpacing: 2,
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 500,
+            }}
+          >
             NEW HIGH SCORE
           </div>
         )}
         {playerRank !== null && (
-          <div style={{ fontSize: 7, color: '#769826', letterSpacing: 1, fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: '#769826',
+              letterSpacing: 1,
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 500,
+            }}
+          >
             GLOBAL RANK: #{playerRank}
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {navigator.share && (
+          <button
+            onClick={() => {
+              navigator
+                .share({
+                  title: 'CORUN - Escape the Monster',
+                  text: `I scored ${score.toLocaleString()} points in CORUN! Can you beat my score?`,
+                  url: window.location.href,
+                })
+                .catch(() => {})
+            }}
+            style={{
+              background: 'rgba(240,235,227,0.05)',
+              border: '1px solid rgba(240,235,227,0.15)',
+              color: 'rgba(240,235,227,0.6)',
+              cursor: 'pointer',
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: 9,
+              fontWeight: 500,
+              padding: '6px 14px',
+              borderRadius: 6,
+              letterSpacing: 1,
+            }}
+          >
+            SHARE SCORE
+          </button>
+        )}
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            marginTop: 8,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           {isStoryMode ? (
             <>
-              <StoneButton variant="primary" onClick={onRetryLevel ?? onRestart}>
+              <GlassButton variant="primary" onClick={onRetryLevel ?? onRestart}>
                 RETRY
-              </StoneButton>
-              <StoneButton variant="secondary" onClick={onBackToLevels ?? onRestart}>
+              </GlassButton>
+              <GlassButton variant="secondary" onClick={onBackToLevels ?? onRestart}>
                 LEVELS
-              </StoneButton>
+              </GlassButton>
             </>
           ) : (
-            <StoneButton variant="primary" onClick={onRestart}>
+            <GlassButton variant="primary" onClick={onRestart}>
               PLAY AGAIN
-            </StoneButton>
+            </GlassButton>
           )}
         </div>
 
-        <div style={{ fontSize: 6, color: '#555', marginTop: 4 }}>
-          PRESS ENTER
-        </div>
+        <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>PRESS ENTER</div>
       </div>
     </div>
   )

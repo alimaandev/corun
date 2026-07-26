@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { playStep } from '../../game/sound'
+import { emitBurst } from './Particles3D'
 import { drawPlayerSprite } from '../../game/sprites'
 import { spriteToTexture } from '../../utils/spriteToTexture'
 import { GroundSegment, TriggerZone as TriggerZoneType } from '../../game/types'
@@ -25,8 +26,16 @@ interface Props {
 }
 
 export default function PlayerController({
-  playerX, keysDown, blockers, triggers, worldWidth, exitZone,
-  solvedPuzzles, allSolved, onNearTrigger, onExitZone,
+  playerX,
+  keysDown,
+  blockers,
+  triggers,
+  worldWidth,
+  exitZone,
+  solvedPuzzles,
+  allSolved,
+  onNearTrigger,
+  onExitZone,
 }: Props) {
   const meshRef = useRef<THREE.Mesh>(null)
   const stepCounter = useRef(0)
@@ -35,9 +44,15 @@ export default function PlayerController({
   const prevTriggerId = useRef<string | null>(null)
   const texture = spriteToTexture(drawPlayerSprite, 'player', 3)
 
-  useEffect(() => { enteredExit.current = false }, [exitZone])
+  useEffect(() => {
+    enteredExit.current = false
+  }, [exitZone])
 
-  useFrame(() => {
+  const trailCounter = useRef(0)
+  const timeRef = useRef(0)
+
+  useFrame((_, delta) => {
+    timeRef.current += delta
     let moved = false
 
     if (keysDown.current.has('arrowleft') || keysDown.current.has('a')) {
@@ -70,6 +85,13 @@ export default function PlayerController({
     }
 
     if (moved) {
+      trailCounter.current++
+      if (trailCounter.current % 3 === 0) {
+        emitBurst(playerX.current + PW / 2, 0.3, 0, 2)
+      }
+    }
+
+    if (moved) {
       stepCounter.current++
       if (stepCounter.current % 6 === 0) playStep()
     }
@@ -83,8 +105,7 @@ export default function PlayerController({
       const tw = t.w * SCALE
       const ty = (450 - t.y - t.h) * SCALE
       const th = t.h * SCALE
-      if (px + PW > tx && px < tx + tw &&
-          py + PH > ty && py < ty + th) {
+      if (px + PW > tx && px < tx + tw && py + PH > ty && py < ty + th) {
         foundTrigger = t
         break
       }
@@ -100,8 +121,7 @@ export default function PlayerController({
       const ew = exitZone.w * SCALE
       const ey = (450 - exitZone.y - exitZone.h) * SCALE
       const eh = exitZone.h * SCALE
-      if (px + PW > ex && px < ex + ew &&
-          py + PH > ey && py < ey + eh) {
+      if (px + PW > ex && px < ex + ew && py + PH > ey && py < ey + eh) {
         enteredExit.current = true
         onExitZone()
       }
@@ -109,6 +129,8 @@ export default function PlayerController({
 
     if (meshRef.current) {
       meshRef.current.position.x = px + PW / 2
+      meshRef.current.position.y =
+        0.6 + Math.sin(timeRef.current * (moved ? 8 : 3)) * (moved ? 0.02 : 0.01)
       meshRef.current.scale.x = dir.current < 0 ? -1 : 1
     }
   })

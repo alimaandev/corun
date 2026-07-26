@@ -5,7 +5,10 @@ import { LevelTheme, THEMES } from '../game/themes'
 import { getPuzzle } from '../game/codePuzzles'
 import { getLevelScene } from '../game/levelScenes'
 import { playInteract, playLevelComplete } from '../game/sound'
-import CodeTerminal from './CodeTerminal'
+import { startMusic, stopMusic, setIntensity } from '../game/audio'
+import EditorPanel3D from './three/EditorPanel3D'
+import Particles3D, { emitBurst } from './three/Particles3D'
+import Joystick from './Joystick'
 import CameraController from './three/CameraController'
 import PlayerController from './three/PlayerController'
 import NPCController from './three/NPCController'
@@ -49,10 +52,13 @@ export default function Scene3D({ levelId, onComplete }: Props) {
     setShowPuzzle(null)
     activePuzzleRef.current = null
     setNearTrigger(null)
+    startMusic(levelId, 0.3)
 
     if (data) {
-      npcs.current = data.npcs.map(n => ({ ...n }))
+      npcs.current = data.npcs.map((n) => ({ ...n }))
     }
+
+    return () => stopMusic()
   }, [levelId])
 
   const handleInteract = useCallback(() => {
@@ -74,7 +80,15 @@ export default function Scene3D({ levelId, onComplete }: Props) {
     activePuzzleRef.current = null
     setNearTrigger(null)
     setShowPuzzle(null)
-  }, [])
+
+    emitBurst(playerX.current + 0.01, 0.6, 0, 40)
+
+    const totalTriggers = scene?.triggers.length ?? 1
+    const solved = solvedPuzzles.current.size
+    const ratio = Math.min(1, solved / totalTriggers)
+    const newIntensity = 0.3 + ratio * 0.5
+    setIntensity(newIntensity)
+  }, [scene])
 
   const handlePuzzleClose = useCallback(() => {
     activePuzzleRef.current = null
@@ -91,13 +105,16 @@ export default function Scene3D({ levelId, onComplete }: Props) {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (activePuzzleRef.current) return
       keysDown.current.add(e.key.toLowerCase())
       if (e.key.toLowerCase() === 'e' && !e.repeat) handleInteract()
     }
     function onKeyUp(e: KeyboardEvent) {
       keysDown.current.delete(e.key.toLowerCase())
     }
-    function checkMobile() { setIsMobile(window.innerWidth < MOBILE_BREAK) }
+    function checkMobile() {
+      setIsMobile(window.innerWidth < MOBILE_BREAK)
+    }
     checkMobile()
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
@@ -113,28 +130,45 @@ export default function Scene3D({ levelId, onComplete }: Props) {
     return () => clearTimeout(completeTimeoutRef.current)
   }, [])
 
-  const allSolved = scene ? scene.triggers.every(t => solvedPuzzles.current.has(t.puzzleId)) : false
+  const allSolved = scene
+    ? scene.triggers.every((t) => solvedPuzzles.current.has(t.puzzleId))
+    : false
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: '#000', zIndex: 200,
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: '#000',
+        zIndex: 200,
+      }}
+    >
       <Canvas
         key={canvasKey}
         gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 3.5, 7], fov: 45, near: 0.1, far: 50 }}
         style={{ display: 'block', touchAction: 'manipulation' }}
         onCreated={(state) => {
-          state.gl.domElement.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault()
-            setTimeout(() => setCanvasKey(k => k + 1), 500)
-          }, false)
-          state.gl.domElement.addEventListener('webglcontextrestored', () => {
-            state.invalidate()
-          }, false)
+          state.gl.domElement.addEventListener(
+            'webglcontextlost',
+            (e) => {
+              e.preventDefault()
+              setTimeout(() => setCanvasKey((k) => k + 1), 500)
+            },
+            false,
+          )
+          state.gl.domElement.addEventListener(
+            'webglcontextrestored',
+            () => {
+              state.invalidate()
+            },
+            false,
+          )
         }}
-        onError={() => setCanvasKey(k => k + 1)}
+        onError={() => setCanvasKey((k) => k + 1)}
       >
         <color attach="background" args={[theme.skyTop]} />
         <ambientLight color={theme.ambientLight} intensity={0.6} />
@@ -146,6 +180,7 @@ export default function Scene3D({ levelId, onComplete }: Props) {
               ground={scene.ground}
               blockers={scene.blockers}
               theme={theme}
+              worldWidth={scene.worldWidth}
             />
             {scene.triggers.map((t, i) => (
               <TriggerZone
@@ -180,105 +215,57 @@ export default function Scene3D({ levelId, onComplete }: Props) {
                 intensity={0.4}
               />
             ))}
+            {showPuzzle && (
+              <EditorPanel3D
+                puzzle={showPuzzle}
+                onSolve={handlePuzzleSolve}
+                onClose={handlePuzzleClose}
+                playerX={playerX.current}
+              />
+            )}
           </>
         )}
 
-        <CameraController
-          playerX={playerX}
-          worldWidth={(scene?.worldWidth ?? 900) * 0.01}
-        />
+        <CameraController playerX={playerX} worldWidth={(scene?.worldWidth ?? 900) * 0.01} />
+        <Particles3D />
       </Canvas>
 
-      <div style={{
-        position: 'fixed', top: 8, left: 8,
-        color: 'rgba(240,235,227,0.4)', fontSize: 8,
-        fontFamily: "'Roboto', sans-serif",
-        fontWeight: 300,
-        zIndex: 210,
-        letterSpacing: 2,
-      }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 8,
+          left: 8,
+          color: 'rgba(240,235,227,0.4)',
+          fontSize: 11,
+          fontFamily: "'Roboto', sans-serif",
+          fontWeight: 300,
+          zIndex: 210,
+          letterSpacing: 2,
+        }}
+      >
         &larr; &rarr; MOVE &nbsp;|&nbsp; E INTERACT
       </div>
 
-      {isMobile && (
-        <>
-          {['left', 'right', 'interact'].map(side => {
-            const isLeft = side === 'left'
-            const isRight = side === 'right'
-            const style: React.CSSProperties = {
-              position: 'fixed',
-              bottom: isLeft || isRight ? 16 : 16,
-              left: isLeft ? 16 : isRight ? 96 : undefined,
-              right: isLeft || isRight ? undefined : 16,
-              width: isLeft || isRight ? 64 : 56,
-              height: isLeft || isRight ? 64 : 56,
-              background: 'rgba(240,235,227,0.08)',
-              border: '1px solid rgba(240,235,227,0.2)',
-              borderRadius: isLeft || isRight ? 12 : '50%',
-              color: '#F0EBE3', fontSize: isLeft || isRight ? 24 : 12,
-              fontFamily: "'Roboto', sans-serif", fontWeight: 300,
-              zIndex: 220, cursor: 'pointer',
-              touchAction: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }
-            if (isLeft) {
-              return (
-                <button key={side} style={style}
-                  onTouchStart={() => keysDown.current.add('arrowleft')}
-                  onTouchEnd={() => keysDown.current.delete('arrowleft')}
-                  onTouchCancel={() => keysDown.current.delete('arrowleft')}
-                  onMouseDown={() => keysDown.current.add('arrowleft')}
-                  onMouseUp={() => keysDown.current.delete('arrowleft')}
-                  onMouseLeave={() => keysDown.current.delete('arrowleft')}
-                  onContextMenu={e => e.preventDefault()}
-                  aria-label="Move left"
-                >&larr;</button>
-              )
-            }
-            if (isRight) {
-              return (
-                <button key={side} style={style}
-                  onTouchStart={() => keysDown.current.add('arrowright')}
-                  onTouchEnd={() => keysDown.current.delete('arrowright')}
-                  onTouchCancel={() => keysDown.current.delete('arrowright')}
-                  onMouseDown={() => keysDown.current.add('arrowright')}
-                  onMouseUp={() => keysDown.current.delete('arrowright')}
-                  onMouseLeave={() => keysDown.current.delete('arrowright')}
-                  onContextMenu={e => e.preventDefault()}
-                  aria-label="Move right"
-                >&rarr;</button>
-              )
-            }
-            return (
-              <button key={side} style={style}
-                onTouchStart={handleInteract}
-                onClick={handleInteract}
-                onContextMenu={e => e.preventDefault()}
-                aria-label="Interact"
-              >E</button>
-            )
-          })}
-        </>
-      )}
+      {isMobile && !showPuzzle && <Joystick keysDown={keysDown} onInteract={handleInteract} />}
 
       {showComplete && (
-        <div style={{
-          position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
-          color: '#769826', fontSize: 14,
-          fontFamily: "'Poppins', sans-serif", fontWeight: 700, letterSpacing: 3,
-          zIndex: 300,
-          textShadow: '0 0 20px rgba(118,152,38,0.3)',
-        }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%,-50%)',
+            color: '#769826',
+            fontSize: 14,
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 700,
+            letterSpacing: 3,
+            zIndex: 300,
+            textShadow: '0 0 20px rgba(118,152,38,0.3)',
+          }}
+        >
           LEVEL COMPLETE
         </div>
-      )}
-
-      {showPuzzle && (
-        <CodeTerminal
-          puzzle={showPuzzle}
-          onSolve={handlePuzzleSolve}
-          onClose={handlePuzzleClose}
-        />
       )}
     </div>
   )

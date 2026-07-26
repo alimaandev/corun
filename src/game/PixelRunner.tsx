@@ -3,7 +3,6 @@ import { Challenge, HUDData, Difficulty } from './types'
 import { getRandomChallenge, clearAIPool } from './challenges'
 import { THEMES, LevelTheme } from './themes'
 
-
 const GAP_START = 60
 const GAP_DRAIN = 1.8
 const CHALLENGE_MIN = 2500
@@ -45,15 +44,28 @@ interface Props {
   onHUDUpdate: (data: HUDData) => void
 }
 
+interface Obstacle {
+  lane: number
+  y: number
+  type: 'barrier' | 'coin' | 'boost'
+  hit: boolean
+}
+
 interface GameS {
-  score: number; gap: number; speed: number; streak: number
+  score: number
+  gap: number
+  speed: number
+  streak: number
   currentLane: number
   displayLane: number
-  boostUntil: number; penaltyUntil: number
-  scrollY: number; screenShake: number
+  boostUntil: number
+  penaltyUntil: number
+  scrollY: number
+  screenShake: number
   flashTimer: number
   flashGreen: boolean
-  paused: boolean; multiplier: number
+  paused: boolean
+  multiplier: number
 }
 
 function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number) {
@@ -92,7 +104,14 @@ function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, fr
   ctx.fillRect(x + 1 * s, y + 4 * s - legSwing, 4 * s, 3 * s)
 }
 
-function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number, danger: number, theme?: LevelTheme) {
+function drawPixelMonster(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  frame: number,
+  danger: number,
+  theme?: LevelTheme,
+) {
   ctx.imageSmoothingEnabled = false
   const s = PX_SCALE
   const bob = Math.sin(frame * 0.12) * 5 * danger
@@ -144,7 +163,14 @@ function drawPixelMonster(ctx: CanvasRenderingContext2D, x: number, y: number, f
   ctx.restore()
 }
 
-function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, speed: number, theme?: LevelTheme) {
+function drawRoad(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  scroll: number,
+  speed: number,
+  theme?: LevelTheme,
+) {
   const roadW = LANE_W() * 3
   const roadX = (w - roadW) / 2
 
@@ -174,11 +200,32 @@ function drawRoad(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: n
   ctx.fillRect(roadX + roadW, 0, 6, h)
 }
 
-function drawPixelCloud(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, seed: number) {
+function drawPixelCloud(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  seed: number,
+) {
   const patterns = [
-    [[0,0,0,1,1,1,0,0,0],[0,1,1,1,1,1,1,0,0],[1,1,1,1,1,1,1,1,0],[1,1,1,0,0,0,1,1,1]],
-    [[0,0,0,0,1,1,1,0,0,0],[0,0,1,1,1,1,1,1,0,0],[0,1,1,1,1,1,1,1,1,0],[1,1,1,1,0,0,0,1,1,1]],
-    [[0,0,1,1,1,0,0,0],[0,1,1,1,1,1,0,0],[1,1,1,1,1,1,1,0],[1,1,1,0,0,1,1,1]],
+    [
+      [0, 0, 0, 1, 1, 1, 0, 0, 0],
+      [0, 1, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 0, 0, 0, 1, 1, 1],
+    ],
+    [
+      [0, 0, 0, 0, 1, 1, 1, 0, 0, 0],
+      [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
+    ],
+    [
+      [0, 0, 1, 1, 1, 0, 0, 0],
+      [0, 1, 1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 0, 0, 1, 1, 1],
+    ],
   ]
   const pat = patterns[seed % patterns.length]
   const rows = pat.length
@@ -193,7 +240,13 @@ function drawPixelCloud(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
   }
 }
 
-function drawScenery(ctx: CanvasRenderingContext2D, w: number, h: number, scroll: number, theme: LevelTheme) {
+function drawScenery(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  scroll: number,
+  theme: LevelTheme,
+) {
   const spacing = 80
   const offset = scroll % spacing
   const s = Math.max(1, Math.floor(w / 250))
@@ -300,7 +353,13 @@ function drawScenery(ctx: CanvasRenderingContext2D, w: number, h: number, scroll
   }
 }
 
-function drawParticles(ctx: CanvasRenderingContext2D, w: number, h: number, frame: number, theme: LevelTheme) {
+function drawParticles(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  frame: number,
+  theme: LevelTheme,
+) {
   const t = theme.particleType
   if (!t) return
   const s = Math.max(1, Math.floor(w / 250))
@@ -350,7 +409,13 @@ function drawParticles(ctx: CanvasRenderingContext2D, w: number, h: number, fram
   }
 }
 
-function drawSpeedLines(ctx: CanvasRenderingContext2D, w: number, h: number, speed: number, frame: number) {
+function drawSpeedLines(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  speed: number,
+  frame: number,
+) {
   if (speed <= 0.8) return
   const count = Math.floor((speed - 0.8) * 8)
   for (let i = 0; i < count; i++) {
@@ -362,15 +427,92 @@ function drawSpeedLines(ctx: CanvasRenderingContext2D, w: number, h: number, spe
   }
 }
 
+function roadLeft(w: number) {
+  return (w - LANE_W() * 3) / 2
+}
+
+function drawObstacle(ctx: CanvasRenderingContext2D, obs: Obstacle, w: number) {
+  ctx.imageSmoothingEnabled = false
+  const s = PX_SCALE
+  const ox = roadLeft(w) + (obs.lane + 1) * LANE_W() + LANE_W() / 2
+  const oy = obs.y
+
+  switch (obs.type) {
+    case 'barrier': {
+      ctx.fillStyle = '#cc3300'
+      ctx.fillRect(ox - 5 * s, oy, 10 * s, 4 * s)
+      ctx.fillRect(ox - 7 * s, oy + 4 * s, 14 * s, 6 * s)
+      ctx.fillStyle = '#ff6633'
+      ctx.fillRect(ox - 3 * s, oy + 2 * s, 6 * s, 2 * s)
+      break
+    }
+    case 'coin': {
+      const bob = Math.sin(performance.now() * 0.004 + obs.lane) * 2
+      ctx.fillStyle = '#ffd700'
+      ctx.beginPath()
+      ctx.arc(ox, oy + bob, 4 * s, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffec80'
+      ctx.beginPath()
+      ctx.arc(ox - s, oy - s + bob, 2 * s, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    }
+    case 'boost': {
+      const pulse = Math.sin(performance.now() * 0.006) * 0.3 + 0.7
+      ctx.fillStyle = `rgba(118,152,38,${pulse})`
+      ctx.fillRect(ox - 3 * s, oy - 2 * s, 6 * s, 8 * s)
+      ctx.fillStyle = '#F0EBE3'
+      ctx.fillRect(ox - s, oy, 2 * s, 4 * s)
+      break
+    }
+  }
+}
+
+function renderBackground(ctx: CanvasRenderingContext2D, w: number, h: number, theme: LevelTheme) {
+  const skyH = Math.floor(h * 0.32)
+  const grad = ctx.createLinearGradient(0, 0, 0, skyH)
+  grad.addColorStop(0, theme.skyTop)
+  grad.addColorStop(1, theme.skyBottom)
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, w, skyH)
+
+  ctx.fillStyle = theme.hillColor
+  ctx.beginPath()
+  ctx.moveTo(0, skyH - 8)
+  for (let x = 0; x <= w; x += 8) {
+    ctx.lineTo(x, skyH - 8 + Math.sin(x * 0.006 + 2) * 16 + Math.sin(x * 0.014) * 8)
+  }
+  ctx.lineTo(w, skyH + 20)
+  ctx.lineTo(0, skyH + 20)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.fillStyle = theme.groundColor
+  ctx.fillRect(0, skyH + 12, w, h - skyH)
+}
+
 const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const bgDirtyRef = useRef(true)
+  const obstaclesRef = useRef<Obstacle[]>([])
+  const spawnTimerRef = useRef(0)
   const stateRef = useRef<GameS>({
-    score: 0, gap: GAP_START, speed: BASE_SPEED, streak: 0,
-    currentLane: 0, displayLane: 0,
-    boostUntil: 0, penaltyUntil: 0,
-    scrollY: 0, screenShake: 0,
-    flashTimer: 0, flashGreen: false,
-    paused: false, multiplier: 1,
+    score: 0,
+    gap: GAP_START,
+    speed: BASE_SPEED,
+    streak: 0,
+    currentLane: 0,
+    displayLane: 0,
+    boostUntil: 0,
+    penaltyUntil: 0,
+    scrollY: 0,
+    screenShake: 0,
+    flashTimer: 0,
+    flashGreen: false,
+    paused: false,
+    multiplier: 1,
   })
   const lastFrameTimeRef = useRef(0)
   const gameRunning = useRef(false)
@@ -391,6 +533,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   useEffect(() => {
     themeRef.current = THEMES[props.themeId ?? 1] || THEMES[1]
+    bgDirtyRef.current = true
   }, [props.themeId])
 
   useEffect(() => {
@@ -425,7 +568,11 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     challengeTimerRef.current = window.setTimeout(async () => {
       try {
         if (gameRunning.current && !stateRef.current.paused) {
-          const challenge = await getRandomChallenge(usedChallengeIds.current, topicRef.current, diffRef.current)
+          const challenge = await getRandomChallenge(
+            usedChallengeIds.current,
+            topicRef.current,
+            diffRef.current,
+          )
           if (!gameRunning.current || disposedRef.current) return
           usedChallengeIds.current.add(challenge.id)
           propsRef.current.onChallenge(challenge)
@@ -438,11 +585,20 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   function resetState() {
     const s = stateRef.current
-    s.score = 0; s.gap = GAP_START; s.speed = BASE_SPEED; s.streak = 0
-    s.currentLane = 0; s.displayLane = 0; s.boostUntil = 0; s.penaltyUntil = 0
-    s.scrollY = 0; s.screenShake = 0
-    s.flashTimer = 0; s.flashGreen = false
-    s.paused = false; s.multiplier = 1
+    s.score = 0
+    s.gap = GAP_START
+    s.speed = BASE_SPEED
+    s.streak = 0
+    s.currentLane = 0
+    s.displayLane = 0
+    s.boostUntil = 0
+    s.penaltyUntil = 0
+    s.scrollY = 0
+    s.screenShake = 0
+    s.flashTimer = 0
+    s.flashGreen = false
+    s.paused = false
+    s.multiplier = 1
     lastFrameTimeRef.current = 0
     gameRunning.current = true
     gameOverFired.current = false
@@ -450,6 +606,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     usedChallengeIds.current.clear()
     frameCountRef.current = 0
     disposedRef.current = false
+    obstaclesRef.current = []
+    spawnTimerRef.current = 1000
     clearTimeout(challengeTimerRef.current)
     clearAIPool()
     scheduleChallenge()
@@ -617,6 +775,12 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       canvas.style.width = window.innerWidth + 'px'
       canvas.style.height = window.innerHeight + 'px'
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      const bg = bgCanvasRef.current || document.createElement('canvas')
+      bgCanvasRef.current = bg
+      bg.width = canvas.width
+      bg.height = canvas.height
+      bgDirtyRef.current = true
     }
     resize()
     window.addEventListener('resize', resize)
@@ -625,11 +789,16 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       try {
         if (disposed) return
         const s = stateRef.current
-        const dt = lastFrameTimeRef.current ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05) : 0
+        const dt = lastFrameTimeRef.current
+          ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05)
+          : 0
         lastFrameTimeRef.current = ts
+        const dpr = window.devicePixelRatio || 1
+        const w = canvas.width / dpr
+        const h = canvas.height / dpr
 
         if (gameRunning.current) {
-          if (!s.paused)  {
+          if (!s.paused) {
             s.scrollY += s.speed * 4 * dt * 60
 
             const now = performance.now()
@@ -649,6 +818,58 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
           s.displayLane += (s.currentLane - s.displayLane) * 0.15
 
+          const obsList = obstaclesRef.current
+          for (let i = obsList.length - 1; i >= 0; i--) {
+            const obs = obsList[i]
+            obs.y += s.speed * 4 * dt * 60
+            if (obs.y > h + 30) {
+              obsList.splice(i, 1)
+              continue
+            }
+            if (obs.hit) continue
+            if (
+              obs.y > playerY() - 20 &&
+              obs.y < playerY() + 20 &&
+              obs.lane === Math.round(s.displayLane)
+            ) {
+              obs.hit = true
+              if (obs.type === 'barrier') {
+                s.gap = Math.max(5, s.gap - 12)
+                s.screenShake = 0.4
+                s.flashTimer = 0.2
+                s.flashGreen = false
+              } else if (obs.type === 'coin') {
+                s.score += 25 * s.multiplier
+                s.gap = Math.min(100, s.gap + 3)
+                s.flashTimer = 0.15
+                s.flashGreen = true
+              } else if (obs.type === 'boost') {
+                s.boostUntil = performance.now() + 2000
+                s.flashTimer = 0.2
+                s.flashGreen = true
+              }
+            }
+          }
+
+          spawnTimerRef.current -= dt * 1000
+          if (spawnTimerRef.current <= 0) {
+            const lane = Math.floor(Math.random() * 3) - 1
+            const types: Obstacle['type'][] = [
+              'barrier',
+              'coin',
+              'barrier',
+              'coin',
+              'coin',
+              'boost',
+            ]
+            const type = types[Math.floor(Math.random() * types.length)]
+            const blocked = obsList.some((o) => o.lane === lane && !o.hit && o.y < 100)
+            if (!blocked) {
+              obsList.push({ lane, y: -30, type, hit: false })
+            }
+            spawnTimerRef.current = 600 + Math.random() * 1000
+          }
+
           if (s.screenShake > 0) {
             s.screenShake *= 0.9
             if (s.screenShake < 0.01) s.screenShake = 0
@@ -663,10 +884,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
             gameRunning.current = false
           }
         }
-
-        const dpr = window.devicePixelRatio || 1
-        const w = canvas.width / dpr
-        const h = canvas.height / dpr
 
         ctx.save()
 
@@ -685,12 +902,21 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         }
 
         const theme = themeRef.current
-        const skyH = Math.floor(h * 0.32)
-        const grad = ctx.createLinearGradient(0, 0, 0, skyH)
-        grad.addColorStop(0, theme.skyTop)
-        grad.addColorStop(1, theme.skyBottom)
-        ctx.fillStyle = grad
-        ctx.fillRect(0, 0, w, skyH)
+
+        if (bgDirtyRef.current) {
+          const bg = bgCanvasRef.current
+          if (bg) {
+            const bctx = bg.getContext('2d')!
+            const bdpr = window.devicePixelRatio || 1
+            bctx.setTransform(bdpr, 0, 0, bdpr, 0, 0)
+            renderBackground(bctx, w, h, theme)
+          }
+          bgDirtyRef.current = false
+        }
+
+        if (bgCanvasRef.current) {
+          ctx.drawImage(bgCanvasRef.current, 0, 0, canvas.width, canvas.height, 0, 0, w, h)
+        }
 
         for (let i = 0; i < 3; i++) {
           const cx = ((i * w * 0.25 + ts * 0.008 * (1 + i * 0.3)) % (w + 120)) - 60
@@ -698,23 +924,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
           drawPixelCloud(ctx, cx, cy, 50 + i * 10, i)
         }
 
-        ctx.fillStyle = theme.hillColor
-        ctx.beginPath()
-        ctx.moveTo(0, skyH - 8)
-        for (let x = 0; x <= w; x += 8) {
-          ctx.lineTo(x, skyH - 8 + Math.sin(x * 0.006 + 2) * 16 + Math.sin(x * 0.014) * 8)
-        }
-        ctx.lineTo(w, skyH + 20)
-        ctx.lineTo(0, skyH + 20)
-        ctx.closePath()
-        ctx.fill()
-
-        ctx.fillStyle = theme.groundColor
-        ctx.fillRect(0, skyH + 12, w, h - skyH)
-
         drawRoad(ctx, w, h, s.scrollY, s.speed, theme)
         drawScenery(ctx, w, h, s.scrollY, theme)
         drawParticles(ctx, w, h, ts * 0.001, theme)
+
+        for (const obs of obstaclesRef.current) {
+          if (!obs.hit) drawObstacle(ctx, obs, w)
+        }
 
         const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
         drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger, theme)

@@ -4,15 +4,34 @@ interface Props extends HUDData {
   isBoss?: boolean
   isBonus?: boolean
   levelName?: string
+  speedRunTime?: number
+  survivalLives?: number
 }
 
-export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelName }: Props) {
+export default function HUD({
+  score,
+  gap,
+  speed,
+  streak,
+  isBoss,
+  isBonus,
+  levelName,
+  speedRunTime,
+  survivalLives,
+}: Props) {
   const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : 'rgba(240,235,227,0.4)'
 
   return (
-    <div style={{ ...styles.bar,
-      borderBottomColor: isBoss ? 'rgba(240,235,227,0.2)' : isBonus ? 'rgba(240,235,227,0.2)' : 'rgba(118,152,38,0.2)',
-    }}>
+    <div
+      style={{
+        ...styles.bar,
+        borderBottomColor: isBoss
+          ? 'rgba(240,235,227,0.2)'
+          : isBonus
+            ? 'rgba(240,235,227,0.2)'
+            : 'rgba(118,152,38,0.2)',
+      }}
+    >
       <div style={styles.left}>
         <div style={styles.lLabel}>SCORE</div>
         <div style={styles.lVal}>{score.toLocaleString()}</div>
@@ -24,12 +43,18 @@ export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelN
         )}
       </div>
 
-        {levelName && (
-        <div style={{
-          color: 'rgba(240,235,227,0.2)', fontSize: 7,
-          fontFamily: "'Poppins', sans-serif", fontWeight: 600, letterSpacing: 1,
-          textAlign: 'center' as const, flexShrink: 0,
-        }}>
+      {levelName && (
+        <div
+          style={{
+            color: 'rgba(240,235,227,0.2)',
+            fontSize: 11,
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            letterSpacing: 1,
+            textAlign: 'center' as const,
+            flexShrink: 0,
+          }}
+        >
           {levelName}
         </div>
       )}
@@ -37,8 +62,14 @@ export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelN
       <div style={styles.center}>
         <div style={styles.gapLabel}>GAP</div>
         <div style={styles.track}>
-          <div style={{ ...styles.fill, width: `${Math.max(2, gap)}%`, background: barColor,
-            boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none' }} />
+          <div
+            style={{
+              ...styles.fill,
+              width: `${Math.max(2, gap)}%`,
+              background: barColor,
+              boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none',
+            }}
+          />
         </div>
         <div style={styles.gapNum}>{Math.round(gap)}m</div>
       </div>
@@ -46,13 +77,37 @@ export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelN
       <div style={styles.right}>
         <div style={styles.stat}>
           <div style={styles.sLabel}>SPD</div>
-          <div style={{ ...styles.sVal, color: speed > 1.3 ? '#769826' : speed < 0.8 ? 'rgba(240,235,227,0.4)' : '#F0EBE3' }}>
+          <div
+            style={{
+              ...styles.sVal,
+              color: speed > 1.3 ? '#769826' : speed < 0.8 ? 'rgba(240,235,227,0.4)' : '#F0EBE3',
+            }}
+          >
             {speed.toFixed(1)}x
           </div>
         </div>
+        {speedRunTime !== undefined && (
+          <div style={styles.stat}>
+            <div style={styles.sLabel}>TIME</div>
+            <div style={{ ...styles.sVal, color: speedRunTime <= 10 ? '#ff4444' : '#F0EBE3' }}>
+              {speedRunTime}s
+            </div>
+          </div>
+        )}
+        {survivalLives !== undefined && (
+          <div style={styles.stat}>
+            <div style={styles.sLabel}>LIVES</div>
+            <div style={{ ...styles.sVal, color: survivalLives <= 1 ? '#ff4444' : '#F0EBE3' }}>
+              {'♥'.repeat(survivalLives)}
+              {'♡'.repeat(Math.max(0, 3 - survivalLives))}
+            </div>
+          </div>
+        )}
         <div style={styles.stat}>
           <div style={styles.sLabel}>MULT</div>
-          <div style={styles.sVal}>{streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : '1x'}</div>
+          <div style={styles.sVal}>
+            {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : '1x'}
+          </div>
         </div>
       </div>
     </div>
@@ -61,38 +116,99 @@ export default function HUD({ score, gap, speed, streak, isBoss, isBonus, levelN
 
 const styles: Record<string, React.CSSProperties> = {
   bar: {
-    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    gap: 4, padding: '4px 6px',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 4,
+    padding: '4px 6px',
     background: 'rgba(10,10,10,0.9)',
     borderBottom: '1px solid rgba(118,152,38,0.15)',
     pointerEvents: 'none',
     boxShadow: 'none',
   },
-  left: { display: 'flex', flexDirection: 'column', gap: 0, position: 'relative' as const, flexShrink: 0 },
-  lLabel: { color: 'rgba(240,235,227,0.5)', fontSize: 7, fontFamily: "'Roboto', sans-serif", fontWeight: 300, letterSpacing: 1 },
-  lVal: { color: '#F0EBE3', fontSize: 14, fontWeight: 700, lineHeight: 1.1, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 },
+  left: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0,
+    position: 'relative' as const,
+    flexShrink: 0,
+  },
+  lLabel: {
+    color: 'rgba(240,235,227,0.5)',
+    fontSize: 11,
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
+    letterSpacing: 1,
+  },
+  lVal: {
+    color: '#F0EBE3',
+    fontSize: 14,
+    fontWeight: 700,
+    lineHeight: 1.1,
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: 1,
+  },
   streakBadge: {
-    position: 'absolute' as const, top: -4, right: -4,
-    display: 'flex', alignItems: 'center', gap: 1,
+    position: 'absolute' as const,
+    top: -4,
+    right: -4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
     padding: '1px 3px',
     border: '1px solid rgba(240,235,227,0.15)',
     background: 'rgba(240,235,227,0.04)',
   },
-  star: { color: '#F0EBE3', fontSize: 6 },
-  sNum: { color: '#F0EBE3', fontSize: 6, fontFamily: "'JetBrains Mono', monospace" },
+  star: { color: '#F0EBE3', fontSize: 11 },
+  sNum: { color: '#F0EBE3', fontSize: 11, fontFamily: "'JetBrains Mono', monospace" },
   center: {
-    flex: 1, minWidth: 0, maxWidth: 160,
-    display: 'flex', flexDirection: 'column',
-    alignItems: 'center', gap: 1,
+    flex: 1,
+    minWidth: 0,
+    maxWidth: 160,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 1,
     padding: '0 4px',
   },
-  gapLabel: { color: 'rgba(240,235,227,0.5)', fontSize: 7, fontFamily: "'Roboto', sans-serif", fontWeight: 300, letterSpacing: 1 },
-  track: { width: '100%', height: 5, background: 'rgba(240,235,227,0.08)', overflow: 'hidden', borderRadius: 2 },
+  gapLabel: {
+    color: 'rgba(240,235,227,0.5)',
+    fontSize: 11,
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
+    letterSpacing: 1,
+  },
+  track: {
+    width: '100%',
+    height: 5,
+    background: 'rgba(240,235,227,0.08)',
+    overflow: 'hidden',
+    borderRadius: 2,
+  },
   fill: { height: '100%', transition: 'width 0.3s ease, background 0.3s ease' },
-  gapNum: { color: 'rgba(240,235,227,0.5)', fontSize: 7, fontFamily: "'JetBrains Mono', monospace" },
+  gapNum: {
+    color: 'rgba(240,235,227,0.5)',
+    fontSize: 11,
+    fontFamily: "'JetBrains Mono', monospace",
+  },
   right: { display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 },
   stat: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0 },
-  sLabel: { color: 'rgba(240,235,227,0.5)', fontSize: 6, fontFamily: "'Roboto', sans-serif", fontWeight: 300, letterSpacing: 1 },
-  sVal: { fontSize: 8, fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 },
+  sLabel: {
+    color: 'rgba(240,235,227,0.5)',
+    fontSize: 11,
+    fontFamily: "'Roboto', sans-serif",
+    fontWeight: 300,
+    letterSpacing: 1,
+  },
+  sVal: {
+    fontSize: 11,
+    fontWeight: 500,
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: 1,
+  },
 }

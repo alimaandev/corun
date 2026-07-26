@@ -13,8 +13,8 @@ beforeEach(() => {
 })
 
 describe('ALL_LEVELS', () => {
-  it('has 9 levels', () => {
-    expect(ALL_LEVELS).toHaveLength(9)
+  it('has 12 levels', () => {
+    expect(ALL_LEVELS).toHaveLength(12)
   })
 
   it('levels are sequential starting from id 1', () => {
