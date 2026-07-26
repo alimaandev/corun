@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/alimaandev/corun/compare/v1.1.1...v1.2.0) (2026-07-26)
+
+
+### Features
+
+* SEO and contributor tooling overhaul ([0e70849](https://github.com/alimaandev/corun/commit/0e70849042a2b51d25a9c0c83676d62fa2ed9289))
+
 ## [1.1.1](https://github.com/alimaandev/corun/compare/v1.1.0...v1.1.1) (2026-07-26)
 
 
