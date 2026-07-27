@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/alimaandev/corun/compare/v1.2.0...v1.3.0) (2026-07-27)
+
+
+### Features
+
+* OG social card, GitHub topics, remove stale sitemap ([87c9544](https://github.com/alimaandev/corun/commit/87c9544d8732be10a8458d93b95454d95815660a))
+
 # [1.2.0](https://github.com/alimaandev/corun/compare/v1.1.1...v1.2.0) (2026-07-26)
 
 
