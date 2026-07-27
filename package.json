@@ -11,9 +11,29 @@
     "javascript",
     "typescript",
     "react",
-    "vite"
+    "vite",
+    "threejs",
+    "pwa",
+    "open-source-game"
   ],
   "license": "MIT",
+  "author": {
+    "name": "Ali Sher",
+    "url": "https://github.com/alimaandev"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/alimaandev"
+    },
+    {
+      "type": "ko-fi",
+      "url": "https://ko-fi.com/ali_sher"
+    }
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alimaandev/corun.git"
