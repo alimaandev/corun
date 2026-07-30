@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { HUDData } from '../game/types'
+import { isMuted, toggleMute } from '../game/audio'
 
 interface Props extends HUDData {
   isBoss?: boolean
@@ -19,6 +21,7 @@ export default function HUD({
   speedRunTime,
   survivalLives,
 }: Props) {
+  const [muted, setMuted] = useState(isMuted())
   const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : 'rgba(240,235,227,0.4)'
 
   return (
@@ -109,6 +112,26 @@ export default function HUD({
             {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : '1x'}
           </div>
         </div>
+        <button
+          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+          onClick={() => {
+            const next = toggleMute()
+            setMuted(next)
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            color: muted ? 'rgba(240,235,227,0.25)' : 'rgba(240,235,227,0.6)',
+            fontSize: 13,
+            padding: '2px 4px',
+            lineHeight: 1,
+            transition: 'color 0.2s',
+          }}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
       </div>
     </div>
   )

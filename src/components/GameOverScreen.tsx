@@ -267,6 +267,32 @@ export default function GameOverScreen({
         </div>
 
         <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>PRESS ENTER</div>
+
+        <a
+          href="https://github.com/alimaandev/corun"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'rgba(240,235,227,0.2)',
+            textDecoration: 'none',
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 10,
+            letterSpacing: 1,
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'rgba(240,235,227,0.5)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'rgba(240,235,227,0.2)'
+          }}
+        >
+          ★ STAR ON GITHUB
+        </a>
       </div>
     </div>
   )

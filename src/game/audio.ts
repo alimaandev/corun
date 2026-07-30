@@ -1,9 +1,34 @@
+const MUTED_KEY = 'corun_muted'
+
 let ctx: AudioContext | null = null
 let masterGain: GainNode | null = null
 
 let droneNodes: { osc: OscillatorNode; gain: GainNode }[] = []
 let droneFilter: BiquadFilterNode | null = null
 let droneGain: GainNode | null = null
+
+export function isMuted(): boolean {
+  try {
+    return localStorage.getItem(MUTED_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+export function setMuted(muted: boolean) {
+  try {
+    localStorage.setItem(MUTED_KEY, muted ? 'true' : 'false')
+  } catch {}
+  if (masterGain) {
+    masterGain.gain.setValueAtTime(muted ? 0 : 0.3, ctx?.currentTime || 0)
+  }
+}
+
+export function toggleMute(): boolean {
+  const next = !isMuted()
+  setMuted(next)
+  return next
+}
 
 let beatInterval: number | null = null
 let beatTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -51,7 +76,7 @@ export function startMusic(levelId: number, intensity = 0.3) {
   currentIntensity = intensity
 
   masterGain = c.createGain()
-  masterGain.gain.setValueAtTime(0.3, c.currentTime)
+  masterGain.gain.setValueAtTime(isMuted() ? 0 : 0.3, c.currentTime)
   masterGain.connect(c.destination)
 
   const preset = DRONE_PRESETS[levelId] || DRONE_PRESETS[1]

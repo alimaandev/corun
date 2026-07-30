@@ -451,7 +451,25 @@ export default function LandingPage() {
                 fontWeight: 300,
               }}
             >
-              CORUN &copy; 2026
+              CORUN &copy; 2026 &nbsp;·&nbsp;
+              <a
+                href="https://github.com/alimaandev/corun"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'rgba(240,235,227,0.4)',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#F0EBE3'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'rgba(240,235,227,0.4)'
+                }}
+              >
+                ★ STAR ON GITHUB
+              </a>
             </p>
           </div>
         </footer>

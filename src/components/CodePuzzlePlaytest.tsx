@@ -119,6 +119,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose }: Props) {
             setCode(e.target.value)
             setStatus('idle')
           }}
+          onTouchStart={(e) => e.stopPropagation()}
           spellCheck={false}
           style={{
             width: '100%',
@@ -133,6 +134,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose }: Props) {
             lineHeight: 1.5,
             resize: 'vertical',
             outline: 'none',
+            touchAction: 'manipulation',
           }}
         />
 

@@ -591,6 +591,39 @@ export default function StartScreen({
             ))}
           </select>
         </div>
+
+        <a
+          href="https://github.com/alimaandev/corun"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'rgba(240,235,227,0.04)',
+            border: '1px solid rgba(240,235,227,0.12)',
+            borderRadius: 6,
+            padding: '6px 14px',
+            color: 'rgba(240,235,227,0.5)',
+            textDecoration: 'none',
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: 1,
+            marginTop: 12,
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(240,235,227,0.08)'
+            e.currentTarget.style.color = '#F0EBE3'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(240,235,227,0.04)'
+            e.currentTarget.style.color = 'rgba(240,235,227,0.5)'
+          }}
+        >
+          ★ STAR ON GITHUB
+        </a>
       </div>
 
       <div

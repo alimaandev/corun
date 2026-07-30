@@ -1,15 +1,15 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="public/icons/Corun.png">
-    <img alt="Corun" src="public/icons/Corun.png" width="120" height="120">
+    <img alt="Corun" src="public/icons/Corun.png" width="80" height="80">
   </picture>
 </p>
 
-<h1 align="center">🏃 CORUN</h1>
-<h3 align="center">Escape the Monster — A Pixel‑Art Coding Adventure</h3>
+<h1 align="center">CORUN</h1>
+<h3 align="center">Escape the Monster — A 3D Pixel‑Art Coding Game</h3>
 
 <p align="center">
-  <em>Solve JavaScript puzzles. Escape the monster. Master programming through play.</em>
+  <em>Solve real JavaScript puzzles. Navigate 3D Tokyo streets. Outrun the monster. Master programming through play.</em>
 </p>
 
 <p align="center">
@@ -19,47 +19,59 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/alimaandev/corun/.github/workflows/ci.yml?style=flat-square&logo=github&label=CI" alt="CI" />
-  <img src="https://img.shields.io/github/license/alimaandev/corun?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/github/stars/alimaandev/corun?style=flat-square&logo=github" alt="Stars" />
-  <img src="https://img.shields.io/github/v/release/alimaandev/corun?style=flat-square&logo=semantic-release" alt="Release" />
-  <img src="https://img.shields.io/github/contributors/alimaandev/corun?style=flat-square" alt="Contributors" />
-  <img src="https://img.shields.io/github/issues/alimaandev/corun?style=flat-square&logo=github" alt="Issues" />
-  <img src="https://img.shields.io/badge/PRs-welcome-769826?style=flat-square" alt="PRs Welcome" />
-  <img src="https://img.shields.io/github/last-commit/alimaandev/corun?style=flat-square" alt="Last Commit" />
+  <img src="public/demo.gif" alt="Corun gameplay — story mode 3D scene with diegetic code editor" width="720" style="border-radius:12px;border:1px solid rgba(240,235,227,0.1)" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/alimaandev/corun/actions"><img src="https://img.shields.io/github/actions/workflow/status/alimaandev/corun/.github/workflows/ci.yml?style=flat-square&logo=github&label=build" alt="CI" /></a>
+  <a href="https://github.com/alimaandev/corun/blob/main/LICENSE"><img src="https://img.shields.io/github/license/alimaandev/corun?style=flat-square&label=license" alt="MIT" /></a>
+  <a href="https://github.com/alimaandev/corun"><img src="https://img.shields.io/github/stars/alimaandev/corun?style=flat-square&logo=github&label=stars" alt="Stars" /></a>
+  <a href="https://github.com/alimaandev/corun/releases"><img src="https://img.shields.io/github/v/release/alimaandev/corun?style=flat-square&logo=semantic-release&label=release" alt="Release" /></a>
 </p>
 
 <br />
 
 ---
 
-## 📖 Table of Contents
+## Quick Start
 
-- [Why Corun?](#-why-corun)
-- [Screenshots](#-screenshots)
-- [Features](#-features)
-- [Game Modes](#-game-modes)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
-- [Tech Stack](#-tech-stack)
-- [Contributing](#-contributing)
-- [Sponsors](#-sponsors)
-- [License](#-license)
+```bash
+git clone https://github.com/alimaandev/corun.git
+cd corun
+npm install
+npm run dev        # → http://localhost:3000
+```
+
+No Auth0 account needed — guest/demo mode works out of the box.
+
+```bash
+npm run typecheck  # tsc -b
+npm run test       # vitest run (45+ tests)
+npm run build      # tsc -b && vite build → dist/
+```
+
+> [Play the live game →](https://corun-zeta.vercel.app)
 
 <br />
 
 ---
 
-## 🎯 Why Corun?
+## Why Corun?
 
-Most coding games are either **too simple** (multiple choice trivia) or **too枯燥** (dry syntax drills). Corun is different:
+Most coding games are either **multiple-choice trivia** or **dry syntax drills**. Corun is neither.
 
-- 🧠 **Real code** — Write actual JavaScript, not pseudo-code. Sandboxed Web Worker evaluation.
-- 🏰 **Immersive story** — 12 levels with 3D scenes, NPCs, cutscenes, and a narrative that pulls you through.
-- 🎵 **Procedural audio** — Every level has a unique soundtrack generated at runtime by the Web Audio API.
-- 📱 **Works everywhere** — PWA installable, touch controls, offline support, 3 locales (EN/ES/FR).
-- 🛠️ **Create your own** — Built-in puzzle editor. Share via URL. Play community puzzles.
-- ⚡ **Performance first** — Code-split chunks, lazy loading, offscreen canvas. Ships ~470 KB gzipped.
+```
+You are trapped in a Tokyo cell.
+A monster is breaking through the wall.
+The only way out is to code.
+```
+
+- **Real JavaScript** — Write actual JS, not pseudo-code. Sandboxed Web Worker evaluation. 52 puzzles covering strings, arrays, objects, regex, math, logic, and ES6+.
+- **3D story world** — 12 levels with diegetic code editors on 3D meshes, NPC patrols, particle effects, dynamic lighting. Walk through Shibuya, Asakusa, and the Imperial Palace.
+- **Procedural soundtrack** — Every level has a unique Web Audio API composition. Zero audio files. BPM scales with your progress.
+- **Works everywhere** — PWA installable on any device. Touch controls, offline support, 3 locales (EN/ES/FR).
+- **Build your own puzzles** — Built-in puzzle editor. Share via URL. Browse community-created challenges.
+- **470 KB gzipped** — Code-split chunks, lazy-loaded Three.js, offscreen canvas. Performance is a feature.
 
 > *"Every line of code brought you home."*
 
@@ -67,49 +79,37 @@ Most coding games are either **too simple** (multiple choice trivia) or **too枯
 
 ---
 
-## 🖼️ Screenshots
-
-<p align="center">
-  <img src="public/demo.gif" alt="Corun gameplay demo" width="720" />
-  <br />
-  <em>Gameplay demo — story mode 3D scene with diegetic code editor</em>
-</p>
-
-<br />
-
----
-
-## ✨ Features
+## Features
 
 <table>
   <tr>
     <td width="50%">
       <h4>🎮 <strong>Two Game Modes</strong></h4>
-      <p>Story Mode (12-level 3D adventure) + Endless Runner (procedural arcade).</p>
+      <p>Story Mode (12-level 3D adventure) + Endless Runner (procedural arcade with adaptive difficulty).</p>
     </td>
     <td width="50%">
       <h4>📝 <strong>52 Real Code Puzzles</strong></h4>
-      <p>JavaScript fundamentals — strings, arrays, objects, regex, math, logic, ES6+.</p>
+      <p>JavaScript fundamentals — strings, arrays, objects, regex, math, logic, ES6+. Sandboxed evaluation.</p>
     </td>
   </tr>
   <tr>
     <td>
       <h4>🏰 <strong>3D Story World</strong></h4>
-      <p>Diegetic code editor on a 3D mesh, NPC patrols, particle effects, dynamic lighting.</p>
+      <p>Diegetic code editor on 3D mesh, NPC patrols, particle burst effects, dynamic lighting, 12 unique scenes.</p>
     </td>
     <td>
       <h4>🎵 <strong>Procedural Soundtrack</strong></h4>
-      <p>12 level-specific presets via Web Audio API. Reactive BPM scales with progress.</p>
+      <p>12 level-specific presets via Web Audio API. Reactive BPM scales with progress. Zero audio files.</p>
     </td>
   </tr>
   <tr>
     <td>
       <h4>📱 <strong>Mobile Ready</strong></h4>
-      <p>Touch joystick, responsive UI, installable PWA. Works offline.</p>
+      <p>Touch joystick, responsive UI, installable PWA. Works fully offline after first load.</p>
     </td>
     <td>
-      <h4>🛠️ <strong>User Content</strong></h4>
-      <p>Built-in puzzle editor, share via base64 URL, community puzzle browser.</p>
+      <h4>🛠️ <strong>User-Generated Content</strong></h4>
+      <p>Built-in puzzle editor, share via base64 URL, community puzzle browser. Create and play custom challenges.</p>
     </td>
   </tr>
   <tr>
@@ -118,18 +118,8 @@ Most coding games are either **too simple** (multiple choice trivia) or **too枯
       <p>English, Spanish, French. Auto-detects browser locale. Persisted to localStorage.</p>
     </td>
     <td>
-      <h4>🏆 <strong>Competitive</strong></h4>
-      <p>Speed Run & Survival modes, global leaderboard, skill-based badges.</p>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h4>♿ <strong>Accessible</strong></h4>
-      <p>Focus traps, ARIA roles, keyboard navigation, screen reader support.</p>
-    </td>
-    <td>
-      <h4>⚡ <strong>Performant</strong></h4>
-      <p>Lazy-loaded chunks, offscreen canvas rendering, code-split three.js (190 KB gz).</p>
+      <h4>🏆 <strong>Competitive Modes</strong></h4>
+      <p>Speed Run (60s countdown) & Survival (3 lives) modes. Global Supabase leaderboard. Skill-based badges.</p>
     </td>
   </tr>
 </table>
@@ -138,9 +128,38 @@ Most coding games are either **too simple** (multiple choice trivia) or **too枯
 
 ---
 
-## 🎮 Game Modes
+## Architecture
 
-### 🏰 Story Mode — 12 Levels
+```mermaid
+flowchart LR
+  A[React App] --> B[Game Engine]
+  A --> C[3D Renderer]
+  A --> D[Sandbox Worker]
+  B --> E[PixelRunner]
+  B --> F[Scene3D]
+  C --> G[Three.js / Fiber]
+  C --> H[Offscreen Canvas]
+  D --> I[Code Evaluator]
+  E --> J[ChallengeModal]
+  E --> K[HUD]
+  F --> L[EditorPanel3D]
+  F --> M[LevelEnvironment]
+  F --> N[Particles3D]
+  O[Auth0 / Guest] --> A
+  P[Supabase] --> E
+  Q[Web Audio API] --> F
+```
+
+<br />
+
+---
+
+## Game Modes
+
+<details>
+<summary><strong>🏰 Story Mode</strong> — 12 levels across 3 arcs</summary>
+
+<br />
 
 Walk a 3D side-scrolling world, interact with NPCs, solve code puzzles at glowing terminals, and follow a narrative through cutscenes.
 
@@ -159,7 +178,12 @@ Walk a 3D side-scrolling world, interact with NPCs, solve code puzzles at glowin
 | 11 | The Laboratory | Alchemy | String ops, sequences |
 | 12 | The Tower Spire | The Summit | Advanced logic |
 
-### 🏃 Endless Runner
+</details>
+
+<details>
+<summary><strong>🏃 Endless Runner</strong> — Procedural arcade mode</summary>
+
+<br />
 
 Classic 3-lane highway escape. Challenges pop up mid-run — answer fast or the monster closes in.
 
@@ -171,79 +195,17 @@ Classic 3-lane highway escape. Challenges pop up mid-run — answer fast or the 
 - **Daily challenges** — One shot per day, leaderboard comparison
 - **Mastery badges** — 5+ correct in a topic = badge
 
-### ⚡ Speed Run & ❤️ Survival
+</details>
+
+<details>
+<summary><strong>⚡ Speed Run & ❤️ Survival</strong> — Competitive variants</summary>
+
+<br />
 
 | Mode | Rules |
 |------|-------|
 | **Speed Run** | 60-second countdown. Wrong answers cost points. Timer in HUD. |
 | **Survival** | 3 lives. Every wrong answer loses one. Hearts displayed in HUD. |
-
-<br />
-
----
-
-## 🚀 Quick Start
-
-```bash
-git clone https://github.com/alimaandev/corun.git
-cd corun
-npm install
-npm run dev        # → http://localhost:3000
-```
-
-No Auth0 account needed — the game falls back to guest/demo mode automatically.
-
-```bash
-npm run typecheck  # tsc -b
-npm run test       # vitest run (45+ tests)
-npm run build      # tsc -b && vite build → dist/
-```
-
-<br />
-
----
-
-## 📁 Project Structure
-
-<details>
-<summary>Click to expand</summary>
-
-```
-src/
-├── game/                    # Core game logic
-│   ├── PixelRunner.tsx      # Endless runner engine
-│   ├── Scene3D.tsx          # 3D story mode Canvas
-│   ├── codePuzzles.ts       # 52 puzzles + sandbox evaluator
-│   ├── audio.ts             # Procedural soundtrack
-│   ├── puzzleShare.ts       # UGC encode/decode
-│   ├── levels.ts            # 12 level configs + progress
-│   ├── levelScenes.ts       # 3D scene layouts
-│   └── challenges.ts        # Challenge generation
-├── components/
-│   ├── three/               # 3D components
-│   │   ├── EditorPanel3D.tsx # Diegetic code editor
-│   │   ├── PlayerController.tsx
-│   │   ├── NPCController.tsx
-│   │   ├── LevelEnvironment.tsx
-│   │   └── Particles3D.tsx   # Burst/trail system
-│   ├── Game.tsx             # Screen state machine
-│   ├── ChallengeModal.tsx   # Question UI
-│   ├── HUD.tsx              # Score, gap, streak
-│   ├── PuzzleEditor.tsx     # UGC creation form
-│   ├── CommunityPuzzles.tsx # UGC browser
-│   └── Joystick.tsx         # Touch controls
-├── lib/
-│   ├── auth.tsx             # Auth + guest fallback
-│   ├── i18n.ts              # EN/ES/FR translations
-│   └── useFocusTrap.ts      # Accessibility
-├── pages/
-│   ├── LandingPage.tsx      # Marketing homepage
-│   ├── LoginPage.tsx
-│   └── RegisterPage.tsx
-├── main.tsx                 # Entry point
-├── App.tsx                  # Router
-└── index.css                # Global styles
-```
 
 </details>
 
@@ -251,17 +213,7 @@ src/
 
 ---
 
-## 🛠️ Tech Stack
-
-<p align="center">
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" />
-  <img src="https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white" />
-  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" />
-</p>
+## Tech Stack
 
 | Category | Tools |
 |----------|-------|
@@ -278,47 +230,23 @@ src/
 
 ---
 
-## 🤝 Contributing
-
-Contributions of all sizes are welcome — bug fixes, features, translations, documentation.
-
-<table>
-  <tr>
-    <td>
-      <h4>🐛 <strong>Found a bug?</strong></h4>
-      <p><a href="https://github.com/alimaandev/corun/issues/new?labels=bug&template=bug_report.yml">Open a bug report</a></p>
-    </td>
-    <td>
-      <h4>💡 <strong>Have an idea?</strong></h4>
-      <p><a href="https://github.com/alimaandev/corun/issues/new?labels=enhancement&template=feature_request.yml">Submit a feature request</a></p>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h4>👋 <strong>First time?</strong></h4>
-      <p>Check <a href="https://github.com/alimaandev/corun/labels/good%20first%20issue">good first issues</a> to get started.</p>
-    </td>
-    <td>
-      <h4>📖 <strong>Read the guide</strong></h4>
-      <p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for full details.</p>
-    </td>
-  </tr>
-</table>
-
-<br />
-
----
-
-## 💖 Sponsors
-
-If you enjoy Corun, consider supporting the project:
+## Star History
 
 <p align="center">
-  <a href="https://github.com/sponsors/alimaandev">
-    <img src="https://img.shields.io/badge/GitHub_Sponsors-0a0a0a?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Sponsors" />
+  <a href="https://star-history.com/#alimaandev/corun&Date">
+    <img src="https://api.star-history.com/svg?repos=alimaandev/corun&type=Date" alt="Star History" width="600" />
   </a>
-  <a href="https://ko-fi.com/ali_sher">
-    <img src="https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Ko-fi" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/alimaandev/corun">
+    <img src="https://img.shields.io/badge/⭐_STAR_ON_GITHUB-0a0a0a?style=for-the-badge&logo=github&logoColor=white" alt="Star on GitHub" />
+  </a>
+  <a href="https://twitter.com/intent/tweet?text=🏃%20CORUN%20-%20Escape%20the%20Monster%20-%20A%20pixel-art%203D%20coding%20game.%20Solve%20JavaScript%20puzzles.%20Escape%20the%20monster.%20&url=https://github.com/alimaandev/corun">
+    <img src="https://img.shields.io/badge/🔁_SHARE_ON_X-000000?style=for-the-badge&logo=x&logoColor=white" alt="Share on X" />
+  </a>
+  <a href="https://news.ycombinator.com/submitlink?u=https://github.com/alimaandev/corun&t=CORUN%20-%20Escape%20the%20Monster">
+    <img src="https://img.shields.io/badge/📮_POST_ON_HN-F0652F?style=for-the-badge&logo=ycombinator&logoColor=white" alt="Post on HN" />
   </a>
 </p>
 
@@ -326,12 +254,25 @@ If you enjoy Corun, consider supporting the project:
 
 ---
 
-## 📜 License
+## Contributing
+
+All contributions welcome — bug fixes, features, translations, docs.
+
+- [Bug reports](https://github.com/alimaandev/corun/issues/new?labels=bug&template=bug_report.yml)
+- [Feature requests](https://github.com/alimaandev/corun/issues/new?labels=enhancement&template=feature_request.yml)
+- [Good first issues](https://github.com/alimaandev/corun/labels/good%20first%20issue)
+- [Contributing guide](CONTRIBUTING.md)
+
+<br />
+
+---
+
+## License
 
 MIT © [Ali Sher](https://github.com/alimaandev)
 
 <p align="center">
-  <sub>Built with ❤️ using React · TypeScript · Three.js · Vite</sub>
-  <br />
   <sub><em>"Every line of code brought you home."</em></sub>
+  <br />
+  <sub>Built with React · TypeScript · Three.js · Vite</sub>
 </p>
