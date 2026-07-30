@@ -38,11 +38,22 @@ let activeLevel = 0
 function getCtx(): AudioContext | null {
   try {
     if (!ctx) ctx = new AudioContext()
-    if (ctx.state === 'suspended') ctx.resume()
     return ctx
   } catch {
     return null
   }
+}
+
+export function resumeAudio() {
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {})
+  }
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', resumeAudio, { once: true })
+  document.addEventListener('touchstart', resumeAudio, { once: true })
+  document.addEventListener('keydown', resumeAudio, { once: true })
 }
 
 interface DronePreset {
