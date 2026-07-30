@@ -1,13 +1,30 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { getSupabase } from './supabase'
+import Dexie, { type EntityTable } from 'dexie'
 
-let _supabase: SupabaseClient | null = null
-function sb(): SupabaseClient {
-  if (!_supabase) {
-    _supabase = getSupabase()
-  }
-  return _supabase
+interface Profile {
+  id: string
+  player_name: string
+  last_seen: string
 }
+
+interface ScoreRow {
+  id?: number
+  profile_id: string
+  player_name: string
+  score: number
+  mode: 'freeplay' | 'story' | 'daily'
+  level_id: number
+  created_at: string
+}
+
+const db = new Dexie('CorunDB') as Dexie & {
+  profiles: EntityTable<Profile, 'id'>
+  scores: EntityTable<ScoreRow, 'id'>
+}
+
+db.version(1).stores({
+  profiles: 'id, player_name, last_seen',
+  scores: '++id, profile_id, score, mode, created_at',
+})
 
 export interface LeaderboardEntry {
   profile_id: string
@@ -48,7 +65,7 @@ function getProfileIdKey(userId?: string): string {
   return userId ? `${PID_KEY}_${userId}` : PID_KEY
 }
 
-function getLocalProfileId(userId?: string): string {
+function getOrCreateProfileId(userId?: string): string {
   try {
     const key = getProfileIdKey(userId)
     let id = localStorage.getItem(key)
@@ -63,49 +80,30 @@ function getLocalProfileId(userId?: string): string {
 }
 
 export async function initSession(userId?: string): Promise<PlayerProfile | null> {
-  try {
-    if (!import.meta.env.VITE_SUPABASE_URL) return null
+  const profileId = getOrCreateProfileId(userId)
+  const localName = getLocalPlayerName(userId) || 'Runner'
 
-    const profileId = getLocalProfileId(userId)
-    const localName = getLocalPlayerName(userId)
-    const name = localName || 'Runner'
-
-    const { data: existing } = await sb()
-      .from('profiles')
-      .select('id, player_name')
-      .eq('id', profileId)
-      .maybeSingle()
-
-    if (existing) {
-      if (localName && localName !== existing.player_name) {
-        await sb()
-          .from('profiles')
-          .update({ player_name: localName, last_seen: new Date().toISOString() })
-          .eq('id', profileId)
-      } else {
-        await sb()
-          .from('profiles')
-          .update({ last_seen: new Date().toISOString() })
-          .eq('id', profileId)
-      }
-      setLocalPlayerName(existing.player_name, userId)
-      return { id: existing.id, player_name: existing.player_name }
+  const existing = await db.profiles.get(profileId)
+  if (existing) {
+    if (localName !== existing.player_name) {
+      await db.profiles.update(profileId, {
+        player_name: localName,
+        last_seen: new Date().toISOString(),
+      })
+    } else {
+      await db.profiles.update(profileId, { last_seen: new Date().toISOString() })
     }
-
-    setLocalPlayerName(name, userId)
-    const { data: created } = await sb()
-      .from('profiles')
-      .insert({ id: profileId, player_name: name })
-      .select('id, player_name')
-      .maybeSingle()
-
-    return created
-      ? { id: created.id, player_name: created.player_name }
-      : { id: profileId, player_name: name }
-  } catch (e) {
-    console.warn('[leaderboard] Init failed:', e)
-    return null
+    setLocalPlayerName(existing.player_name, userId)
+    return { id: existing.id, player_name: existing.player_name }
   }
+
+  setLocalPlayerName(localName, userId)
+  await db.profiles.put({
+    id: profileId,
+    player_name: localName,
+    last_seen: new Date().toISOString(),
+  })
+  return { id: profileId, player_name: localName }
 }
 
 export async function updatePlayerName(
@@ -115,8 +113,8 @@ export async function updatePlayerName(
 ): Promise<boolean> {
   setLocalPlayerName(name, userId)
   try {
-    const { error } = await sb().from('profiles').update({ player_name: name }).eq('id', profileId)
-    return !error
+    await db.profiles.update(profileId, { player_name: name, last_seen: new Date().toISOString() })
+    return true
   } catch {
     return false
   }
@@ -128,93 +126,49 @@ export async function submitScore(
   mode: 'freeplay' | 'story' | 'daily',
   levelId = 0,
 ): Promise<boolean> {
-  const { error } = await sb()
-    .from('scores')
-    .insert({ profile_id: profileId, score, mode, level_id: levelId })
-  if (error) {
-    try {
-      const queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
-      queue.push({ profile_id: profileId, score, mode, level_id: levelId, ts: Date.now() })
-      localStorage.setItem('corun_score_queue', JSON.stringify(queue.slice(-50)))
-    } catch {}
-    return false
-  }
-  return true
-}
-
-export async function flushScoreQueue(): Promise<number> {
   try {
-    const queue = JSON.parse(localStorage.getItem('corun_score_queue') || '[]')
-    if (queue.length === 0) return 0
-    const remaining: typeof queue = []
-    let flushed = 0
-    for (const item of queue) {
-      const { error } = await sb().from('scores').insert(item)
-      if (!error) flushed++
-      else remaining.push(item)
-    }
-    localStorage.setItem('corun_score_queue', JSON.stringify(remaining))
-    return flushed
+    const profile = await db.profiles.get(profileId)
+    await db.scores.add({
+      profile_id: profileId,
+      player_name: profile?.player_name || 'Runner',
+      score,
+      mode,
+      level_id: levelId,
+      created_at: new Date().toISOString(),
+    })
+    return true
   } catch {
-    return 0
+    return false
   }
 }
 
 export async function getGlobalLeaderboard(
   profileId: string,
-  page = 1,
-  limit = 100,
+  _page = 1,
+  _limit = 100,
 ): Promise<{ entries: LeaderboardEntry[]; yourRank: number; yourBest: number }> {
   try {
-    const from = (page - 1) * limit
-
-    let rows: any[] | null = null
-    const { data: scores } = await sb()
-      .from('scores')
-      .select('profile_id, score, profiles!inner(player_name)')
-      .order('score', { ascending: false })
-
-    if (scores) {
-      const map = new Map<string, { name: string; score: number }>()
-      for (const s of scores) {
-        const pid = s.profile_id
-        if (!map.has(pid) || s.score > map.get(pid)!.score) {
-          map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
-        }
+    const allScores = await db.scores.toArray()
+    const map = new Map<string, { name: string; score: number }>()
+    for (const s of allScores) {
+      if (!map.has(s.profile_id) || s.score > map.get(s.profile_id)!.score) {
+        map.set(s.profile_id, { name: s.player_name || 'Runner', score: s.score })
       }
-      rows = Array.from(map.entries())
-        .sort((a, b) => b[1].score - a[1].score)
-        .slice(from, from + limit)
-        .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
     }
+    const sorted = Array.from(map.entries())
+      .sort((a, b) => b[1].score - a[1].score)
+      .map(([pid, v], i) => ({
+        profile_id: pid,
+        player_name: v.name,
+        score: v.score,
+        rank: i + 1,
+        is_you: pid === profileId,
+      }))
 
-    const entries: LeaderboardEntry[] = (rows || []).map((r: any, i: number) => ({
-      profile_id: r.profile_id,
-      player_name: r.player_name,
-      score: r.best_score,
-      rank: from + i + 1,
-      is_you: r.profile_id === profileId,
-    }))
+    const yourBest = sorted.find((e) => e.is_you)?.score || 0
+    const yourRank = yourBest > 0 ? sorted.findIndex((e) => e.is_you) + 1 : 0
 
-    const { data: yourBestRow } = await sb()
-      .from('scores')
-      .select('score')
-      .eq('profile_id', profileId)
-      .order('score', { ascending: false })
-      .limit(1)
-
-    const yourBest = yourBestRow?.[0]?.score || 0
-
-    let yourRank = 0
-    if (yourBest > 0) {
-      const { count } = await sb()
-        .from('scores')
-        .select('*', { count: 'exact', head: true })
-        .gt('score', yourBest)
-      yourRank = (count || 0) + 1
-    }
-
-    return { entries, yourRank, yourBest }
+    return { entries: sorted.slice(0, 100), yourRank, yourBest }
   } catch {
     return { entries: [], yourRank: 0, yourBest: 0 }
   }
@@ -225,57 +179,28 @@ export async function getDailyLeaderboard(
 ): Promise<{ entries: LeaderboardEntry[]; yourRank: number; yourBest: number }> {
   try {
     const today = new Date().toISOString().slice(0, 10)
-
-    let rows: any[] | null = null
-    const { data: scores } = await sb()
-      .from('scores')
-      .select('profile_id, score, profiles!inner(player_name)')
-      .gte('created_at', today)
-      .order('score', { ascending: false })
-
-    if (scores) {
-      const map = new Map<string, { name: string; score: number }>()
-      for (const s of scores) {
-        const pid = s.profile_id
-        if (!map.has(pid) || s.score > map.get(pid)!.score) {
-          map.set(pid, { name: (s.profiles as any)?.player_name || 'Runner', score: s.score })
-        }
+    const allScores = await db.scores.where('created_at').startsWith(today).toArray()
+    const map = new Map<string, { name: string; score: number }>()
+    for (const s of allScores) {
+      if (!map.has(s.profile_id) || s.score > map.get(s.profile_id)!.score) {
+        map.set(s.profile_id, { name: s.player_name || 'Runner', score: s.score })
       }
-      rows = Array.from(map.entries())
-        .sort((a, b) => b[1].score - a[1].score)
-        .slice(0, 100)
-        .map(([pid, v]) => ({ profile_id: pid, player_name: v.name, best_score: v.score }))
     }
+    const sorted = Array.from(map.entries())
+      .sort((a, b) => b[1].score - a[1].score)
+      .slice(0, 100)
+      .map(([pid, v], i) => ({
+        profile_id: pid,
+        player_name: v.name,
+        score: v.score,
+        rank: i + 1,
+        is_you: pid === profileId,
+      }))
 
-    const entries: LeaderboardEntry[] = (rows || []).map((r: any, i: number) => ({
-      profile_id: r.profile_id,
-      player_name: r.player_name,
-      score: r.best_score,
-      rank: i + 1,
-      is_you: r.profile_id === profileId,
-    }))
+    const yourBest = sorted.find((e) => e.is_you)?.score || 0
+    const yourRank = yourBest > 0 ? sorted.findIndex((e) => e.is_you) + 1 : 0
 
-    const { data: yourBestRow } = await sb()
-      .from('scores')
-      .select('score')
-      .eq('profile_id', profileId)
-      .gte('created_at', today)
-      .order('score', { ascending: false })
-      .limit(1)
-
-    const yourBest = yourBestRow?.[0]?.score || 0
-
-    let yourRank = 0
-    if (yourBest > 0) {
-      const { count } = await sb()
-        .from('scores')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', today)
-        .gt('score', yourBest)
-      yourRank = (count || 0) + 1
-    }
-
-    return { entries, yourRank, yourBest }
+    return { entries: sorted, yourRank, yourBest }
   } catch {
     return { entries: [], yourRank: 0, yourBest: 0 }
   }

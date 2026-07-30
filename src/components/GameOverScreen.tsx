@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import Chamber from './three/Chamber'
 import GlassButton from './GlassButton'
+
 interface Props {
   score: number
   highScore: number
@@ -30,13 +31,10 @@ function Slab({
   isNewHighScore: boolean
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
-
   useFrame(({ clock }) => {
-    if (meshRef.current) {
+    if (meshRef.current)
       meshRef.current.position.y = Math.min(0.3, meshRef.current.position.y + 0.02)
-    }
   })
-
   return (
     <group>
       <mesh ref={meshRef} position={[0, -2, 0]}>
@@ -62,7 +60,6 @@ function Badge({ position, color }: { position: [number, number, number]; color:
       meshRef.current.rotation.y += 0.01
     }
   })
-
   return (
     <mesh ref={meshRef} position={position}>
       <planeGeometry args={[0.3, 0.3]} />
@@ -71,24 +68,23 @@ function Badge({ position, color }: { position: [number, number, number]; color:
   )
 }
 
+const c = (opacity: number) => `rgba(240,235,227,${opacity})`
+
 export default function GameOverScreen({
   score,
   highScore,
   playerRank,
-  playerName,
   badges = [],
-  savedClips = [],
   levelMode,
   levelName,
-  clipBlob,
   onRestart,
   onRetryLevel,
   onBackToLevels,
-  onDeleteClip,
 }: Props) {
   const [canvasKey, setCanvasKey] = useState(0)
   const isStoryMode = !!levelMode
   const isNewHighScore = score > 0 && score >= highScore
+
   return (
     <div
       style={{
@@ -121,9 +117,7 @@ export default function GameOverScreen({
           )
           state.gl.domElement.addEventListener(
             'webglcontextrestored',
-            () => {
-              state.invalidate()
-            },
+            () => state.invalidate(),
             false,
           )
         }}
@@ -151,14 +145,14 @@ export default function GameOverScreen({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 12,
+          gap: 10,
           textAlign: 'center',
         }}
       >
         <div
           style={{
             fontSize: 11,
-            color: 'rgba(240,235,227,0.5)',
+            color: c(0.4),
             letterSpacing: 4,
             fontFamily: "'Poppins', sans-serif",
             fontWeight: 600,
@@ -166,26 +160,41 @@ export default function GameOverScreen({
         >
           GAME OVER
         </div>
+        {levelName ? (
+          <div
+            style={{
+              fontSize: 12,
+              color: c(0.5),
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            {levelName} — CAUGHT
+          </div>
+        ) : (
+          <div
+            style={{
+              fontSize: 12,
+              color: c(0.5),
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+            }}
+          >
+            THE MONSTER CAUGHT YOU
+          </div>
+        )}
         <div
           style={{
-            fontSize: 12,
-            color: 'rgba(240,235,227,0.6)',
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 300,
-          }}
-        >
-          THE MONSTER CAUGHT YOU
-        </div>
-        <div
-          style={{
-            fontSize: 28,
+            fontSize: 36,
             color: '#F0EBE3',
             fontFamily: "'JetBrains Mono', monospace",
             fontWeight: 700,
+            lineHeight: 1,
           }}
         >
           {score.toLocaleString()}
         </div>
+
         {isNewHighScore && (
           <div
             style={{
@@ -209,43 +218,15 @@ export default function GameOverScreen({
               fontWeight: 500,
             }}
           >
-            GLOBAL RANK: #{playerRank}
+            RANK: #{playerRank}
           </div>
-        )}
-
-        {navigator.share && (
-          <button
-            onClick={() => {
-              navigator
-                .share({
-                  title: 'CORUN - Escape the Monster',
-                  text: `I scored ${score.toLocaleString()} points in CORUN! Can you beat my score?`,
-                  url: window.location.href,
-                })
-                .catch(() => {})
-            }}
-            style={{
-              background: 'rgba(240,235,227,0.05)',
-              border: '1px solid rgba(240,235,227,0.15)',
-              color: 'rgba(240,235,227,0.6)',
-              cursor: 'pointer',
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: 9,
-              fontWeight: 500,
-              padding: '6px 14px',
-              borderRadius: 6,
-              letterSpacing: 1,
-            }}
-          >
-            SHARE SCORE
-          </button>
         )}
 
         <div
           style={{
             display: 'flex',
             gap: 8,
-            marginTop: 8,
+            marginTop: 4,
             flexWrap: 'wrap',
             justifyContent: 'center',
           }}
@@ -266,7 +247,7 @@ export default function GameOverScreen({
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>PRESS ENTER</div>
+        <div style={{ fontSize: 11, color: '#555' }}>PRESS ENTER</div>
 
         <a
           href="https://github.com/alimaandev/corun"
@@ -277,18 +258,11 @@ export default function GameOverScreen({
             bottom: 16,
             left: '50%',
             transform: 'translateX(-50%)',
-            color: 'rgba(240,235,227,0.2)',
+            color: c(0.2),
             textDecoration: 'none',
             fontFamily: "'Roboto', sans-serif",
             fontSize: 10,
             letterSpacing: 1,
-            transition: 'color 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'rgba(240,235,227,0.5)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'rgba(240,235,227,0.2)'
           }}
         >
           ★ STAR ON GITHUB

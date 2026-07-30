@@ -10,148 +10,262 @@ interface Props extends HUDData {
   survivalLives?: number
 }
 
+const c = (opacity: number) => `rgba(240,235,227,${opacity})`
+
 export default function HUD({
   score,
   gap,
-  speed,
   streak,
   isBoss,
-  isBonus,
   levelName,
   speedRunTime,
   survivalLives,
 }: Props) {
   const [muted, setMuted] = useState(isMuted())
   const [showKeys, setShowKeys] = useState(false)
-  const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : 'rgba(240,235,227,0.4)'
+  const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : c(0.4)
 
   return (
-    <div
-      style={{
-        ...styles.bar,
-        borderBottomColor: isBoss
-          ? 'rgba(240,235,227,0.2)'
-          : isBonus
-            ? 'rgba(240,235,227,0.2)'
-            : 'rgba(118,152,38,0.2)',
-      }}
-    >
-      <div style={styles.left}>
-        <div style={styles.lLabel}>SCORE</div>
-        <div style={styles.lVal}>{score.toLocaleString()}</div>
-        {streak >= 3 && (
-          <div style={styles.streakBadge}>
-            <span style={styles.star}>★</span>
-            <span style={styles.sNum}>{streak}x</span>
-          </div>
-        )}
-      </div>
-
-      {levelName && (
-        <div
-          style={{
-            color: 'rgba(240,235,227,0.2)',
-            fontSize: 11,
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 600,
-            letterSpacing: 1,
-            textAlign: 'center' as const,
-            flexShrink: 0,
-          }}
-        >
-          {levelName}
-        </div>
-      )}
-
-      <div style={styles.center}>
-        <div style={styles.gapLabel}>GAP</div>
-        <div style={styles.track}>
+    <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 10px',
+          background: 'rgba(10,10,10,0.85)',
+          borderBottom: `1px solid ${c(0.08)}`,
+          pointerEvents: 'none',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
           <div
             style={{
-              ...styles.fill,
-              width: `${Math.max(2, gap)}%`,
-              background: barColor,
-              boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none',
-            }}
-          />
-        </div>
-        <div style={styles.gapNum}>{Math.round(gap)}m</div>
-      </div>
-
-      <div style={styles.right}>
-        <div style={styles.stat}>
-          <div style={styles.sLabel}>SPD</div>
-          <div
-            style={{
-              ...styles.sVal,
-              color: speed > 1.3 ? '#769826' : speed < 0.8 ? 'rgba(240,235,227,0.4)' : '#F0EBE3',
+              color: c(0.5),
+              fontSize: 11,
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+              letterSpacing: 1,
             }}
           >
-            {speed.toFixed(1)}x
+            SCORE
+          </div>
+          <div
+            style={{
+              color: '#F0EBE3',
+              fontSize: 15,
+              fontWeight: 700,
+              lineHeight: 1.1,
+              fontFamily: "'JetBrains Mono', monospace",
+              letterSpacing: 1,
+            }}
+          >
+            {score.toLocaleString()}
           </div>
         </div>
-        {speedRunTime !== undefined && (
-          <div style={styles.stat}>
-            <div style={styles.sLabel}>TIME</div>
-            <div style={{ ...styles.sVal, color: speedRunTime <= 10 ? '#ff4444' : '#F0EBE3' }}>
-              {speedRunTime}s
-            </div>
+
+        {streak >= 3 && (
+          <div
+            style={{
+              alignSelf: 'flex-start',
+              marginTop: 2,
+              padding: '1px 5px',
+              border: `1px solid ${c(0.15)}`,
+              background: c(0.04),
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <span style={{ color: '#769826', fontSize: 9 }}>★</span>
+            <span
+              style={{ color: '#F0EBE3', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              {streak}x
+            </span>
           </div>
         )}
-        {survivalLives !== undefined && (
-          <div style={styles.stat}>
-            <div style={styles.sLabel}>LIVES</div>
-            <div style={{ ...styles.sVal, color: survivalLives <= 1 ? '#ff4444' : '#F0EBE3' }}>
-              {'♥'.repeat(survivalLives)}
-              {'♡'.repeat(Math.max(0, 3 - survivalLives))}
-            </div>
+
+        {levelName && (
+          <div
+            style={{
+              color: c(0.15),
+              fontSize: 11,
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600,
+              letterSpacing: 1,
+              textAlign: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {levelName}
           </div>
         )}
-        <div style={styles.stat}>
-          <div style={styles.sLabel}>MULT</div>
-          <div style={styles.sVal}>
-            {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : '1x'}
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            maxWidth: 160,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1,
+            padding: '0 4px',
+          }}
+        >
+          <div
+            style={{
+              color: c(0.5),
+              fontSize: 11,
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 300,
+              letterSpacing: 1,
+            }}
+          >
+            GAP
+          </div>
+          <div
+            style={{
+              width: '100%',
+              height: 5,
+              background: c(0.08),
+              overflow: 'hidden',
+              borderRadius: 2,
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${Math.max(2, gap)}%`,
+                background: barColor,
+                boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none',
+                transition: 'width 0.3s ease, background 0.3s ease',
+              }}
+            />
+          </div>
+          <div style={{ color: c(0.5), fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}>
+            {Math.round(gap)}m
           </div>
         </div>
-        <button
-          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
-          onClick={() => {
-            const next = toggleMute()
-            setMuted(next)
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-            color: muted ? 'rgba(240,235,227,0.25)' : 'rgba(240,235,227,0.6)',
-            fontSize: 13,
-            padding: '2px 4px',
-            lineHeight: 1,
-            transition: 'color 0.2s',
-          }}
-        >
-          {muted ? '🔇' : '🔊'}
-        </button>
-        <button
-          aria-label="Keyboard shortcuts"
-          onClick={() => setShowKeys((v) => !v)}
-          style={{
-            background: showKeys ? 'rgba(240,235,227,0.1)' : 'none',
-            border: 'none',
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-            color: showKeys ? '#F0EBE3' : 'rgba(240,235,227,0.35)',
-            fontSize: 11,
-            fontFamily: "'JetBrains Mono', monospace",
-            padding: '2px 5px',
-            lineHeight: 1,
-            borderRadius: 3,
-            transition: 'all 0.2s',
-          }}
-        >
-          ?
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {speedRunTime !== undefined && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <div
+                style={{
+                  color: c(0.5),
+                  fontSize: 11,
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: 1,
+                }}
+              >
+                TIME
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: speedRunTime <= 10 ? '#ff4444' : '#F0EBE3',
+                }}
+              >
+                {speedRunTime}s
+              </div>
+            </div>
+          )}
+          {survivalLives !== undefined && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <div
+                style={{
+                  color: c(0.5),
+                  fontSize: 11,
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: 1,
+                }}
+              >
+                LIVES
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: survivalLives <= 1 ? '#ff4444' : '#F0EBE3',
+                }}
+              >
+                {'♥'.repeat(survivalLives)}
+                {'♡'.repeat(Math.max(0, 3 - survivalLives))}
+              </div>
+            </div>
+          )}
+          {!speedRunTime && survivalLives === undefined && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <div
+                style={{
+                  color: c(0.5),
+                  fontSize: 11,
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: 1,
+                }}
+              >
+                STREAK
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: streak >= 3 ? '#769826' : c(0.4),
+                }}
+              >
+                {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : `${streak}`}
+              </div>
+            </div>
+          )}
+          <button
+            aria-label={muted ? 'Unmute' : 'Mute'}
+            onClick={() => setMuted(toggleMute())}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              color: muted ? c(0.25) : c(0.6),
+              fontSize: 13,
+              padding: '2px 4px',
+              lineHeight: 1,
+            }}
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+          <button
+            aria-label="Shortcuts"
+            onClick={() => setShowKeys((v) => !v)}
+            style={{
+              background: showKeys ? c(0.1) : 'none',
+              border: 'none',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              color: showKeys ? '#F0EBE3' : c(0.35),
+              fontSize: 11,
+              fontFamily: "'JetBrains Mono', monospace",
+              padding: '2px 5px',
+              lineHeight: 1,
+              borderRadius: 3,
+            }}
+          >
+            ?
+          </button>
+        </div>
       </div>
 
       {showKeys && (
@@ -159,11 +273,11 @@ export default function HUD({
           style={{
             position: 'fixed',
             zIndex: 100,
-            top: 40,
+            top: 44,
             left: '50%',
             transform: 'translateX(-50%)',
             background: '#111',
-            border: '1px solid rgba(240,235,227,0.1)',
+            border: `1px solid ${c(0.1)}`,
             borderRadius: 8,
             padding: 16,
             fontFamily: "'Roboto', sans-serif",
@@ -186,129 +300,21 @@ export default function HUD({
           >
             SHORTCUTS
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Enter</span>
-            <span>Restart game</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Esc</span>
-            <span>Close modal / Back</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Ctrl+Enter</span>
-            <span>Run code test</span>
-          </div>
-          <div
-            style={{
-              fontSize: 9,
-              color: 'rgba(240,235,227,0.2)',
-              marginTop: 4,
-              textAlign: 'center',
-            }}
-          >
+          {[
+            ['Enter', 'Restart game'],
+            ['Esc', 'Close / Back'],
+            ['Ctrl+Enter', 'Run code test'],
+          ].map(([k, d]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+              <span style={{ color: c(0.4) }}>{k}</span>
+              <span>{d}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 9, color: c(0.2), marginTop: 4, textAlign: 'center' }}>
             Click ? again to close
           </div>
         </div>
       )}
-    </div>
+    </>
   )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  bar: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 50,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 4,
-    padding: '4px 6px',
-    background: 'rgba(10,10,10,0.9)',
-    borderBottom: '1px solid rgba(118,152,38,0.15)',
-    pointerEvents: 'none',
-    boxShadow: 'none',
-  },
-  left: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    position: 'relative' as const,
-    flexShrink: 0,
-  },
-  lLabel: {
-    color: 'rgba(240,235,227,0.5)',
-    fontSize: 11,
-    fontFamily: "'Roboto', sans-serif",
-    fontWeight: 300,
-    letterSpacing: 1,
-  },
-  lVal: {
-    color: '#F0EBE3',
-    fontSize: 14,
-    fontWeight: 700,
-    lineHeight: 1.1,
-    fontFamily: "'JetBrains Mono', monospace",
-    letterSpacing: 1,
-  },
-  streakBadge: {
-    position: 'absolute' as const,
-    top: -4,
-    right: -4,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 1,
-    padding: '1px 3px',
-    border: '1px solid rgba(240,235,227,0.15)',
-    background: 'rgba(240,235,227,0.04)',
-  },
-  star: { color: '#F0EBE3', fontSize: 11 },
-  sNum: { color: '#F0EBE3', fontSize: 11, fontFamily: "'JetBrains Mono', monospace" },
-  center: {
-    flex: 1,
-    minWidth: 0,
-    maxWidth: 160,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 1,
-    padding: '0 4px',
-  },
-  gapLabel: {
-    color: 'rgba(240,235,227,0.5)',
-    fontSize: 11,
-    fontFamily: "'Roboto', sans-serif",
-    fontWeight: 300,
-    letterSpacing: 1,
-  },
-  track: {
-    width: '100%',
-    height: 5,
-    background: 'rgba(240,235,227,0.08)',
-    overflow: 'hidden',
-    borderRadius: 2,
-  },
-  fill: { height: '100%', transition: 'width 0.3s ease, background 0.3s ease' },
-  gapNum: {
-    color: 'rgba(240,235,227,0.5)',
-    fontSize: 11,
-    fontFamily: "'JetBrains Mono', monospace",
-  },
-  right: { display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 },
-  stat: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0 },
-  sLabel: {
-    color: 'rgba(240,235,227,0.5)',
-    fontSize: 11,
-    fontFamily: "'Roboto', sans-serif",
-    fontWeight: 300,
-    letterSpacing: 1,
-  },
-  sVal: {
-    fontSize: 11,
-    fontWeight: 500,
-    fontFamily: "'JetBrains Mono', monospace",
-    letterSpacing: 1,
-  },
 }

@@ -10,7 +10,6 @@ const CommunityPuzzles = lazy(() => import('./CommunityPuzzles'))
 import HUD from './HUD'
 import StartScreen from './StartScreen'
 import GameOverScreen from './GameOverScreen'
-import PixelBackground from './PixelBackground'
 import LevelSelect from './LevelSelect'
 import SceneCanvas from './SceneCanvas'
 import { playGameOver, playBossAppear, playSuccess, playError } from '../game/sound'
@@ -37,7 +36,6 @@ import { saveClip, downloadClip, getAllClips, deleteClip } from '../game/clips'
 import {
   initSession,
   submitScore,
-  flushScoreQueue,
   updatePlayerName,
   getLocalPlayerName,
   setLocalPlayerName,
@@ -710,7 +708,7 @@ export default function Game() {
         )
       })
       .catch(() => console.debug('[Game] getAllClips failed'))
-    if (import.meta.env.VITE_SUPABASE_URL && profileRef.current && score > 0) {
+    if (profileRef.current && score > 0) {
       const mode = activeLevelRef.current
         ? 'story'
         : isDailyRef.current
@@ -749,17 +747,14 @@ export default function Game() {
     if (!local || local === 'Runner') {
       setShowNameDialog(true)
     }
-    if (import.meta.env.VITE_SUPABASE_URL && auth0Id) {
-      initSession(auth0Id)
-        .then((p) => {
-          if (p) {
-            profileRef.current = p
-            setProfile(p)
-          }
-          flushScoreQueue()
-        })
-        .catch(() => console.debug('[Game] initSession failed'))
-    }
+    initSession(auth0Id)
+      .then((p) => {
+        if (p) {
+          profileRef.current = p
+          setProfile(p)
+        }
+      })
+      .catch(() => console.debug('[Game] initSession failed'))
   }, [user?.sub])
 
   useEffect(() => {
@@ -1085,20 +1080,17 @@ export default function Game() {
         {renderComboNotification()}
 
         {screen === 'start' && (
-          <>
-            <PixelBackground />
-            <StartScreen
-              highScore={highScore}
-              onStart={handleStart}
-              onStoryMode={goToLevelSelect}
-              onSpeedRun={handleSpeedRun}
-              onSurvival={handleSurvival}
-              onPuzzleEditor={() => setShowPuzzleEditor(true)}
-              onCustomPuzzles={() => setShowCustomPuzzles(true)}
-              playerName={profile?.player_name}
-              profileId={profile?.id}
-            />
-          </>
+          <StartScreen
+            highScore={highScore}
+            onStart={handleStart}
+            onStoryMode={goToLevelSelect}
+            onSpeedRun={handleSpeedRun}
+            onSurvival={handleSurvival}
+            onPuzzleEditor={() => setShowPuzzleEditor(true)}
+            onCustomPuzzles={() => setShowCustomPuzzles(true)}
+            playerName={profile?.player_name}
+            profileId={profile?.id}
+          />
         )}
 
         {screen === 'levelselect' && (
@@ -1204,27 +1196,18 @@ export default function Game() {
         )}
 
         {screen === 'gameover' && (
-          <>
-            <PixelBackground />
-            <GameOverScreen
-              score={finalScore}
-              highScore={highScore}
-              onRestart={handleRestart}
-              badges={finalBadges}
-              clipBlob={clipBlob}
-              savedClips={savedClips}
-              onDeleteClip={(id) => {
-                deleteClip(id).catch(() => console.debug('[Game] deleteClip failed'))
-                setSavedClips((prev) => prev.filter((c) => c.id !== id))
-              }}
-              levelMode={!!activeLevelRef.current}
-              levelName={activeLevelRef.current?.name}
-              onRetryLevel={handleRetryLevel}
-              onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
-              playerRank={playerRank}
-              playerName={profile?.player_name}
-            />
-          </>
+          <GameOverScreen
+            score={finalScore}
+            highScore={highScore}
+            onRestart={handleRestart}
+            badges={finalBadges}
+            levelMode={!!activeLevelRef.current}
+            levelName={activeLevelRef.current?.name}
+            onRetryLevel={handleRetryLevel}
+            onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
+            playerRank={playerRank}
+            playerName={profile?.player_name}
+          />
         )}
 
         {showNameDialog && <NameDialog onSubmit={handleNameSubmit} />}
