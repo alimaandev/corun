@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/alimaandev/corun/compare/v1.4.0...v1.5.0) (2026-07-30)
+
+
+### Features
+
+* menu music, loading screen, shortcuts overlay, 6 new issues ([cae4a48](https://github.com/alimaandev/corun/commit/cae4a48e3d49b76380fd6559cc4efeeb9ed83fb9))
+
 # [1.4.0](https://github.com/alimaandev/corun/compare/v1.3.0...v1.4.0) (2026-07-30)
 
 
