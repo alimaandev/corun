@@ -14,6 +14,7 @@ import PixelBackground from './PixelBackground'
 import LevelSelect from './LevelSelect'
 import SceneCanvas from './SceneCanvas'
 import { playGameOver, playBossAppear, playSuccess, playError } from '../game/sound'
+import { startMusic, stopMusic } from '../game/audio'
 import {
   Challenge,
   HUDData,
@@ -45,6 +46,7 @@ import {
 } from '../lib/leaderboard'
 import NameDialog from './NameDialog'
 import CodePuzzlePlaytest from './CodePuzzlePlaytest'
+import LoadingScreen from './LoadingScreen'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
 
 type Screen =
@@ -179,6 +181,23 @@ export default function Game() {
   useEffect(() => {
     hudDataRef.current = hudData
   }, [hudData])
+
+  const prevScreen = useRef<Screen | null>(null)
+  useEffect(() => {
+    if (screen === prevScreen.current) return
+    const prev = prevScreen.current
+    prevScreen.current = screen
+    if (prev === 'playing') stopMusic()
+    if (screen === 'start' || screen === 'levelselect') {
+      startMusic(0, 0.15)
+    } else if (screen === 'gameover') {
+      startMusic(1, 0.1)
+    } else if (screen === 'playing' && !activeLevel) {
+      startMusic(0, 0.3)
+    } else if (screen === 'levelintro' || screen === 'leveloutro' || screen === 'ending') {
+      startMusic(activeLevelRef.current?.id || 1, 0.2)
+    }
+  }, [screen, activeLevel])
 
   const goToLevelSelect = useCallback(() => {
     setScreen('levelselect')
@@ -981,7 +1000,7 @@ export default function Game() {
       </Helmet>
       <div style={styles.root}>
         {screen === 'playing' && !activeLevel && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingScreen />}>
             <PixelRunner
               ref={gameRef}
               topic={selectedTopic ?? undefined}
@@ -994,7 +1013,7 @@ export default function Game() {
         )}
 
         {screen === 'playing' && activeLevel && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingScreen />}>
             <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
           </Suspense>
         )}

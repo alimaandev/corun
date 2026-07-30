@@ -22,6 +22,7 @@ export default function HUD({
   survivalLives,
 }: Props) {
   const [muted, setMuted] = useState(isMuted())
+  const [showKeys, setShowKeys] = useState(false)
   const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : 'rgba(240,235,227,0.4)'
 
   return (
@@ -132,7 +133,83 @@ export default function HUD({
         >
           {muted ? '🔇' : '🔊'}
         </button>
+        <button
+          aria-label="Keyboard shortcuts"
+          onClick={() => setShowKeys((v) => !v)}
+          style={{
+            background: showKeys ? 'rgba(240,235,227,0.1)' : 'none',
+            border: 'none',
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            color: showKeys ? '#F0EBE3' : 'rgba(240,235,227,0.35)',
+            fontSize: 11,
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: '2px 5px',
+            lineHeight: 1,
+            borderRadius: 3,
+            transition: 'all 0.2s',
+          }}
+        >
+          ?
+        </button>
       </div>
+
+      {showKeys && (
+        <div
+          style={{
+            position: 'fixed',
+            zIndex: 100,
+            top: 40,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#111',
+            border: '1px solid rgba(240,235,227,0.1)',
+            borderRadius: 8,
+            padding: 16,
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 10,
+            color: '#F0EBE3',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+            minWidth: 220,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 700,
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: 11,
+              marginBottom: 4,
+              letterSpacing: 1,
+            }}
+          >
+            SHORTCUTS
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Enter</span>
+            <span>Restart game</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Esc</span>
+            <span>Close modal / Back</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+            <span style={{ color: 'rgba(240,235,227,0.4)' }}>Ctrl+Enter</span>
+            <span>Run code test</span>
+          </div>
+          <div
+            style={{
+              fontSize: 9,
+              color: 'rgba(240,235,227,0.2)',
+              marginTop: 4,
+              textAlign: 'center',
+            }}
+          >
+            Click ? again to close
+          </div>
+        </div>
+      )}
     </div>
   )
 }
