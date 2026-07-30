@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/alimaandev/corun/compare/v1.3.0...v1.4.0) (2026-07-30)
+
+
+### Features
+
+* README overhaul, sound toggle, mobile cursor fix, GitHub SEO ([672a375](https://github.com/alimaandev/corun/commit/672a375e8fa2fe7036d2e5b09ca4225618883d46))
+
 # [1.3.0](https://github.com/alimaandev/corun/compare/v1.2.0...v1.3.0) (2026-07-27)
 
 
