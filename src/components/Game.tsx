@@ -32,7 +32,6 @@ import {
 } from '../game/challenges'
 import { ALL_LEVELS, ENDING_SCENE, getLevelProgress, saveLevelProgress } from '../game/levels'
 import { getLevelScene } from '../game/levelScenes'
-import { saveClip, downloadClip, getAllClips, deleteClip } from '../game/clips'
 import {
   initSession,
   submitScore,
@@ -46,6 +45,7 @@ import NameDialog from './NameDialog'
 import CodePuzzlePlaytest from './CodePuzzlePlaytest'
 import LoadingScreen from './LoadingScreen'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
+import { colors, fonts, alpha, radius } from '../lib/theme'
 
 type Screen =
   'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
@@ -125,11 +125,6 @@ export default function Game() {
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
-  const [recording, setRecording] = useState(false)
-  const [clipBlob, setClipBlob] = useState<Blob | null>(null)
-  const [savedClips, setSavedClips] = useState<
-    { id: number; url: string; score: number; date: string }[]
-  >([])
 
   // Level state
   const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null)
@@ -218,6 +213,37 @@ export default function Game() {
     setScreen('levelintro')
   }, [])
 
+  interface GameStateOverrides {
+    mode: Mode
+    modeRef: Mode
+    isDaily: boolean
+    hudData: Partial<HUDData>
+  }
+
+  const resetGameState = useCallback((overrides?: Partial<GameStateOverrides>) => {
+    setHudData({ score: 0, gap: 70, speed: 1, streak: 0, ...overrides?.hudData })
+    setCurrentChallenge(null)
+    setMode(overrides?.mode ?? 'normal')
+    setBoss(null)
+    setBonusTimeLeft(0)
+    setShowCombo(false)
+    setComboText('')
+    setFinalScore(0)
+    setFinalBadges([])
+    challengeRef.current = false
+    lastBossScore.current = 0
+    lastBonusScore.current = 0
+    recentCorrect.current = []
+    topicCounts.current = {}
+    earnedBadges.current = new Set()
+    modeRef.current = overrides?.modeRef ?? 'normal'
+    bossRef.current = null
+    streakRef.current = 0
+    isDailyRef.current = overrides?.isDaily ?? false
+    clearTimeout(bonusTimerRef.current)
+    clearTimeout(comboTimeoutRef.current)
+  }, [])
+
   const handleStoryDone = useCallback(() => {
     const level = activeLevelRef.current
     if (!level) {
@@ -227,31 +253,8 @@ export default function Game() {
     isLevelBossRef.current = false
     levelTargetReached.current = false
     setScreen('playing')
-    setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
-    setCurrentChallenge(null)
-    setMode('normal')
-    setBoss(null)
-    setBonusTimeLeft(0)
-    setShowCombo(false)
-    setComboText('')
-    setRecording(false)
-    setClipBlob(null)
-    setSavedClips([])
-    setFinalScore(0)
-    setFinalBadges([])
-    challengeRef.current = false
-    lastBossScore.current = 0
-    lastBonusScore.current = 0
-    recentCorrect.current = []
-    topicCounts.current = {}
-    earnedBadges.current = new Set()
-    modeRef.current = 'normal'
-    bossRef.current = null
-    streakRef.current = 0
-    isDailyRef.current = false
-    clearTimeout(bonusTimerRef.current)
-    clearTimeout(comboTimeoutRef.current)
-  }, [])
+    resetGameState()
+  }, [resetGameState])
 
   const handleLevelComplete = useCallback((correctCount?: number) => {
     const level = activeLevelRef.current
@@ -296,69 +299,25 @@ export default function Game() {
       setSelectedTopic(topic)
       setSelectedDifficulty(difficulty)
       setScreen('playing')
-      setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
-      setCurrentChallenge(null)
-      setMode('normal')
-      setBoss(null)
-      setBonusTimeLeft(0)
-      setShowCombo(false)
-      setComboText('')
-      setRecording(false)
-      setClipBlob(null)
-      setSavedClips([])
-      challengeRef.current = false
-      lastBossScore.current = 0
-      lastBonusScore.current = 0
-      recentCorrect.current = []
-      topicCounts.current = {}
-      earnedBadges.current = new Set()
-      modeRef.current = 'normal'
-      bossRef.current = null
-      streakRef.current = 0
-      clearTimeout(bonusTimerRef.current)
-      clearTimeout(comboTimeoutRef.current)
+      resetGameState({ isDaily: !!isDaily })
       if (isDaily) {
-        isDailyRef.current = true
         const dc = getDailyChallenge()
         dailyTimeoutRef.current = window.setTimeout(() => {
           challengeRef.current = true
           setCurrentChallenge(dc)
           setTimeLimit(8)
         }, 200)
-      } else {
-        isDailyRef.current = false
       }
     },
-    [],
+    [resetGameState],
   )
 
   const handleSpeedRun = useCallback(() => {
     setSelectedTopic(null)
     setSelectedDifficulty('easy')
     setScreen('playing')
-    setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
-    setCurrentChallenge(null)
-    setMode('speedrun')
-    setBoss(null)
-    setBonusTimeLeft(0)
-    setShowCombo(false)
-    setComboText('')
-    setRecording(false)
-    setClipBlob(null)
-    setSavedClips([])
-    challengeRef.current = false
-    lastBossScore.current = 0
-    lastBonusScore.current = 0
-    recentCorrect.current = []
-    topicCounts.current = {}
-    earnedBadges.current = new Set()
-    modeRef.current = 'speedrun'
-    bossRef.current = null
-    streakRef.current = 0
-    isDailyRef.current = false
+    resetGameState({ mode: 'speedrun', modeRef: 'speedrun' })
     setSpeedRunTime(60)
-    clearTimeout(bonusTimerRef.current)
-    clearTimeout(comboTimeoutRef.current)
     if (speedRunTimerRef.current) clearInterval(speedRunTimerRef.current)
     speedRunTimerRef.current = setInterval(() => {
       setSpeedRunTime((t) => {
@@ -371,37 +330,16 @@ export default function Game() {
         return t - 1
       })
     }, 1000)
-  }, [])
+  }, [resetGameState])
 
   const handleSurvival = useCallback(() => {
     setSelectedTopic(null)
     setSelectedDifficulty('easy')
     setScreen('playing')
-    setHudData({ score: 0, gap: 70, speed: 1, streak: 0 })
-    setCurrentChallenge(null)
-    setMode('survival')
-    setBoss(null)
-    setBonusTimeLeft(0)
-    setShowCombo(false)
-    setComboText('')
-    setRecording(false)
-    setClipBlob(null)
-    setSavedClips([])
-    challengeRef.current = false
-    lastBossScore.current = 0
-    lastBonusScore.current = 0
-    recentCorrect.current = []
-    topicCounts.current = {}
-    earnedBadges.current = new Set()
-    modeRef.current = 'survival'
-    bossRef.current = null
-    streakRef.current = 0
-    isDailyRef.current = false
+    resetGameState({ mode: 'survival', modeRef: 'survival' })
     setSurvivalLives(3)
     survivalLivesRef.current = 3
-    clearTimeout(bonusTimerRef.current)
-    clearTimeout(comboTimeoutRef.current)
-  }, [])
+  }, [resetGameState])
 
   function getAdaptiveDifficulty(base: Difficulty): Difficulty | undefined {
     const recent = recentCorrect.current
@@ -701,13 +639,6 @@ export default function Game() {
     })
     if (score > 0) addToLeaderboard(Math.floor(score))
     if (isDailyRef.current && score > 0) markDailyCompleted()
-    getAllClips()
-      .then((clips) => {
-        setSavedClips(
-          clips.map((c) => ({ id: c.id ?? 0, url: c.url ?? '', score: c.score, date: c.date })),
-        )
-      })
-      .catch(() => console.debug('[Game] getAllClips failed'))
     if (profileRef.current && score > 0) {
       const mode = activeLevelRef.current
         ? 'story'
@@ -724,8 +655,6 @@ export default function Game() {
   const handleRestart = useCallback(() => {
     setScreen('start')
     setFinalScore(0)
-    setClipBlob(null)
-    setRecording(false)
     challengeRef.current = false
     clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
@@ -879,9 +808,9 @@ export default function Game() {
       >
         <div
           style={{
-            color: '#F0EBE3',
+            color: colors.fg,
             fontSize: 12,
-            fontFamily: "'Poppins', sans-serif",
+            fontFamily: fonts.heading,
             fontWeight: 600,
             letterSpacing: 2,
             marginBottom: 6,
@@ -892,8 +821,8 @@ export default function Game() {
         <div
           style={{
             height: 8,
-            background: 'rgba(240,235,227,0.05)',
-            border: '1px solid rgba(240,235,227,0.2)',
+            background: alpha(0.05),
+            border: `1px solid ${alpha(0.2)}`,
             overflow: 'hidden',
           }}
         >
@@ -901,16 +830,16 @@ export default function Game() {
             style={{
               width: `${pct}%`,
               height: '100%',
-              background: '#769826',
+              background: colors.accent,
               transition: 'width 0.3s',
             }}
           />
         </div>
         <div
           style={{
-            color: 'rgba(240,235,227,0.5)',
+            color: alpha(0.5),
             fontSize: 10,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: fonts.mono,
             marginTop: 3,
             letterSpacing: 1,
           }}
@@ -936,9 +865,9 @@ export default function Game() {
       >
         <div
           style={{
-            color: '#769826',
+            color: colors.accent,
             fontSize: 10,
-            fontFamily: "'Poppins', sans-serif",
+            fontFamily: fonts.heading,
             fontWeight: 700,
             letterSpacing: 3,
           }}
@@ -947,9 +876,9 @@ export default function Game() {
         </div>
         <div
           style={{
-            color: '#F0EBE3',
+            color: colors.fg,
             fontSize: 11,
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: fonts.mono,
             marginTop: 4,
             letterSpacing: 1,
           }}
@@ -971,11 +900,11 @@ export default function Game() {
           transform: 'translateX(-50%)',
           zIndex: 150,
           pointerEvents: 'none',
-          color: '#F0EBE3',
+          color: colors.fg,
           fontSize: 18,
-          fontFamily: "'Poppins', sans-serif",
+          fontFamily: fonts.heading,
           fontWeight: 700,
-          textShadow: '0 0 20px rgba(240,235,227,0.3)',
+          textShadow: `0 0 20px ${alpha(0.3)}`,
           animation: 'fadeIn 0.3s ease-out',
         }}
       >
@@ -1011,44 +940,6 @@ export default function Game() {
           <Suspense fallback={<LoadingScreen />}>
             <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
           </Suspense>
-        )}
-
-        {screen === 'playing' && !activeLevel && (
-          <button
-            className="rec-btn"
-            onClick={() => {
-              if (gameRef.current?.isRecording()) {
-                gameRef.current.stopRecording().then((blob) => {
-                  if (blob) {
-                    downloadClip(blob, hudData.score)
-                    saveClip(blob, hudData.score)
-                    setClipBlob(blob)
-                  }
-                })
-                setRecording(false)
-              } else {
-                gameRef.current?.startRecording()
-                setRecording(true)
-              }
-            }}
-            style={{
-              position: 'fixed',
-              bottom: 16,
-              right: 16,
-              zIndex: 100,
-              padding: '6px 12px',
-              fontSize: 11,
-              fontFamily: "'Roboto', sans-serif",
-              fontWeight: 500,
-              border: `1px solid ${recording ? '#769826' : 'rgba(240,235,227,0.2)'}`,
-              background: recording ? 'rgba(118,152,38,0.15)' : 'rgba(240,235,227,0.05)',
-              color: recording ? '#769826' : 'rgba(240,235,227,0.5)',
-              cursor: 'pointer',
-              borderRadius: 4,
-            }}
-          >
-            {recording ? '● STOP' : '○ REC'}
-          </button>
         )}
 
         {screen === 'playing' && !activeLevel && (
@@ -1117,26 +1008,23 @@ export default function Game() {
           <div
             style={{
               position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: '#0a0a0a',
+              inset: 0,
+              background: colors.bg,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 300,
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               padding: 20,
               overflow: 'auto',
             }}
           >
             <div
               style={{
-                color: '#F0EBE3',
+                color: colors.fg,
                 fontSize: 16,
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: fonts.heading,
                 fontWeight: 700,
                 letterSpacing: 6,
                 marginBottom: 30,
@@ -1146,26 +1034,26 @@ export default function Game() {
             </div>
             <div
               style={{
-                color: 'rgba(240,235,227,0.6)',
+                color: alpha(0.6),
                 fontSize: 10,
                 lineHeight: 2,
                 marginBottom: 30,
                 textAlign: 'center' as const,
-                fontFamily: "'Roboto', sans-serif",
+                fontFamily: fonts.body,
                 fontWeight: 300,
               }}
             >
-              <div style={{ color: '#769826', marginBottom: 12, fontWeight: 500 }}>
+              <div style={{ color: colors.accent, marginBottom: 12, fontWeight: 500 }}>
                 STORY COMPLETE
               </div>
               <div>Created by — Ali Sher</div>
-              <div style={{ marginTop: 8, color: 'rgba(240,235,227,0.3)', fontSize: 11 }}>
+              <div style={{ marginTop: 8, color: alpha(0.3), fontSize: 11 }}>
                 Built with React · TypeScript · Vite
               </div>
               <div
                 style={{
                   marginTop: 16,
-                  color: 'rgba(240,235,227,0.4)',
+                  color: alpha(0.4),
                   fontSize: 11,
                   fontStyle: 'italic',
                 }}
@@ -1180,14 +1068,14 @@ export default function Game() {
               }}
               style={{
                 background: 'transparent',
-                border: '1px solid rgba(240,235,227,0.3)',
-                color: '#F0EBE3',
-                fontFamily: "'Roboto', sans-serif",
+                border: `1px solid ${alpha(0.3)}`,
+                color: colors.fg,
+                fontFamily: fonts.body,
                 fontWeight: 500,
                 fontSize: 10,
                 padding: '12px 24px',
                 cursor: 'pointer',
-                borderRadius: 4,
+                borderRadius: radius.sm,
               }}
             >
               ◀ BACK TO MENU

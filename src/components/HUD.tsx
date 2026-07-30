@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { HUDData } from '../game/types'
 import { isMuted, toggleMute } from '../game/audio'
+import { colors, fonts, alpha } from '../lib/theme'
 
 interface Props extends HUDData {
   isBoss?: boolean
@@ -9,8 +10,6 @@ interface Props extends HUDData {
   speedRunTime?: number
   survivalLives?: number
 }
-
-const c = (opacity: number) => `rgba(240,235,227,${opacity})`
 
 export default function HUD({
   score,
@@ -23,7 +22,7 @@ export default function HUD({
 }: Props) {
   const [muted, setMuted] = useState(isMuted())
   const [showKeys, setShowKeys] = useState(false)
-  const barColor = gap > 40 ? '#769826' : gap > 20 ? '#F0EBE3' : c(0.4)
+  const barColor = gap > 40 ? colors.accent : gap > 20 ? colors.fg : alpha(0.4)
 
   return (
     <>
@@ -39,16 +38,16 @@ export default function HUD({
           gap: 8,
           padding: '6px 10px',
           background: 'rgba(10,10,10,0.85)',
-          borderBottom: `1px solid ${c(0.08)}`,
+          borderBottom: `1px solid ${alpha(0.08)}`,
           pointerEvents: 'none',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, flexShrink: 0 }}>
           <div
             style={{
-              color: c(0.5),
+              color: alpha(0.5),
               fontSize: 11,
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               fontWeight: 300,
               letterSpacing: 1,
             }}
@@ -57,11 +56,11 @@ export default function HUD({
           </div>
           <div
             style={{
-              color: '#F0EBE3',
+              color: colors.fg,
               fontSize: 15,
               fontWeight: 700,
               lineHeight: 1.1,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: fonts.mono,
               letterSpacing: 1,
             }}
           >
@@ -75,17 +74,15 @@ export default function HUD({
               alignSelf: 'flex-start',
               marginTop: 2,
               padding: '1px 5px',
-              border: `1px solid ${c(0.15)}`,
-              background: c(0.04),
+              border: `1px solid ${alpha(0.15)}`,
+              background: alpha(0.04),
               display: 'flex',
               alignItems: 'center',
               gap: 2,
             }}
           >
-            <span style={{ color: '#769826', fontSize: 9 }}>★</span>
-            <span
-              style={{ color: '#F0EBE3', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }}
-            >
+            <span style={{ color: colors.accent, fontSize: 9 }}>★</span>
+            <span style={{ color: colors.fg, fontSize: 10, fontFamily: fonts.mono }}>
               {streak}x
             </span>
           </div>
@@ -94,9 +91,9 @@ export default function HUD({
         {levelName && (
           <div
             style={{
-              color: c(0.15),
+              color: alpha(0.15),
               fontSize: 11,
-              fontFamily: "'Poppins', sans-serif",
+              fontFamily: fonts.heading,
               fontWeight: 600,
               letterSpacing: 1,
               textAlign: 'center',
@@ -121,9 +118,9 @@ export default function HUD({
         >
           <div
             style={{
-              color: c(0.5),
+              color: alpha(0.5),
               fontSize: 11,
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               fontWeight: 300,
               letterSpacing: 1,
             }}
@@ -134,7 +131,7 @@ export default function HUD({
             style={{
               width: '100%',
               height: 5,
-              background: c(0.08),
+              background: alpha(0.08),
               overflow: 'hidden',
               borderRadius: 2,
             }}
@@ -149,7 +146,7 @@ export default function HUD({
               }}
             />
           </div>
-          <div style={{ color: c(0.5), fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ color: alpha(0.5), fontSize: 11, fontFamily: fonts.mono }}>
             {Math.round(gap)}m
           </div>
         </div>
@@ -159,9 +156,9 @@ export default function HUD({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <div
                 style={{
-                  color: c(0.5),
+                  color: alpha(0.5),
                   fontSize: 11,
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: fonts.body,
                   fontWeight: 300,
                   letterSpacing: 1,
                 }}
@@ -172,8 +169,8 @@ export default function HUD({
                 style={{
                   fontSize: 11,
                   fontWeight: 500,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: speedRunTime <= 10 ? '#ff4444' : '#F0EBE3',
+                  fontFamily: fonts.mono,
+                  color: speedRunTime <= 10 ? colors.danger : colors.fg,
                 }}
               >
                 {speedRunTime}s
@@ -184,9 +181,9 @@ export default function HUD({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <div
                 style={{
-                  color: c(0.5),
+                  color: alpha(0.5),
                   fontSize: 11,
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: fonts.body,
                   fontWeight: 300,
                   letterSpacing: 1,
                 }}
@@ -197,8 +194,8 @@ export default function HUD({
                 style={{
                   fontSize: 11,
                   fontWeight: 500,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: survivalLives <= 1 ? '#ff4444' : '#F0EBE3',
+                  fontFamily: fonts.mono,
+                  color: survivalLives <= 1 ? colors.danger : colors.fg,
                 }}
               >
                 {'♥'.repeat(survivalLives)}
@@ -210,9 +207,9 @@ export default function HUD({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <div
                 style={{
-                  color: c(0.5),
+                  color: alpha(0.5),
                   fontSize: 11,
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: fonts.body,
                   fontWeight: 300,
                   letterSpacing: 1,
                 }}
@@ -223,8 +220,8 @@ export default function HUD({
                 style={{
                   fontSize: 11,
                   fontWeight: 500,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: streak >= 3 ? '#769826' : c(0.4),
+                  fontFamily: fonts.mono,
+                  color: streak >= 3 ? colors.accent : alpha(0.4),
                 }}
               >
                 {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : `${streak}`}
@@ -239,7 +236,7 @@ export default function HUD({
               border: 'none',
               cursor: 'pointer',
               pointerEvents: 'auto',
-              color: muted ? c(0.25) : c(0.6),
+              color: muted ? alpha(0.25) : alpha(0.6),
               fontSize: 13,
               padding: '2px 4px',
               lineHeight: 1,
@@ -251,13 +248,13 @@ export default function HUD({
             aria-label="Shortcuts"
             onClick={() => setShowKeys((v) => !v)}
             style={{
-              background: showKeys ? c(0.1) : 'none',
+              background: showKeys ? alpha(0.1) : 'none',
               border: 'none',
               cursor: 'pointer',
               pointerEvents: 'auto',
-              color: showKeys ? '#F0EBE3' : c(0.35),
+              color: showKeys ? colors.fg : alpha(0.35),
               fontSize: 11,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: fonts.mono,
               padding: '2px 5px',
               lineHeight: 1,
               borderRadius: 3,
@@ -277,12 +274,12 @@ export default function HUD({
             left: '50%',
             transform: 'translateX(-50%)',
             background: '#111',
-            border: `1px solid ${c(0.1)}`,
+            border: `1px solid ${alpha(0.1)}`,
             borderRadius: 8,
             padding: 16,
-            fontFamily: "'Roboto', sans-serif",
+            fontFamily: fonts.body,
             fontSize: 10,
-            color: '#F0EBE3',
+            color: colors.fg,
             display: 'flex',
             flexDirection: 'column',
             gap: 6,
@@ -292,7 +289,7 @@ export default function HUD({
           <div
             style={{
               fontWeight: 700,
-              fontFamily: "'Poppins', sans-serif",
+              fontFamily: fonts.heading,
               fontSize: 11,
               marginBottom: 4,
               letterSpacing: 1,
@@ -306,11 +303,11 @@ export default function HUD({
             ['Ctrl+Enter', 'Run code test'],
           ].map(([k, d]) => (
             <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 20 }}>
-              <span style={{ color: c(0.4) }}>{k}</span>
+              <span style={{ color: alpha(0.4) }}>{k}</span>
               <span>{d}</span>
             </div>
           ))}
-          <div style={{ fontSize: 9, color: c(0.2), marginTop: 4, textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: alpha(0.2), marginTop: 4, textAlign: 'center' }}>
             Click ? again to close
           </div>
         </div>

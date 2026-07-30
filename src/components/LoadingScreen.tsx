@@ -1,3 +1,5 @@
+import { colors, fonts, alpha } from '../lib/theme'
+
 const TIPS = [
   'Write real JavaScript, not pseudo-code',
   'Every level has a unique procedural soundtrack',
@@ -16,22 +18,22 @@ export default function LoadingScreen() {
         position: 'fixed',
         inset: 0,
         zIndex: 250,
-        background: '#0a0a0a',
+        background: colors.bg,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 24,
-        fontFamily: "'JetBrains Mono', monospace",
-        color: '#F0EBE3',
+        fontFamily: fonts.mono,
+        color: colors.fg,
       }}
     >
       <div
         style={{
           width: 32,
           height: 32,
-          border: '2px solid rgba(240,235,227,0.15)',
-          borderTopColor: '#F0EBE3',
+          border: `2px solid ${alpha(0.15)}`,
+          borderTopColor: colors.fg,
           borderRadius: '50%',
           animation: 'lspin 0.8s linear infinite',
         }}
@@ -40,7 +42,7 @@ export default function LoadingScreen() {
       <div
         style={{
           fontSize: 9,
-          color: 'rgba(240,235,227,0.25)',
+          color: alpha(0.25),
           maxWidth: 300,
           textAlign: 'center',
           lineHeight: 1.6,

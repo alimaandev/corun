@@ -5,6 +5,7 @@ import Chamber from './three/Chamber'
 import GlassButton from './GlassButton'
 import { ALL_LEVELS } from '../game/levels'
 import { LevelProgress } from '../game/types'
+import { colors, fonts, alpha } from '../lib/theme'
 
 interface Props {
   progress: LevelProgress
@@ -19,9 +20,9 @@ export default function LevelSelect({ progress, onSelectLevel, onBack }: Props) 
       style={{
         position: 'fixed',
         inset: 0,
-        background: '#0a0a0a',
-        color: '#F0EBE3',
-        fontFamily: "'Roboto', sans-serif",
+        background: colors.bg,
+        color: colors.fg,
+        fontFamily: fonts.body,
         zIndex: 100,
       }}
     >
@@ -73,9 +74,9 @@ export default function LevelSelect({ progress, onSelectLevel, onBack }: Props) 
         <span
           style={{
             fontSize: 10,
-            color: '#F0EBE3',
+            color: colors.fg,
             letterSpacing: 3,
-            fontFamily: "'Poppins', sans-serif",
+            fontFamily: fonts.heading,
             fontWeight: 600,
           }}
         >

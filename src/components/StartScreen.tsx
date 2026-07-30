@@ -11,6 +11,7 @@ import {
 } from '../lib/leaderboard'
 import { Topic, Difficulty } from '../game/types'
 import { setLocale, getLocale, getSupportedLocales, type Locale } from '../lib/i18n'
+import { colors, fonts, alpha, radius } from '../lib/theme'
 
 interface Props {
   highScore: number
@@ -70,19 +71,8 @@ export default function StartScreen({
 
   const entries = lbTab === 0 ? leaderboard : dailyLeaderboard
 
-  const s: React.CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    background: '#0a0a0a',
-    zIndex: 100,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#0a0a0a', zIndex: 100 }}>
+    <div style={{ position: 'fixed', inset: 0, background: colors.bg, zIndex: 100 }}>
       <Canvas
         gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 5], fov: 50, near: 0.1, far: 30 }}
@@ -110,9 +100,9 @@ export default function StartScreen({
                 fontSize: 56,
                 fontWeight: 800,
                 letterSpacing: 3,
-                color: '#F0EBE3',
-                fontFamily: "'Poppins', sans-serif",
-                textShadow: '0 0 60px rgba(240,235,227,0.12)',
+                color: colors.fg,
+                fontFamily: fonts.heading,
+                textShadow: `0 0 60px ${alpha(0.12)}`,
                 marginBottom: 4,
               }}
             >
@@ -123,8 +113,8 @@ export default function StartScreen({
                 fontSize: 12,
                 fontWeight: 300,
                 letterSpacing: 6,
-                color: 'rgba(240,235,227,0.45)',
-                fontFamily: "'Roboto', sans-serif",
+                color: alpha(0.45),
+                fontFamily: fonts.body,
                 marginBottom: 40,
               }}
             >
@@ -134,34 +124,9 @@ export default function StartScreen({
             <div
               style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}
             >
-              <button
-                onClick={() => setView('play')}
-                style={{
-                  width: 220,
-                  padding: '14px 0',
-                  background: '#F0EBE3',
-                  color: '#0a0a0a',
-                  border: 'none',
-                  borderRadius: 10,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fontFamily: "'Poppins', sans-serif",
-                  letterSpacing: 2,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 0 30px rgba(240,235,227,0.15)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 50px rgba(240,235,227,0.3)'
-                  e.currentTarget.style.transform = 'scale(1.03)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(240,235,227,0.15)'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
+              <GlassButton size="lg" onClick={() => setView('play')}>
                 PLAY
-              </button>
+              </GlassButton>
               <GlassButton size="lg" onClick={onStoryMode}>
                 STORY MODE
               </GlassButton>
@@ -171,21 +136,9 @@ export default function StartScreen({
             </div>
 
             <div style={{ display: 'flex', gap: 16, marginTop: 28 }}>
-              <button
-                onClick={() => setView('leaderboard')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(240,235,227,0.3)',
-                  fontSize: 10,
-                  fontFamily: "'Roboto', sans-serif",
-                  letterSpacing: 1,
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
+              <GlassButton size="sm" variant="secondary" onClick={() => setView('leaderboard')}>
                 LEADERBOARD
-              </button>
+              </GlassButton>
               <select
                 value={getLocale()}
                 onChange={(e) => {
@@ -194,12 +147,12 @@ export default function StartScreen({
                 }}
                 style={{
                   background: 'none',
-                  color: 'rgba(240,235,227,0.3)',
-                  border: '1px solid rgba(240,235,227,0.1)',
-                  borderRadius: 4,
+                  color: alpha(0.3),
+                  border: `1px solid ${alpha(0.1)}`,
+                  borderRadius: radius.sm,
                   padding: '2px 6px',
                   outline: 'none',
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: fonts.body,
                   fontSize: 10,
                   cursor: 'pointer',
                 }}
@@ -222,39 +175,20 @@ export default function StartScreen({
                 fontSize: 11,
                 fontWeight: 300,
                 letterSpacing: 4,
-                color: 'rgba(240,235,227,0.4)',
-                fontFamily: "'Roboto', sans-serif",
+                color: alpha(0.4),
+                fontFamily: fonts.body,
                 marginBottom: 4,
               }}
             >
               SELECT MODE
             </div>
 
-            <button
+            <GlassButton
+              size="lg"
               onClick={() => onStart(subject === 'all' ? null : subject, difficulty)}
-              style={{
-                width: 240,
-                padding: '14px 0',
-                background: '#F0EBE3',
-                color: '#0a0a0a',
-                border: 'none',
-                borderRadius: 10,
-                fontSize: 11,
-                fontWeight: 600,
-                fontFamily: "'Poppins', sans-serif",
-                letterSpacing: 2,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.03)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
             >
               FREE PLAY
-            </button>
+            </GlassButton>
             <GlassButton
               size="lg"
               onClick={dailyDone ? undefined : () => onStart(null, 'medium', true)}
@@ -284,12 +218,12 @@ export default function StartScreen({
                 onChange={(e) => setSubject(e.target.value as Topic | 'all')}
                 style={{
                   background: 'rgba(0,0,0,0.4)',
-                  color: '#F0EBE3',
-                  border: '1px solid rgba(240,235,227,0.15)',
-                  borderRadius: 6,
+                  color: colors.fg,
+                  border: `1px solid ${alpha(0.15)}`,
+                  borderRadius: radius.md,
                   padding: '5px 8px',
                   outline: 'none',
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: fonts.body,
                   fontSize: 10,
                   cursor: 'pointer',
                 }}
@@ -307,16 +241,14 @@ export default function StartScreen({
                     key={d}
                     onClick={() => setDifficulty(d)}
                     style={{
-                      background: difficulty === d ? 'rgba(240,235,227,0.1)' : 'transparent',
-                      color: difficulty === d ? '#F0EBE3' : 'rgba(240,235,227,0.4)',
+                      background: difficulty === d ? alpha(0.1) : 'transparent',
+                      color: difficulty === d ? colors.fg : alpha(0.4),
                       border:
-                        difficulty === d
-                          ? '1px solid rgba(240,235,227,0.3)'
-                          : '1px solid rgba(240,235,227,0.1)',
-                      borderRadius: 6,
+                        difficulty === d ? `1px solid ${alpha(0.3)}` : `1px solid ${alpha(0.1)}`,
+                      borderRadius: radius.md,
                       padding: '4px 10px',
                       cursor: 'pointer',
-                      fontFamily: "'Roboto', sans-serif",
+                      fontFamily: fonts.body,
                       fontSize: 10,
                       textTransform: 'capitalize',
                       transition: 'all 0.2s',
@@ -328,21 +260,14 @@ export default function StartScreen({
               </div>
             </div>
 
-            <button
+            <GlassButton
+              size="sm"
+              variant="secondary"
               onClick={() => setView('main')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(240,235,227,0.25)',
-                fontSize: 10,
-                fontFamily: "'Roboto', sans-serif",
-                letterSpacing: 1,
-                cursor: 'pointer',
-                marginTop: 8,
-              }}
+              style={{ marginTop: 8 }}
             >
-              {'←'} BACK
-            </button>
+              ← BACK
+            </GlassButton>
           </div>
         )}
 
@@ -363,10 +288,10 @@ export default function StartScreen({
                   onClick={() => setLbTab(i)}
                   style={{
                     flex: 1,
-                    background: lbTab === i ? 'rgba(240,235,227,0.08)' : 'transparent',
-                    color: lbTab === i ? '#F0EBE3' : 'rgba(240,235,227,0.3)',
-                    border: '1px solid rgba(240,235,227,0.1)',
-                    fontFamily: "'Roboto', sans-serif",
+                    background: lbTab === i ? alpha(0.08) : 'transparent',
+                    color: lbTab === i ? colors.fg : alpha(0.3),
+                    border: `1px solid ${alpha(0.1)}`,
+                    fontFamily: fonts.body,
                     fontSize: 11,
                     fontWeight: 300,
                     padding: '8px 0',
@@ -381,10 +306,10 @@ export default function StartScreen({
               style={{
                 display: 'flex',
                 fontSize: 11,
-                color: 'rgba(240,235,227,0.3)',
-                fontFamily: "'Roboto', sans-serif",
+                color: alpha(0.3),
+                fontFamily: fonts.body,
                 padding: '0 4px 6px',
-                borderBottom: '1px solid rgba(240,235,227,0.08)',
+                borderBottom: `1px solid ${alpha(0.08)}`,
               }}
             >
               <span style={{ width: 30 }}>#</span>
@@ -398,17 +323,17 @@ export default function StartScreen({
                   display: 'flex',
                   alignItems: 'center',
                   padding: '5px 4px',
-                  borderBottom: '1px solid rgba(240,235,227,0.04)',
+                  borderBottom: `1px solid ${alpha(0.04)}`,
                   fontSize: 11,
-                  color: 'rgba(240,235,227,0.6)',
-                  fontFamily: "'Roboto', sans-serif",
-                  background: playerRank === entry.rank ? 'rgba(240,235,227,0.04)' : 'transparent',
+                  color: alpha(0.6),
+                  fontFamily: fonts.body,
+                  background: playerRank === entry.rank ? alpha(0.04) : 'transparent',
                 }}
               >
                 <span
                   style={{
                     width: 30,
-                    color: entry.rank <= 3 ? '#F0EBE3' : 'rgba(240,235,227,0.4)',
+                    color: entry.rank <= 3 ? colors.fg : alpha(0.4),
                   }}
                 >
                   #{entry.rank}
@@ -423,10 +348,10 @@ export default function StartScreen({
                 >
                   {entry.player_name}
                   {playerRank === entry.rank && (
-                    <span style={{ color: 'rgba(240,235,227,0.5)', marginLeft: 6 }}>(you)</span>
+                    <span style={{ color: alpha(0.5), marginLeft: 6 }}>(you)</span>
                   )}
                 </span>
-                <span style={{ width: 60, textAlign: 'right', color: '#F0EBE3' }}>
+                <span style={{ width: 60, textAlign: 'right', color: colors.fg }}>
                   {entry.score.toLocaleString()}
                 </span>
               </div>
@@ -437,29 +362,21 @@ export default function StartScreen({
                   textAlign: 'center',
                   marginTop: 12,
                   fontSize: 11,
-                  color: 'rgba(240,235,227,0.5)',
-                  fontFamily: "'Roboto', sans-serif",
+                  color: alpha(0.5),
+                  fontFamily: fonts.body,
                 }}
               >
                 YOUR RANK: #{playerRank}
               </div>
             )}
-            <button
+            <GlassButton
+              size="sm"
+              variant="secondary"
               onClick={() => setView('main')}
-              style={{
-                display: 'block',
-                margin: '12px auto 0',
-                background: 'none',
-                border: 'none',
-                color: 'rgba(240,235,227,0.25)',
-                fontSize: 10,
-                fontFamily: "'Roboto', sans-serif",
-                letterSpacing: 1,
-                cursor: 'pointer',
-              }}
+              style={{ display: 'block', margin: '12px auto 0' }}
             >
               ← BACK
-            </button>
+            </GlassButton>
           </GlassPanel>
         )}
       </div>
@@ -479,8 +396,8 @@ export default function StartScreen({
           style={{
             fontSize: 11,
             fontWeight: 300,
-            color: 'rgba(240,235,227,0.4)',
-            fontFamily: "'Roboto', sans-serif",
+            color: alpha(0.4),
+            fontFamily: fonts.body,
           }}
         >
           {playerName || 'RUNNER'}

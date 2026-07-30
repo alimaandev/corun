@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { glassPanel as gp, alpha } from '../lib/theme'
 
 interface Props {
   children: ReactNode
@@ -13,11 +14,7 @@ export default function GlassPanel({ children, style, glow, onClick, hover = tru
     <div
       onClick={onClick}
       style={{
-        background: 'rgba(0,0,0,0.25)',
-        border: '1px solid rgba(240,235,227,0.12)',
-        borderRadius: 12,
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        ...gp,
         padding: 16,
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 0.3s ease',

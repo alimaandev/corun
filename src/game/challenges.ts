@@ -165,7 +165,7 @@ const FALLBACKS: Challenge[] = [
   },
 
   {
-    id: -15,
+    id: -25,
     type: 'multiple',
     difficulty: 'easy',
     topic: 'python',
@@ -176,7 +176,7 @@ const FALLBACKS: Challenge[] = [
   },
 
   {
-    id: -16,
+    id: -26,
     type: 'multiple',
     difficulty: 'medium',
     topic: 'web',
@@ -187,7 +187,7 @@ const FALLBACKS: Challenge[] = [
   },
 
   {
-    id: -17,
+    id: -27,
     type: 'multiple',
     difficulty: 'hard',
     topic: 'general',
@@ -198,7 +198,7 @@ const FALLBACKS: Challenge[] = [
   },
 
   {
-    id: -15,
+    id: -28,
     type: 'spot-bug',
     difficulty: 'easy',
     topic: 'javascript',
@@ -215,7 +215,7 @@ const FALLBACKS: Challenge[] = [
   },
 
   {
-    id: -16,
+    id: -29,
     type: 'spot-bug',
     difficulty: 'medium',
     topic: 'javascript',

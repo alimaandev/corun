@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { colors, fonts, radius, transition, alpha } from '../lib/theme'
 
 interface Props {
   variant?: 'primary' | 'secondary'
@@ -15,7 +16,14 @@ const sizeMap: Record<string, { p: string; fs: number }> = {
   lg: { p: '14px 32px', fs: 12 },
 }
 
-export default function GlassButton({ variant = 'primary', size = 'md', onClick, children, style, disabled }: Props) {
+export default function GlassButton({
+  variant = 'primary',
+  size = 'md',
+  onClick,
+  children,
+  style,
+  disabled,
+}: Props) {
   const s = sizeMap[size]
   const isPrimary = variant === 'primary'
 
@@ -24,17 +32,17 @@ export default function GlassButton({ variant = 'primary', size = 'md', onClick,
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       style={{
-        background: isPrimary ? '#F0EBE3' : 'transparent',
-        color: isPrimary ? '#0a0a0a' : '#F0EBE3',
-        border: isPrimary ? 'none' : '1px solid rgba(240,235,227,0.25)',
+        background: isPrimary ? colors.fg : 'transparent',
+        color: isPrimary ? colors.bg : colors.fg,
+        border: isPrimary ? 'none' : `1px solid ${alpha(0.25)}`,
         padding: s.p,
         fontSize: s.fs,
         fontWeight: 500,
         letterSpacing: 2,
         cursor: disabled ? 'default' : 'pointer',
-        fontFamily: "'Roboto', sans-serif",
-        borderRadius: 10,
-        transition: 'all 0.25s ease',
+        fontFamily: fonts.body,
+        borderRadius: radius.xl,
+        transition,
         opacity: disabled ? 0.35 : 1,
         pointerEvents: disabled ? 'none' : 'auto',
         textTransform: 'uppercase',
@@ -43,9 +51,9 @@ export default function GlassButton({ variant = 'primary', size = 'md', onClick,
       onMouseEnter={(e) => {
         if (disabled) return
         if (isPrimary) {
-          e.currentTarget.style.boxShadow = '0 0 24px rgba(240,235,227,0.35)'
+          e.currentTarget.style.boxShadow = `0 0 24px ${alpha(0.35)}`
         } else {
-          e.currentTarget.style.background = 'rgba(240,235,227,0.08)'
+          e.currentTarget.style.background = alpha(0.08)
         }
         e.currentTarget.style.transform = 'scale(1.03)'
       }}

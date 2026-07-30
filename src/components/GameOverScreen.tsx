@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber'
 import Chamber from './three/Chamber'
 import GlassButton from './GlassButton'
+import { colors, fonts, alpha } from '../lib/theme'
 
 interface Props {
   score: number
@@ -11,14 +11,11 @@ interface Props {
   playerRank: number | null
   playerName?: string
   badges?: { topic: string; label: string; count: number }[]
-  savedClips?: { id: number; url: string; score: number; date: string }[]
   levelMode?: boolean
   levelName?: string
-  clipBlob?: Blob | null
   onRestart?: () => void
   onRetryLevel?: () => void
   onBackToLevels?: () => void
-  onDeleteClip?: (id: number) => void
 }
 
 function Slab({
@@ -68,8 +65,6 @@ function Badge({ position, color }: { position: [number, number, number]; color:
   )
 }
 
-const c = (opacity: number) => `rgba(240,235,227,${opacity})`
-
 export default function GameOverScreen({
   score,
   highScore,
@@ -90,9 +85,9 @@ export default function GameOverScreen({
       style={{
         position: 'fixed',
         inset: 0,
-        background: '#0a0a0a',
-        color: '#F0EBE3',
-        fontFamily: "'Roboto', sans-serif",
+        background: colors.bg,
+        color: colors.fg,
+        fontFamily: fonts.body,
         zIndex: 100,
         display: 'flex',
         flexDirection: 'column',
@@ -133,7 +128,7 @@ export default function GameOverScreen({
               1 + Math.sin((i / 3) * Math.PI * 2) * 0.5,
               Math.sin((i / 3) * Math.PI * 2) * 0.5,
             ]}
-            color={['#F0EBE3', '#769826', '#F0EBE3'][i]}
+            color={[colors.fg, colors.accent, colors.fg][i]}
           />
         ))}
       </Canvas>
@@ -152,9 +147,9 @@ export default function GameOverScreen({
         <div
           style={{
             fontSize: 11,
-            color: c(0.4),
+            color: alpha(0.4),
             letterSpacing: 4,
-            fontFamily: "'Poppins', sans-serif",
+            fontFamily: fonts.heading,
             fontWeight: 600,
           }}
         >
@@ -164,8 +159,8 @@ export default function GameOverScreen({
           <div
             style={{
               fontSize: 12,
-              color: c(0.5),
-              fontFamily: "'Roboto', sans-serif",
+              color: alpha(0.5),
+              fontFamily: fonts.body,
               fontWeight: 300,
             }}
           >
@@ -175,8 +170,8 @@ export default function GameOverScreen({
           <div
             style={{
               fontSize: 12,
-              color: c(0.5),
-              fontFamily: "'Roboto', sans-serif",
+              color: alpha(0.5),
+              fontFamily: fonts.body,
               fontWeight: 300,
             }}
           >
@@ -186,8 +181,8 @@ export default function GameOverScreen({
         <div
           style={{
             fontSize: 36,
-            color: '#F0EBE3',
-            fontFamily: "'JetBrains Mono', monospace",
+            color: colors.fg,
+            fontFamily: fonts.mono,
             fontWeight: 700,
             lineHeight: 1,
           }}
@@ -199,9 +194,9 @@ export default function GameOverScreen({
           <div
             style={{
               fontSize: 11,
-              color: '#F0EBE3',
+              color: colors.fg,
               letterSpacing: 2,
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               fontWeight: 500,
             }}
           >
@@ -212,9 +207,9 @@ export default function GameOverScreen({
           <div
             style={{
               fontSize: 11,
-              color: '#769826',
+              color: colors.accent,
               letterSpacing: 1,
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               fontWeight: 500,
             }}
           >
@@ -258,9 +253,9 @@ export default function GameOverScreen({
             bottom: 16,
             left: '50%',
             transform: 'translateX(-50%)',
-            color: c(0.2),
+            color: alpha(0.2),
             textDecoration: 'none',
-            fontFamily: "'Roboto', sans-serif",
+            fontFamily: fonts.body,
             fontSize: 10,
             letterSpacing: 1,
           }}

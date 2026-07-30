@@ -19,8 +19,10 @@ export function setMuted(muted: boolean) {
   try {
     localStorage.setItem(MUTED_KEY, muted ? 'true' : 'false')
   } catch {}
-  if (masterGain) {
-    masterGain.gain.setValueAtTime(muted ? 0 : 0.3, ctx?.currentTime || 0)
+  const c = getAudioContext()
+  const mg = getMasterGain()
+  if (c && mg) {
+    mg.gain.setValueAtTime(muted ? 0 : 0.3, c.currentTime)
   }
 }
 
@@ -30,12 +32,24 @@ export function toggleMute(): boolean {
   return next
 }
 
-let beatInterval: number | null = null
 let beatTimeoutId: ReturnType<typeof setTimeout> | null = null
 let currentIntensity = 0.3
 let activeLevel = 0
 
-function getCtx(): AudioContext | null {
+let initResume = false
+export function resumeAudio() {
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {})
+  }
+}
+if (typeof document !== 'undefined' && !initResume) {
+  initResume = true
+  document.addEventListener('click', resumeAudio, { once: true })
+  document.addEventListener('touchstart', resumeAudio, { once: true })
+  document.addEventListener('keydown', resumeAudio, { once: true })
+}
+
+export function getAudioContext(): AudioContext | null {
   try {
     if (!ctx) ctx = new AudioContext()
     return ctx
@@ -44,16 +58,15 @@ function getCtx(): AudioContext | null {
   }
 }
 
-export function resumeAudio() {
-  if (ctx && ctx.state === 'suspended') {
-    ctx.resume().catch(() => {})
+export function getMasterGain(): GainNode | null {
+  const c = getAudioContext()
+  if (!c) return null
+  if (!masterGain) {
+    masterGain = c.createGain()
+    masterGain.gain.setValueAtTime(isMuted() ? 0 : 0.3, c.currentTime)
+    masterGain.connect(c.destination)
   }
-}
-
-if (typeof document !== 'undefined') {
-  document.addEventListener('click', resumeAudio, { once: true })
-  document.addEventListener('touchstart', resumeAudio, { once: true })
-  document.addEventListener('keydown', resumeAudio, { once: true })
+  return masterGain
 }
 
 interface DronePreset {
@@ -80,29 +93,28 @@ const DRONE_PRESETS: Record<number, DronePreset> = {
 }
 
 export function startMusic(levelId: number, intensity = 0.3) {
-  const c = getCtx()
+  const c = getAudioContext()
   if (!c) return
   stopMusic()
   activeLevel = levelId
   currentIntensity = intensity
 
-  masterGain = c.createGain()
-  masterGain.gain.setValueAtTime(isMuted() ? 0 : 0.3, c.currentTime)
-  masterGain.connect(c.destination)
+  const mg = getMasterGain()
+  if (!mg) return
 
   const preset = DRONE_PRESETS[levelId] || DRONE_PRESETS[1]
 
   droneGain = c.createGain()
   droneGain.gain.setValueAtTime(0, c.currentTime)
   droneGain.gain.linearRampToValueAtTime(preset.gain, c.currentTime + 1.5)
-  droneGain.connect(masterGain)
+  droneGain.connect(mg)
 
   droneFilter = c.createBiquadFilter()
   droneFilter.type = 'lowpass'
   droneFilter.frequency.setValueAtTime(preset.filterFreq, c.currentTime)
   droneFilter.Q.setValueAtTime(preset.filterQ, c.currentTime)
   droneGain.connect(droneFilter)
-  droneFilter.connect(masterGain)
+  droneFilter.connect(mg)
 
   const layers = [
     { freq: preset.baseFreq, detune: 0, type: 'sawtooth' as OscillatorType },
@@ -153,6 +165,8 @@ function scheduleBeat(c: AudioContext) {
 }
 
 function playKick(c: AudioContext, t: number) {
+  const mg = getMasterGain()
+  if (!mg) return
   const osc = c.createOscillator()
   const gain = c.createGain()
   osc.type = 'sine'
@@ -161,12 +175,14 @@ function playKick(c: AudioContext, t: number) {
   gain.gain.setValueAtTime(0.25 * currentIntensity * 2, t)
   gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12)
   osc.connect(gain)
-  if (masterGain) gain.connect(masterGain)
+  gain.connect(mg)
   osc.start(t)
   osc.stop(t + 0.12)
 }
 
 function playSnare(c: AudioContext, t: number) {
+  const mg = getMasterGain()
+  if (!mg) return
   const buffer = c.createBuffer(1, c.sampleRate * 0.05, c.sampleRate)
   const data = buffer.getChannelData(0)
   for (let i = 0; i < data.length; i++) {
@@ -178,12 +194,14 @@ function playSnare(c: AudioContext, t: number) {
   gain.gain.setValueAtTime(0.12 * currentIntensity * 2, t)
   gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05)
   source.connect(gain)
-  if (masterGain) gain.connect(masterGain)
+  gain.connect(mg)
   source.start(t)
   source.stop(t + 0.1)
 }
 
 function playHihat(c: AudioContext, t: number) {
+  const mg = getMasterGain()
+  if (!mg) return
   const buffer = c.createBuffer(1, c.sampleRate * 0.02, c.sampleRate)
   const data = buffer.getChannelData(0)
   for (let i = 0; i < data.length; i++) {
@@ -195,7 +213,7 @@ function playHihat(c: AudioContext, t: number) {
   gain.gain.setValueAtTime(0.06 * currentIntensity * 2, t)
   gain.gain.exponentialRampToValueAtTime(0.001, t + 0.02)
   source.connect(gain)
-  if (masterGain) gain.connect(masterGain)
+  gain.connect(mg)
   source.start(t)
   source.stop(t + 0.03)
 }
@@ -205,42 +223,56 @@ export function setIntensity(intensity: number) {
 }
 
 export function stopMusic() {
+  const c = getAudioContext()
+
   if (beatTimeoutId) {
     clearTimeout(beatTimeoutId)
     beatTimeoutId = null
   }
-  beatInterval = null
   activeLevel = 0
 
-  for (const node of droneNodes) {
-    try {
-      node.osc.stop()
-    } catch {}
-    try {
-      node.osc.disconnect()
-    } catch {}
-    try {
-      node.gain.disconnect()
-    } catch {}
+  if (droneGain && droneGain.gain && c) {
+    droneGain.gain.setValueAtTime(droneGain.gain.value, c.currentTime)
+    droneGain.gain.linearRampToValueAtTime(0, c.currentTime + 0.1)
   }
-  droneNodes = []
 
-  if (droneFilter) {
-    try {
-      droneFilter.disconnect()
-    } catch {}
-    droneFilter = null
+  if (c) {
+    const fadeTime = c.currentTime + 0.15
+    for (const node of droneNodes) {
+      try {
+        node.gain.gain.setValueAtTime(node.gain.gain.value, c.currentTime)
+      } catch {}
+      try {
+        node.gain.gain.linearRampToValueAtTime(0, fadeTime)
+      } catch {}
+    }
   }
-  if (droneGain) {
-    try {
-      droneGain.disconnect()
-    } catch {}
-    droneGain = null
-  }
-  if (masterGain) {
-    try {
-      masterGain.disconnect()
-    } catch {}
-    masterGain = null
-  }
+
+  setTimeout(() => {
+    for (const node of droneNodes) {
+      try {
+        node.osc.stop()
+      } catch {}
+      try {
+        node.osc.disconnect()
+      } catch {}
+      try {
+        node.gain.disconnect()
+      } catch {}
+    }
+    droneNodes = []
+
+    if (droneFilter) {
+      try {
+        droneFilter.disconnect()
+      } catch {}
+      droneFilter = null
+    }
+    if (droneGain) {
+      try {
+        droneGain.disconnect()
+      } catch {}
+      droneGain = null
+    }
+  }, 200)
 }
