@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/alimaandev/corun/compare/v1.5.0...v1.5.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* AudioContext resume on user gesture, deprecated meta tag ([1cb574d](https://github.com/alimaandev/corun/commit/1cb574d3d10ebcbb40c18ed466ce74695d003792))
+
 # [1.5.0](https://github.com/alimaandev/corun/compare/v1.4.0...v1.5.0) (2026-07-30)
 
 
