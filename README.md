@@ -257,15 +257,18 @@ Leaderboard entries are computed from local `scores` and shaped for a future rem
 
 Releases are **fully automated** with [semantic-release](https://github.com/semantic-release/semantic-release) in `.github/workflows/release.yml` — a push to `main` with `feat`/`fix` commits bumps the version, writes the changelog, and tags a GitHub release. The **latest** release is always downloadable from the [Releases page](https://github.com/alimaandev/corun/releases).
 
-| Tag        | Date       | Highlights                                                                                |
-| ---------- | ---------- | ----------------------------------------------------------------------------------------- |
-| **v1.6.0** | 2026-08-04 | 2D parallax story levels, Dexie v2 migration + outbox, engine extraction, resume last run |
-| v1.5.x     | 2026-07-30 | Session persistence groundwork, scheduling/badges refinement (3 patch releases)           |
-| v1.4.0     | 2026-07-30 | Daily challenge + leaderboards                                                            |
-| v1.3.0     | 2026-07-27 | Competitive modes (Speed Run / Survival)                                                  |
-| v1.2.0     | 2026-07-26 | PWA install + service worker caching                                                      |
-| v1.1.x     | 2026-07-26 | UX/i18n polish                                                                            |
-| v1.0.0     | 2026-07-23 | Initial production release                                                                |
+| Tag        | Date       | Highlights                                                                                                    |
+| ---------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
+| **v1.6.0** | 2026-08-04 | 2D parallax story levels, Dexie v2 storage + outbox journal, engine extraction, resume last run, lazy screens |
+| v1.5.2     | 2026-07-30 | Fix: deduped challenge IDs, unified audio context, theme tokens, dead-code removal                            |
+| v1.5.1     | 2026-07-30 | Fix: AudioContext resumes on user gesture, meta-tag cleanup                                                   |
+| v1.5.0     | 2026-07-30 | Menu music, loading screen, shortcuts overlay                                                                 |
+| v1.4.0     | 2026-07-30 | README overhaul, sound toggle, mobile cursor fix, GitHub SEO                                                  |
+| v1.3.0     | 2026-07-27 | OG social card, repo topics                                                                                   |
+| v1.2.0     | 2026-07-26 | SEO + contributor tooling overhaul                                                                            |
+| v1.1.1     | 2026-07-26 | Fix: resolve `tsc -b` type errors                                                                             |
+| v1.1.0     | 2026-07-26 | Phase 3–4 polish and outstanding items                                                                        |
+| v1.0.0     | 2026-07-23 | Initial production release — touch controls, daily challenges, leaderboard, clip recording                    |
 
 <details>
 <summary><strong>All tags / changelog</strong></summary>
