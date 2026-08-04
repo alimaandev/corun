@@ -1,4 +1,4 @@
-import { LevelConfig, LevelProgress, SceneConfig } from './types'
+import { LevelConfig, LevelProgress, SceneConfig } from '../../types'
 
 function sc(
   bgTop: string,

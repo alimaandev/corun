@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import IsometricMap from './three/IsometricMap'
 import Chamber from './three/Chamber'
 import GlassButton from './GlassButton'
-import { ALL_LEVELS } from '../game/levels'
+import { ALL_LEVELS } from '../game/engine/data/levels'
 import { LevelProgress } from '../game/types'
 import { colors, fonts, alpha } from '../lib/theme'
 

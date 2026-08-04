@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { ALL_LEVELS } from '../../game/levels'
+import { ALL_LEVELS } from '../../game/engine/data/levels'
 import { LevelProgress } from '../../game/types'
 
 interface Props {
@@ -41,8 +41,20 @@ export default function IsometricMap({ progress, onSelectLevel }: Props) {
             <mesh
               position={[x, 0.3, 0]}
               onClick={() => isUnlocked && onSelectLevel(level.id)}
-              onPointerOver={isUnlocked ? () => { document.body.style.cursor = 'pointer' } : undefined}
-              onPointerOut={isUnlocked ? () => { document.body.style.cursor = 'default' } : undefined}
+              onPointerOver={
+                isUnlocked
+                  ? () => {
+                      document.body.style.cursor = 'pointer'
+                    }
+                  : undefined
+              }
+              onPointerOut={
+                isUnlocked
+                  ? () => {
+                      document.body.style.cursor = 'default'
+                    }
+                  : undefined
+              }
             >
               <boxGeometry args={[1.2, 0.6, 0.8]} />
               <meshBasicMaterial color={color} transparent opacity={isUnlocked ? 1 : 0.3} />

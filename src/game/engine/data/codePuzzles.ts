@@ -1,4 +1,4 @@
-import { CodePuzzle } from './types'
+import { CodePuzzle } from '../../types'
 
 export const ALL_PUZZLES: Record<string, CodePuzzle> = {
   /* ═══ LEVEL 1 — The Cell ═══ */
@@ -624,39 +624,4 @@ export function getPuzzle(id: string): CodePuzzle | undefined {
   return ALL_PUZZLES[id]
 }
 
-export function evaluateCode(
-  userCode: string,
-  testCode: string,
-): Promise<{ success: boolean; output: string }> {
-  return new Promise((resolve) => {
-    const id = crypto.randomUUID()
-    const worker = new Worker(new URL('./sandbox.worker.ts', import.meta.url), { type: 'module' })
-
-    const timer = setTimeout(() => {
-      worker.terminate()
-      resolve({ success: false, output: 'Execution timed out (2s limit)' })
-    }, 2000)
-
-    worker.onmessage = (e: MessageEvent<{ id: string; success: boolean; output: string }>) => {
-      if (e.data.id === id) {
-        clearTimeout(timer)
-        worker.terminate()
-        resolve({ success: e.data.success, output: e.data.output })
-      }
-    }
-
-    worker.onerror = () => {
-      clearTimeout(timer)
-      worker.terminate()
-      resolve({ success: false, output: 'Worker error' })
-    }
-
-    worker.onmessageerror = () => {
-      clearTimeout(timer)
-      worker.terminate()
-      resolve({ success: false, output: 'Worker communication error' })
-    }
-
-    worker.postMessage({ id, userCode, testCode })
-  })
-}
+export { evaluateCode } from '../codeEvaluator'

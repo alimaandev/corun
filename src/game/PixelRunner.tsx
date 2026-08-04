@@ -1,20 +1,20 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Challenge, HUDData, Difficulty } from './types'
-import { getRandomChallenge, clearAIPool } from './challenges'
+import { getRandomChallenge, clearAIPool } from './engine/data/challenges'
 import { THEMES, LevelTheme } from './themes'
+import {
+  applyCommand,
+  createRunnerState,
+  dangerLevel,
+  RunnerObstacle,
+  RunnerState,
+  RUNNER,
+  stepRunner,
+} from './engine/runnerSim'
 
-const GAP_START = 60
-const GAP_DRAIN = 1.8
+const GAP_START = RUNNER.gapStart
 const CHALLENGE_MIN = 2500
 const CHALLENGE_MAX = 6000
-const CORRECT_BOOST = 25
-const WRONG_PENALTY = 18
-const TIMEOUT_PENALTY = 30
-const BOOST_DURATION = 3500
-const PENALTY_DURATION = 2000
-const BASE_SPEED = 1
-const BOOST_SPEED = 2.0
-const PENALTY_SPEED = 0.5
 let PX_SCALE = 2
 function updateScale(w: number) {
   PX_SCALE = Math.max(1.5, Math.min(3, Math.floor(w / 200)))
@@ -44,29 +44,9 @@ interface Props {
   onHUDUpdate: (data: HUDData) => void
 }
 
-interface Obstacle {
-  lane: number
-  y: number
-  type: 'barrier' | 'coin' | 'boost'
-  hit: boolean
-}
+type Obstacle = RunnerObstacle
 
-interface GameS {
-  score: number
-  gap: number
-  speed: number
-  streak: number
-  currentLane: number
-  displayLane: number
-  boostUntil: number
-  penaltyUntil: number
-  scrollY: number
-  screenShake: number
-  flashTimer: number
-  flashGreen: boolean
-  paused: boolean
-  multiplier: number
-}
+type GameS = RunnerState
 
 function drawPixelPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number) {
   ctx.imageSmoothingEnabled = false
@@ -496,26 +476,8 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const bgDirtyRef = useRef(true)
-  const obstaclesRef = useRef<Obstacle[]>([])
-  const spawnTimerRef = useRef(0)
-  const stateRef = useRef<GameS>({
-    score: 0,
-    gap: GAP_START,
-    speed: BASE_SPEED,
-    streak: 0,
-    currentLane: 0,
-    displayLane: 0,
-    boostUntil: 0,
-    penaltyUntil: 0,
-    scrollY: 0,
-    screenShake: 0,
-    flashTimer: 0,
-    flashGreen: false,
-    paused: false,
-    multiplier: 1,
-  })
+  const stateRef = useRef<GameS>(createRunnerState())
   const lastFrameTimeRef = useRef(0)
-  const gameRunning = useRef(false)
   const gameOverFired = useRef(false)
   const gameInitialized = useRef(false)
   const topicRef = useRef<string | undefined>(undefined)
@@ -525,7 +487,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   const challengeTimerRef = useRef<number>(0)
   const frameCountRef = useRef(0)
   const propsRef = useRef(props)
-  const animRef = useRef<number>(0)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordedChunksRef = useRef<Blob[]>([])
   const themeRef = useRef<LevelTheme>(THEMES[props.themeId ?? 1] || THEMES[1])
@@ -557,7 +518,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   const monsterY = () => {
     const s = stateRef.current
-    const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
+    const danger = dangerLevel(s.gap)
     return playerY() + 25 + (1 - danger) * 130
   }
 
@@ -567,13 +528,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     const delay = CHALLENGE_MIN + Math.random() * (CHALLENGE_MAX - CHALLENGE_MIN)
     challengeTimerRef.current = window.setTimeout(async () => {
       try {
-        if (gameRunning.current && !stateRef.current.paused) {
+        if (stateRef.current.phase === 'running' && !stateRef.current.paused) {
           const challenge = await getRandomChallenge(
             usedChallengeIds.current,
             topicRef.current,
             diffRef.current,
           )
-          if (!gameRunning.current || disposedRef.current) return
+          if (stateRef.current.phase !== 'running' || disposedRef.current) return
           usedChallengeIds.current.add(challenge.id)
           propsRef.current.onChallenge(challenge)
         }
@@ -584,30 +545,13 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   }
 
   function resetState() {
-    const s = stateRef.current
-    s.score = 0
-    s.gap = GAP_START
-    s.speed = BASE_SPEED
-    s.streak = 0
-    s.currentLane = 0
-    s.displayLane = 0
-    s.boostUntil = 0
-    s.penaltyUntil = 0
-    s.scrollY = 0
-    s.screenShake = 0
-    s.flashTimer = 0
-    s.flashGreen = false
-    s.paused = false
-    s.multiplier = 1
+    stateRef.current = applyCommand(createRunnerState(), { type: 'start' }, performance.now())
     lastFrameTimeRef.current = 0
-    gameRunning.current = true
     gameOverFired.current = false
     gameInitialized.current = true
     usedChallengeIds.current.clear()
     frameCountRef.current = 0
     disposedRef.current = false
-    obstaclesRef.current = []
-    spawnTimerRef.current = 1000
     clearTimeout(challengeTimerRef.current)
     clearAIPool()
     scheduleChallenge()
@@ -619,44 +563,36 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       resetState()
     },
     handleAnswer(correct: boolean) {
-      if (!gameRunning.current) return
-      const s = stateRef.current
-      if (correct) {
-        s.gap = Math.min(100, s.gap + CORRECT_BOOST)
-        s.streak++
-        s.boostUntil = performance.now() + BOOST_DURATION
-        s.flashTimer = 0.3
-        s.flashGreen = true
-      } else {
-        s.gap = Math.max(5, s.gap - WRONG_PENALTY)
-        s.streak = 0
-        s.penaltyUntil = performance.now() + PENALTY_DURATION
-        s.screenShake = 0.5
-        s.flashTimer = 0.3
-        s.flashGreen = false
-      }
+      if (stateRef.current.phase !== 'running') return
+      stateRef.current = applyCommand(
+        stateRef.current,
+        { type: 'answer', correct },
+        performance.now(),
+      )
       clearTimeout(challengeTimerRef.current)
       scheduleChallenge()
     },
     handleTimeout() {
-      if (!gameRunning.current) return
-      const s = stateRef.current
-      s.gap = Math.max(5, s.gap - TIMEOUT_PENALTY)
-      s.streak = 0
-      s.penaltyUntil = performance.now() + PENALTY_DURATION
-      s.screenShake = 0.8
-      s.flashTimer = 0.3
-      s.flashGreen = false
+      if (stateRef.current.phase !== 'running') return
+      stateRef.current = applyCommand(stateRef.current, { type: 'timeout' }, performance.now())
       clearTimeout(challengeTimerRef.current)
       scheduleChallenge()
     },
     setPaused(paused: boolean) {
-      stateRef.current.paused = paused
+      stateRef.current = applyCommand(
+        stateRef.current,
+        { type: 'setPaused', paused },
+        performance.now(),
+      )
       if (paused) clearTimeout(challengeTimerRef.current)
       else scheduleChallenge()
     },
     setMultiplier(mult: number) {
-      stateRef.current.multiplier = mult
+      stateRef.current = applyCommand(
+        stateRef.current,
+        { type: 'setMultiplier', multiplier: mult },
+        performance.now(),
+      )
     },
     setPreferredDifficulty(diff?: string) {
       diffRef.current = diff
@@ -692,12 +628,19 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (!gameRunning.current) return
-      const s = stateRef.current
+      if (stateRef.current.phase !== 'running') return
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        s.currentLane = Math.max(-1, s.currentLane - 1)
+        stateRef.current = applyCommand(
+          stateRef.current,
+          { type: 'moveLane', dir: -1 },
+          performance.now(),
+        )
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        s.currentLane = Math.min(1, s.currentLane + 1)
+        stateRef.current = applyCommand(
+          stateRef.current,
+          { type: 'moveLane', dir: 1 },
+          performance.now(),
+        )
       }
     }
 
@@ -708,21 +651,39 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
       touchStartY = e.touches[0].clientY
     }
     function handleTouchEnd(e: TouchEvent) {
-      if (!gameRunning.current) return
+      if (stateRef.current.phase !== 'running') return
       const dx = e.changedTouches[0].clientX - touchStartX
       const dy = e.changedTouches[0].clientY - touchStartY
-      const s = stateRef.current
       if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
         if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
-          if (dx < 0) s.currentLane = Math.max(-1, s.currentLane - 1)
-          else s.currentLane = Math.min(1, s.currentLane + 1)
+          if (dx < 0) {
+            stateRef.current = applyCommand(
+              stateRef.current,
+              { type: 'moveLane', dir: -1 },
+              performance.now(),
+            )
+          } else {
+            stateRef.current = applyCommand(
+              stateRef.current,
+              { type: 'moveLane', dir: 1 },
+              performance.now(),
+            )
+          }
         }
       } else {
         const x = e.changedTouches[0].clientX
         if (x < window.innerWidth * 0.4) {
-          s.currentLane = Math.max(-1, s.currentLane - 1)
+          stateRef.current = applyCommand(
+            stateRef.current,
+            { type: 'moveLane', dir: -1 },
+            performance.now(),
+          )
         } else if (x > window.innerWidth * 0.6) {
-          s.currentLane = Math.min(1, s.currentLane + 1)
+          stateRef.current = applyCommand(
+            stateRef.current,
+            { type: 'moveLane', dir: 1 },
+            performance.now(),
+          )
         }
       }
     }
@@ -740,7 +701,7 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (!gameInitialized.current || disposedRef.current) return
-      if (!gameRunning.current) {
+      if (stateRef.current.phase === 'gameover') {
         if (!gameOverFired.current) {
           gameOverFired.current = true
           propsRef.current.onGameOver(Math.floor(stateRef.current.score))
@@ -788,7 +749,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     function loop(ts: number) {
       try {
         if (disposed) return
-        const s = stateRef.current
         const dt = lastFrameTimeRef.current
           ? Math.min((ts - lastFrameTimeRef.current) / 1000, 0.05)
           : 0
@@ -797,93 +757,15 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         const w = canvas.width / dpr
         const h = canvas.height / dpr
 
-        if (gameRunning.current) {
-          if (!s.paused) {
-            s.scrollY += s.speed * 4 * dt * 60
-
-            const now = performance.now()
-            if (now < s.boostUntil) {
-              s.speed = BOOST_SPEED
-              s.score += 10 * dt * s.multiplier
-            } else if (now < s.penaltyUntil) {
-              s.speed = PENALTY_SPEED
-              s.score += 3 * dt * s.multiplier
-            } else {
-              s.speed = BASE_SPEED
-              s.score += 6 * dt * s.multiplier
-            }
-
-            s.gap -= GAP_DRAIN * s.speed * dt
-          }
-
-          s.displayLane += (s.currentLane - s.displayLane) * 0.15
-
-          const obsList = obstaclesRef.current
-          for (let i = obsList.length - 1; i >= 0; i--) {
-            const obs = obsList[i]
-            obs.y += s.speed * 4 * dt * 60
-            if (obs.y > h + 30) {
-              obsList.splice(i, 1)
-              continue
-            }
-            if (obs.hit) continue
-            if (
-              obs.y > playerY() - 20 &&
-              obs.y < playerY() + 20 &&
-              obs.lane === Math.round(s.displayLane)
-            ) {
-              obs.hit = true
-              if (obs.type === 'barrier') {
-                s.gap = Math.max(5, s.gap - 12)
-                s.screenShake = 0.4
-                s.flashTimer = 0.2
-                s.flashGreen = false
-              } else if (obs.type === 'coin') {
-                s.score += 25 * s.multiplier
-                s.gap = Math.min(100, s.gap + 3)
-                s.flashTimer = 0.15
-                s.flashGreen = true
-              } else if (obs.type === 'boost') {
-                s.boostUntil = performance.now() + 2000
-                s.flashTimer = 0.2
-                s.flashGreen = true
-              }
-            }
-          }
-
-          spawnTimerRef.current -= dt * 1000
-          if (spawnTimerRef.current <= 0) {
-            const lane = Math.floor(Math.random() * 3) - 1
-            const types: Obstacle['type'][] = [
-              'barrier',
-              'coin',
-              'barrier',
-              'coin',
-              'coin',
-              'boost',
-            ]
-            const type = types[Math.floor(Math.random() * types.length)]
-            const blocked = obsList.some((o) => o.lane === lane && !o.hit && o.y < 100)
-            if (!blocked) {
-              obsList.push({ lane, y: -30, type, hit: false })
-            }
-            spawnTimerRef.current = 600 + Math.random() * 1000
-          }
-
-          if (s.screenShake > 0) {
-            s.screenShake *= 0.9
-            if (s.screenShake < 0.01) s.screenShake = 0
-          }
-
-          if (s.flashTimer > 0) {
-            s.flashTimer -= dt
-          }
-
-          if (s.gap <= 0) {
-            s.gap = 0
-            gameRunning.current = false
-          }
+        if (stateRef.current.phase === 'running') {
+          const { state } = stepRunner(stateRef.current, dt, ts, {
+            viewportHeight: h,
+            rng: Math.random,
+          })
+          stateRef.current = state
         }
+
+        const s = stateRef.current
 
         ctx.save()
 
@@ -928,11 +810,11 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
         drawScenery(ctx, w, h, s.scrollY, theme)
         drawParticles(ctx, w, h, ts * 0.001, theme)
 
-        for (const obs of obstaclesRef.current) {
+        for (const obs of stateRef.current.obstacles) {
           if (!obs.hit) drawObstacle(ctx, obs, w)
         }
 
-        const danger = Math.max(0, Math.min(1, (GAP_START - s.gap) / GAP_START))
+        const danger = dangerLevel(s.gap)
         drawPixelMonster(ctx, playerX(), monsterY(), ts * 0.001, danger, theme)
         drawPixelPlayer(ctx, playerX(), playerY(), ts * 0.001)
 
@@ -961,7 +843,6 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     return () => {
       disposed = true
       disposedRef.current = true
-      gameRunning.current = false
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(anim)
       clearTimeout(challengeTimerRef.current)

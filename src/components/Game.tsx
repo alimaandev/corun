@@ -28,9 +28,14 @@ import {
   markDailyCompleted,
   addToLeaderboard,
   saveBadge,
-} from '../game/challenges'
-import { ALL_LEVELS, ENDING_SCENE, getLevelProgress, saveLevelProgress } from '../game/levels'
-import { getLevelScene } from '../game/levelScenes'
+} from '../game/engine/data/challenges'
+import {
+  ALL_LEVELS,
+  ENDING_SCENE,
+  getLevelProgress,
+  saveLevelProgress,
+} from '../game/engine/data/levels'
+import { getLevelScene } from '../game/engine/data/levelScenes'
 import {
   initSession,
   submitScore,

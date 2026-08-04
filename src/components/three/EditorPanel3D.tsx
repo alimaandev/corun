@@ -2,7 +2,7 @@ import { useRef, useMemo, useState, useEffect, useCallback } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { CodePuzzle } from '../../game/types'
-import { evaluateCode } from '../../game/codePuzzles'
+import { evaluateCode } from '../../game/engine/data/codePuzzles'
 import { playSuccess, playError } from '../../game/sound'
 
 const CANVAS_W = 640

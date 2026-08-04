@@ -1,4 +1,4 @@
-import { LevelSceneData } from './types'
+import { LevelSceneData } from '../../types'
 
 const GY = 450
 const GH = 50

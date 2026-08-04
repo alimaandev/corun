@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import TerminalScene from './three/TerminalScene'
 import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
-import { TOPICS, isDailyCompleted } from '../game/challenges'
+import { TOPICS, isDailyCompleted } from '../game/engine/data/challenges'
 import {
   getGlobalLeaderboard,
   getDailyLeaderboard,

@@ -6,7 +6,7 @@ import {
   saveLevelProgress,
   isLevelUnlocked,
 } from './levels'
-import type { LevelProgress } from './types'
+import type { LevelProgress } from '../../types'
 
 beforeEach(() => {
   localStorage.clear()
