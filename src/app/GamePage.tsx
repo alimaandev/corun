@@ -25,9 +25,7 @@ import {
 import {
   getRandomChallenge,
   getDailyChallenge,
-  markDailyCompleted,
   addToLeaderboard,
-  saveBadge,
 } from '../game/engine/data/challenges'
 import {
   ALL_LEVELS,
@@ -52,19 +50,14 @@ import { importPuzzleFromUrl } from '../game/puzzleShare'
 import { colors, fonts, alpha, radius } from '../lib/theme'
 import { useBossBattle } from '../features/boss/useBossBattle'
 import { useBonusRound } from '../features/bonus/useBonusRound'
-import { getComboMultiplier } from '../game/engine/scoring'
+import { useEndless, Badge } from '../features/endless/useEndless'
+import { useSpeedRun } from '../features/speedrun/useSpeedRun'
+import { useSurvival } from '../features/survival/useSurvival'
+import { useDailyChallenge } from '../features/daily/useDailyChallenge'
 import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features/modes'
 
 type Screen =
   'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
-
-interface Badge {
-  topic: Topic
-  label: string
-  count: number
-}
-
-const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>('start')
@@ -72,8 +65,6 @@ export default function Game() {
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
   const [timeLimit, setTimeLimit] = useState(5)
   const [mode, setMode] = useState<Mode>('normal')
-  const [showCombo, setShowCombo] = useState(false)
-  const [comboText, setComboText] = useState('')
   const [highScore, setHighScore] = useState(() => {
     try {
       const v = parseInt(localStorage.getItem('coderun_highscore') || '0', 10)
@@ -96,20 +87,9 @@ export default function Game() {
   const challengeRef = useRef(false)
   const lastBossScore = useRef(0)
   const lastBonusScore = useRef(0)
-  const recentCorrect = useRef<boolean[]>([])
-  const topicCounts = useRef<Record<string, number>>({})
-  const earnedBadges = useRef<Set<string>>(new Set())
   const modeRef = useRef<Mode>('normal')
-  const comboTimeoutRef = useRef<number>(0)
-  const dailyTimeoutRef = useRef<number>(0)
-  const streakRef = useRef(0)
-  const isDailyRef = useRef(false)
-  const [speedRunTime, setSpeedRunTime] = useState(60)
-  const [survivalLives, setSurvivalLives] = useState(3)
-  const speedRunTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const gameOverRef = useRef<(score: number) => void>(() => {})
   const hudScoreRef = useRef(0)
-  const survivalLivesRef = useRef(3)
   useEffect(() => {
     hudScoreRef.current = hudData.score
   }, [hudData.score])
@@ -228,6 +208,20 @@ export default function Game() {
 
   const bonusRound = useBonusRound(bonusCtx)
 
+  const endless = useEndless()
+
+  const onModeTimeUp = useCallback(() => {
+    gameOverRef.current(hudScoreRef.current)
+  }, [])
+
+  const speedRunCtx = useMemo(() => ({ onTimeUp: onModeTimeUp }), [onModeTimeUp])
+  const speedRun = useSpeedRun(speedRunCtx)
+
+  const survivalCtx = useMemo(() => ({ onGameOver: onModeTimeUp }), [onModeTimeUp])
+  const survival = useSurvival(survivalCtx)
+
+  const daily = useDailyChallenge()
+
   interface GameStateOverrides {
     mode: Mode
     modeRef: Mode
@@ -240,24 +234,20 @@ export default function Game() {
       setHudData({ score: 0, gap: 70, speed: 1, streak: 0, ...overrides?.hudData })
       setCurrentChallenge(null)
       setMode(overrides?.mode ?? 'normal')
-      setShowCombo(false)
-      setComboText('')
       setFinalScore(0)
       setFinalBadges([])
       challengeRef.current = false
       lastBossScore.current = 0
       lastBonusScore.current = 0
-      recentCorrect.current = []
-      topicCounts.current = {}
-      earnedBadges.current = new Set()
       modeRef.current = overrides?.modeRef ?? 'normal'
-      streakRef.current = 0
-      isDailyRef.current = overrides?.isDaily ?? false
-      clearTimeout(comboTimeoutRef.current)
       bossBattle.reset()
       bonusRound.reset()
+      endless.reset()
+      speedRun.reset()
+      survival.reset()
+      daily.reset(overrides?.isDaily ?? false)
     },
-    [bossBattle, bonusRound],
+    [bossBattle, bonusRound, endless, speedRun, survival, daily],
   )
 
   const handleStoryDone = useCallback(() => {
@@ -285,66 +275,6 @@ export default function Game() {
     setShowEndingScene(false)
   }, [])
 
-  const handleStart = useCallback(
-    (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => {
-      setSelectedTopic(topic)
-      setSelectedDifficulty(difficulty)
-      setScreen('playing')
-      resetGameState({ isDaily: !!isDaily })
-      if (isDaily) {
-        const dc = getDailyChallenge()
-        dailyTimeoutRef.current = window.setTimeout(() => {
-          challengeRef.current = true
-          setCurrentChallenge(dc)
-          setTimeLimit(8)
-        }, 200)
-      }
-    },
-    [resetGameState],
-  )
-
-  const handleSpeedRun = useCallback(() => {
-    setSelectedTopic(null)
-    setSelectedDifficulty('easy')
-    setScreen('playing')
-    resetGameState({ mode: 'speedrun', modeRef: 'speedrun' })
-    setSpeedRunTime(60)
-    if (speedRunTimerRef.current) clearInterval(speedRunTimerRef.current)
-    speedRunTimerRef.current = setInterval(() => {
-      setSpeedRunTime((t) => {
-        if (t <= 1) {
-          if (speedRunTimerRef.current) clearInterval(speedRunTimerRef.current)
-          speedRunTimerRef.current = null
-          gameOverRef.current(hudScoreRef.current)
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
-  }, [resetGameState])
-
-  const handleSurvival = useCallback(() => {
-    setSelectedTopic(null)
-    setSelectedDifficulty('easy')
-    setScreen('playing')
-    resetGameState({ mode: 'survival', modeRef: 'survival' })
-    setSurvivalLives(3)
-    survivalLivesRef.current = 3
-  }, [resetGameState])
-
-  function getAdaptiveDifficulty(base: Difficulty): Difficulty | undefined {
-    const recent = recentCorrect.current
-    if (recent.length >= 3) {
-      const last3 = recent.slice(-3)
-      const allCorrect = last3.every((r) => r)
-      const allWrong = last3.every((r) => !r)
-      const baseIdx = DIFFICULTY_ORDER.indexOf(base)
-      if (allCorrect && baseIdx < DIFFICULTY_ORDER.length - 1) return DIFFICULTY_ORDER[baseIdx + 1]
-      if (allWrong && baseIdx > 0) return DIFFICULTY_ORDER[baseIdx - 1]
-    }
-    return undefined
-  }
-
   const handleChallenge = useCallback((challenge: Challenge) => {
     if (challengeRef.current) return
     challengeRef.current = true
@@ -357,24 +287,37 @@ export default function Game() {
     setCurrentChallenge(null)
   }, [])
 
-  function showComboNotification(level: number) {
-    clearTimeout(comboTimeoutRef.current)
-    const texts = [
-      '',
-      '',
-      '',
-      '🔥 COMBO x1.5',
-      '',
-      '🔥🔥 COMBO x2',
-      '',
-      '🔥🔥🔥 COMBO x3',
-      '',
-      '🔥🔥🔥🔥 COMBO x4',
-    ]
-    setComboText(texts[level] || '')
-    setShowCombo(true)
-    comboTimeoutRef.current = window.setTimeout(() => setShowCombo(false), 1200)
-  }
+  const handleStart = useCallback(
+    (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => {
+      setSelectedTopic(topic)
+      setSelectedDifficulty(difficulty)
+      setScreen('playing')
+      resetGameState({ isDaily: !!isDaily })
+      if (isDaily) {
+        const dc = getDailyChallenge()
+        daily.start(dc, (challenge, time) => {
+          handleChallenge(challenge)
+          setTimeLimit(time)
+        })
+      }
+    },
+    [resetGameState, daily, handleChallenge],
+  )
+
+  const handleSpeedRun = useCallback(() => {
+    setSelectedTopic(null)
+    setSelectedDifficulty('easy')
+    setScreen('playing')
+    resetGameState({ mode: 'speedrun', modeRef: 'speedrun' })
+    speedRun.start()
+  }, [resetGameState, speedRun])
+
+  const handleSurvival = useCallback(() => {
+    setSelectedTopic(null)
+    setSelectedDifficulty('easy')
+    setScreen('playing')
+    resetGameState({ mode: 'survival', modeRef: 'survival' })
+  }, [resetGameState])
 
   const handleAnswer = useCallback(
     (answerIndex: number) => {
@@ -394,10 +337,8 @@ export default function Game() {
 
       if (modeRef.current === 'survival') {
         if (!correct) {
-          survivalLivesRef.current--
-          setSurvivalLives(survivalLivesRef.current)
-          if (survivalLivesRef.current <= 0) {
-            handleGameOver(hudScoreRef.current)
+          const dead = survival.loseLife()
+          if (dead) {
             finishChallenge()
             return
           }
@@ -416,28 +357,25 @@ export default function Game() {
       gameRef.current?.handleAnswer(correct)
       if (correct) playSuccess()
       else playError()
-      recentCorrect.current.push(correct)
-      if (recentCorrect.current.length > 6) recentCorrect.current.shift()
-      const adaptDiff = getAdaptiveDifficulty(selectedDifficulty)
+      const { multiplier, adaptDiff } = endless.registerAnswer(
+        correct,
+        currentChallenge.topic,
+        selectedDifficulty,
+      )
       gameRef.current?.setPreferredDifficulty(adaptDiff)
-
-      const topic = currentChallenge.topic
-      if (correct) {
-        topicCounts.current[topic] = (topicCounts.current[topic] || 0) + 1
-        if (topicCounts.current[topic] >= 5 && !earnedBadges.current.has(topic)) {
-          earnedBadges.current.add(topic)
-          saveBadge(topic)
-        }
-      }
-
-      streakRef.current = correct ? streakRef.current + 1 : 0
-      const mult = getComboMultiplier(streakRef.current)
-      gameRef.current?.setMultiplier(mult)
-      if (mult >= 1.5 && correct) showComboNotification(streakRef.current)
+      gameRef.current?.setMultiplier(multiplier)
 
       finishChallenge()
     },
-    [currentChallenge, selectedDifficulty, finishChallenge, bossBattle, bonusRound],
+    [
+      currentChallenge,
+      selectedDifficulty,
+      finishChallenge,
+      bossBattle,
+      bonusRound,
+      endless,
+      survival,
+    ],
   )
 
   const handleTimeout = useCallback(() => {
@@ -452,13 +390,11 @@ export default function Game() {
       return
     }
     gameRef.current?.handleTimeout()
-    recentCorrect.current.push(false)
-    if (recentCorrect.current.length > 6) recentCorrect.current.shift()
-    const adaptDiff = getAdaptiveDifficulty(selectedDifficulty)
+    const adaptDiff = endless.registerTimeout(selectedDifficulty)
     gameRef.current?.setPreferredDifficulty(adaptDiff)
     gameRef.current?.setMultiplier(1)
     finishChallenge()
-  }, [finishChallenge, bossBattle, bonusRound])
+  }, [finishChallenge, bossBattle, bonusRound, endless])
 
   const handleNameSubmit = useCallback(async (name: string) => {
     setShowNameDialog(false)
@@ -471,51 +407,45 @@ export default function Game() {
     }
   }, [])
 
-  const handleGameOver = useCallback((score: number) => {
-    playGameOver()
-    setFinalScore(score)
-    setFinalBadges(
-      Array.from(earnedBadges.current).map((t) => ({
-        topic: t as Topic,
-        label: t,
-        count: topicCounts.current[t] || 0,
-      })),
-    )
-    setScreen('gameover')
-    challengeRef.current = false
-    setCurrentChallenge(null)
-    clearTimeout(comboTimeoutRef.current)
-    setHighScore((prev) => {
-      const safePrev = isNaN(prev) ? 0 : prev
-      const nh = Math.max(safePrev, score)
-      if (nh > safePrev && !isNaN(nh)) {
-        try {
-          localStorage.setItem('coderun_highscore', String(nh))
-        } catch {}
+  const handleGameOver = useCallback(
+    (score: number) => {
+      playGameOver()
+      setFinalScore(score)
+      setFinalBadges(endless.getBadges())
+      setScreen('gameover')
+      challengeRef.current = false
+      setCurrentChallenge(null)
+      setHighScore((prev) => {
+        const safePrev = isNaN(prev) ? 0 : prev
+        const nh = Math.max(safePrev, score)
+        if (nh > safePrev && !isNaN(nh)) {
+          try {
+            localStorage.setItem('coderun_highscore', String(nh))
+          } catch {}
+        }
+        return nh
+      })
+      if (score > 0) addToLeaderboard(Math.floor(score))
+      daily.complete(score)
+      if (profileRef.current && score > 0) {
+        const mode = activeLevelRef.current
+          ? 'story'
+          : daily.isDailyRef.current
+            ? 'daily'
+            : ('freeplay' as const)
+        submitScore(profileRef.current.id, Math.floor(score), mode, activeLevelRef.current?.id || 0)
+          .then(() => getGlobalLeaderboard(profileRef.current!.id))
+          .then((res) => setPlayerRank(res.yourRank))
+          .catch(() => console.debug('[Game] leaderboard submit failed'))
       }
-      return nh
-    })
-    if (score > 0) addToLeaderboard(Math.floor(score))
-    if (isDailyRef.current && score > 0) markDailyCompleted()
-    if (profileRef.current && score > 0) {
-      const mode = activeLevelRef.current
-        ? 'story'
-        : isDailyRef.current
-          ? 'daily'
-          : ('freeplay' as const)
-      submitScore(profileRef.current.id, Math.floor(score), mode, activeLevelRef.current?.id || 0)
-        .then(() => getGlobalLeaderboard(profileRef.current!.id))
-        .then((res) => setPlayerRank(res.yourRank))
-        .catch(() => console.debug('[Game] leaderboard submit failed'))
-    }
-  }, [])
+    },
+    [endless, daily],
+  )
 
   const handleRestart = useCallback(() => {
     setScreen('start')
     setFinalScore(0)
     challengeRef.current = false
-    clearTimeout(comboTimeoutRef.current)
-    clearTimeout(dailyTimeoutRef.current)
   }, [])
 
   const handleRetryLevel = useCallback(() => {
@@ -555,10 +485,10 @@ export default function Game() {
 
   useEffect(() => {
     return () => {
-      clearTimeout(comboTimeoutRef.current)
-      clearTimeout(dailyTimeoutRef.current)
+      speedRun.dispose()
+      survival.dispose()
     }
-  }, [])
+  }, [speedRun, survival])
 
   useEffect(() => {
     if (screen !== 'playing' || hudData.score <= 0) return
@@ -730,7 +660,7 @@ export default function Game() {
   }
 
   function renderComboNotification() {
-    if (!showCombo) return null
+    if (!endless.showCombo) return null
     return (
       <div
         style={{
@@ -748,7 +678,7 @@ export default function Game() {
           animation: 'fadeIn 0.3s ease-out',
         }}
       >
-        {comboText}
+        {endless.comboText}
       </div>
     )
   }
@@ -788,8 +718,8 @@ export default function Game() {
             isBoss={mode === 'boss'}
             isBonus={mode === 'bonus'}
             levelName={undefined}
-            speedRunTime={mode === 'speedrun' ? speedRunTime : undefined}
-            survivalLives={mode === 'survival' ? survivalLives : undefined}
+            speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
+            survivalLives={mode === 'survival' ? survival.lives : undefined}
           />
         )}
 
