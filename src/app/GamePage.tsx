@@ -1,17 +1,17 @@
-import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
 import type { PixelRunnerHandle } from '../game/PixelRunner'
 const PixelRunner = lazy(() => import('../game/PixelRunner'))
-const ChallengeModal = lazy(() => import('./ChallengeModal'))
-const Scene3D = lazy(() => import('./Scene3D'))
-const PuzzleEditor = lazy(() => import('./PuzzleEditor'))
-const CommunityPuzzles = lazy(() => import('./CommunityPuzzles'))
-import HUD from './HUD'
-import StartScreen from './StartScreen'
-import GameOverScreen from './GameOverScreen'
-import LevelSelect from './LevelSelect'
-import SceneCanvas from './SceneCanvas'
-import { playGameOver, playBossAppear, playSuccess, playError } from '../game/sound'
+const ChallengeModal = lazy(() => import('../components/ChallengeModal'))
+const StoryLevelCanvas = lazy(() => import('../features/story/StoryLevelCanvas'))
+const PuzzleEditor = lazy(() => import('../components/PuzzleEditor'))
+const CommunityPuzzles = lazy(() => import('../components/CommunityPuzzles'))
+import HUD from '../components/HUD'
+import StartScreen from '../components/StartScreen'
+import GameOverScreen from '../components/GameOverScreen'
+import LevelSelect from '../components/LevelSelect'
+import SceneCanvas from '../components/SceneCanvas'
+import { playGameOver, playSuccess, playError } from '../game/sound'
 import { startMusic, stopMusic } from '../game/audio'
 import {
   Challenge,
@@ -45,23 +45,18 @@ import {
   getGlobalLeaderboard,
   PlayerProfile,
 } from '../lib/leaderboard'
-import NameDialog from './NameDialog'
-import CodePuzzlePlaytest from './CodePuzzlePlaytest'
-import LoadingScreen from './LoadingScreen'
+import NameDialog from '../components/NameDialog'
+import CodePuzzlePlaytest from '../components/CodePuzzlePlaytest'
+import LoadingScreen from '../components/LoadingScreen'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
 import { colors, fonts, alpha, radius } from '../lib/theme'
+import { useBossBattle } from '../features/boss/useBossBattle'
+import { useBonusRound } from '../features/bonus/useBonusRound'
+import { getComboMultiplier } from '../game/engine/scoring'
+import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features/modes'
 
 type Screen =
   'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
-type Mode = 'normal' | 'boss' | 'bonus' | 'speedrun' | 'survival'
-
-interface BossState {
-  hp: number
-  maxHp: number
-  name: string
-  questionsLeft: number
-  correctCount: number
-}
 
 interface Badge {
   topic: Topic
@@ -69,42 +64,7 @@ interface Badge {
   count: number
 }
 
-const BOSS_THRESHOLD = 150
-const BONUS_THRESHOLD = 80
-const BONUS_DURATION = 5
-const COMBO_MULTIPLIERS = [1, 1, 1, 1.5, 1.5, 2, 2, 3, 3, 4]
 const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard']
-
-const BOSS_NAMES = [
-  { name: 'SYNTAX ERROR', hp: 3 },
-  { name: 'NULL POINTER', hp: 3 },
-  { name: 'INFINITE LOOP', hp: 4 },
-  { name: 'MEMORY LEAK', hp: 3 },
-  { name: 'DEADLOCK', hp: 4 },
-  { name: 'RUNTIME ERROR', hp: 3 },
-]
-
-function getTimeLimit(difficulty: Difficulty): number {
-  switch (difficulty) {
-    case 'easy':
-      return 4
-    case 'medium':
-      return 6
-    case 'hard':
-      return 8
-    default:
-      return 5
-  }
-}
-
-function getComboMultiplier(streak: number): number {
-  if (streak >= 10) return 4
-  return COMBO_MULTIPLIERS[streak] ?? 1
-}
-
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>('start')
@@ -112,8 +72,6 @@ export default function Game() {
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
   const [timeLimit, setTimeLimit] = useState(5)
   const [mode, setMode] = useState<Mode>('normal')
-  const [boss, setBoss] = useState<BossState | null>(null)
-  const [bonusTimeLeft, setBonusTimeLeft] = useState(0)
   const [showCombo, setShowCombo] = useState(false)
   const [comboText, setComboText] = useState('')
   const [highScore, setHighScore] = useState(() => {
@@ -142,10 +100,6 @@ export default function Game() {
   const topicCounts = useRef<Record<string, number>>({})
   const earnedBadges = useRef<Set<string>>(new Set())
   const modeRef = useRef<Mode>('normal')
-  const bossRef = useRef<BossState | null>(null)
-  const bonusTimerRef = useRef<number>(0)
-  const bonusQuestionsRef = useRef(0)
-  const bonusTimeLeftRef = useRef(0)
   const comboTimeoutRef = useRef<number>(0)
   const dailyTimeoutRef = useRef<number>(0)
   const streakRef = useRef(0)
@@ -170,7 +124,6 @@ export default function Game() {
 
   // Level refs
   const activeLevelRef = useRef<LevelConfig | null>(null)
-  const isLevelBossRef = useRef(false)
   const levelTargetReached = useRef(false)
   const hudDataRef = useRef<HUDData>(hudData)
 
@@ -216,49 +169,6 @@ export default function Game() {
     setScreen('levelintro')
   }, [])
 
-  interface GameStateOverrides {
-    mode: Mode
-    modeRef: Mode
-    isDaily: boolean
-    hudData: Partial<HUDData>
-  }
-
-  const resetGameState = useCallback((overrides?: Partial<GameStateOverrides>) => {
-    setHudData({ score: 0, gap: 70, speed: 1, streak: 0, ...overrides?.hudData })
-    setCurrentChallenge(null)
-    setMode(overrides?.mode ?? 'normal')
-    setBoss(null)
-    setBonusTimeLeft(0)
-    setShowCombo(false)
-    setComboText('')
-    setFinalScore(0)
-    setFinalBadges([])
-    challengeRef.current = false
-    lastBossScore.current = 0
-    lastBonusScore.current = 0
-    recentCorrect.current = []
-    topicCounts.current = {}
-    earnedBadges.current = new Set()
-    modeRef.current = overrides?.modeRef ?? 'normal'
-    bossRef.current = null
-    streakRef.current = 0
-    isDailyRef.current = overrides?.isDaily ?? false
-    clearTimeout(bonusTimerRef.current)
-    clearTimeout(comboTimeoutRef.current)
-  }, [])
-
-  const handleStoryDone = useCallback(() => {
-    const level = activeLevelRef.current
-    if (!level) {
-      setScreen('levelselect')
-      return
-    }
-    isLevelBossRef.current = false
-    levelTargetReached.current = false
-    setScreen('playing')
-    resetGameState()
-  }, [resetGameState])
-
   const handleLevelComplete = useCallback((correctCount?: number) => {
     const level = activeLevelRef.current
     if (!level) return
@@ -282,6 +192,84 @@ export default function Game() {
     setFinalStars(stars)
     setScreen('leveloutro')
   }, [])
+
+  const showChallenge = useCallback((challenge: Challenge, timeLimitSeconds: number) => {
+    setCurrentChallenge(challenge)
+    setTimeLimit(timeLimitSeconds)
+    challengeRef.current = true
+  }, [])
+
+  const bossCtx = useMemo(
+    () => ({
+      gameRef,
+      modeRef,
+      setMode,
+      topic: selectedTopic,
+      showChallenge,
+      onLevelComplete: handleLevelComplete,
+      getLevel: () => activeLevelRef.current,
+    }),
+    [selectedTopic, showChallenge, handleLevelComplete],
+  )
+
+  const bossBattle = useBossBattle(bossCtx)
+
+  const bonusCtx = useMemo(
+    () => ({
+      gameRef,
+      modeRef,
+      setMode,
+      topic: selectedTopic,
+      showChallenge,
+      active: mode === 'bonus' && screen === 'playing',
+    }),
+    [selectedTopic, showChallenge, mode, screen],
+  )
+
+  const bonusRound = useBonusRound(bonusCtx)
+
+  interface GameStateOverrides {
+    mode: Mode
+    modeRef: Mode
+    isDaily: boolean
+    hudData: Partial<HUDData>
+  }
+
+  const resetGameState = useCallback(
+    (overrides?: Partial<GameStateOverrides>) => {
+      setHudData({ score: 0, gap: 70, speed: 1, streak: 0, ...overrides?.hudData })
+      setCurrentChallenge(null)
+      setMode(overrides?.mode ?? 'normal')
+      setShowCombo(false)
+      setComboText('')
+      setFinalScore(0)
+      setFinalBadges([])
+      challengeRef.current = false
+      lastBossScore.current = 0
+      lastBonusScore.current = 0
+      recentCorrect.current = []
+      topicCounts.current = {}
+      earnedBadges.current = new Set()
+      modeRef.current = overrides?.modeRef ?? 'normal'
+      streakRef.current = 0
+      isDailyRef.current = overrides?.isDaily ?? false
+      clearTimeout(comboTimeoutRef.current)
+      bossBattle.reset()
+      bonusRound.reset()
+    },
+    [bossBattle, bonusRound],
+  )
+
+  const handleStoryDone = useCallback(() => {
+    const level = activeLevelRef.current
+    if (!level) {
+      setScreen('levelselect')
+      return
+    }
+    levelTargetReached.current = false
+    setScreen('playing')
+    resetGameState()
+  }, [resetGameState])
 
   const [showEndingScene, setShowEndingScene] = useState(true)
 
@@ -388,147 +376,18 @@ export default function Game() {
     comboTimeoutRef.current = window.setTimeout(() => setShowCombo(false), 1200)
   }
 
-  function triggerBossBattle() {
-    const b = pick(BOSS_NAMES)
-    const bs: BossState = {
-      hp: b.hp,
-      maxHp: b.hp,
-      name: b.name,
-      questionsLeft: b.hp,
-      correctCount: 0,
-    }
-    bossRef.current = bs
-    setBoss(bs)
-    modeRef.current = 'boss'
-    setMode('boss')
-    gameRef.current?.setPaused(true)
-    playBossAppear()
-    scheduleBossQuestion(bs)
-  }
-
-  function triggerLevelBoss() {
-    const lev = activeLevelRef.current
-    if (!lev) {
-      triggerBossBattle()
-      return
-    }
-    isLevelBossRef.current = true
-    const bossCfg = lev.boss
-    const bs: BossState = {
-      hp: bossCfg.hp,
-      maxHp: bossCfg.hp,
-      name: bossCfg.name,
-      questionsLeft: bossCfg.hp,
-      correctCount: 0,
-    }
-    bossRef.current = bs
-    setBoss(bs)
-    modeRef.current = 'boss'
-    setMode('boss')
-    gameRef.current?.setPaused(true)
-    playBossAppear()
-    scheduleBossQuestion(bs)
-  }
-
-  async function scheduleBossQuestion(bs: BossState) {
-    if (bs.questionsLeft <= 0) return finishBossBattle(bs)
-    const diff = activeLevelRef.current?.boss.difficulty ?? 'hard'
-    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, diff)
-    setCurrentChallenge(q)
-    setTimeLimit(getTimeLimit(diff))
-    challengeRef.current = true
-  }
-
-  async function handleBossAnswer(correct: boolean) {
-    const bs = bossRef.current
-    if (!bs) return
-    if (correct) {
-      bs.hp--
-      bs.correctCount++
-    }
-    bs.questionsLeft--
-    if (bs.questionsLeft <= 0) {
-      finishBossBattle(bs)
-      return
-    }
-    setBoss({ ...bs })
-    const diff = activeLevelRef.current?.boss.difficulty ?? 'hard'
-    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, diff)
-    setCurrentChallenge(q)
-    setTimeLimit(getTimeLimit(diff))
-    challengeRef.current = true
-  }
-
-  function finishBossBattle(bs: BossState) {
-    bossRef.current = null
-    setBoss(null)
-    modeRef.current = 'normal'
-    setMode('normal')
-    gameRef.current?.setPaused(false)
-    gameRef.current?.setMultiplier(1)
-
-    if (isLevelBossRef.current) {
-      isLevelBossRef.current = false
-      handleLevelComplete(bs.correctCount)
-      return
-    }
-
-    for (let i = 0; i < bs.correctCount; i++) {
-      gameRef.current?.handleAnswer(true)
-    }
-  }
-
-  function triggerBonusRound() {
-    modeRef.current = 'bonus'
-    setMode('bonus')
-    bonusTimeLeftRef.current = BONUS_DURATION
-    setBonusTimeLeft(BONUS_DURATION)
-    bonusQuestionsRef.current = 0
-    gameRef.current?.setPaused(true)
-    gameRef.current?.setMultiplier(2)
-    scheduleBonusQuestion()
-  }
-
-  async function scheduleBonusQuestion() {
-    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
-    setCurrentChallenge(q)
-    setTimeLimit(BONUS_DURATION - bonusQuestionsRef.current * 0.3)
-    challengeRef.current = true
-  }
-
-  async function handleBonusAnswer(correct: boolean) {
-    if (correct) bonusQuestionsRef.current++
-    if (bonusTimeLeftRef.current <= 0 || bonusQuestionsRef.current >= 6) {
-      finishBonusRound()
-      return
-    }
-    const q = await getRandomChallenge(new Set(), selectedTopic ?? undefined, 'easy')
-    setCurrentChallenge(q)
-    setTimeLimit(Math.max(2, bonusTimeLeftRef.current - 0.5))
-    challengeRef.current = true
-  }
-
-  function finishBonusRound() {
-    clearInterval(bonusTimerRef.current)
-    modeRef.current = 'normal'
-    setMode('normal')
-    setBonusTimeLeft(0)
-    gameRef.current?.setMultiplier(1)
-    gameRef.current?.setPaused(false)
-  }
-
   const handleAnswer = useCallback(
     (answerIndex: number) => {
       if (!currentChallenge) return
       const correct = answerIndex === currentChallenge.correct
 
       if (modeRef.current === 'boss') {
-        handleBossAnswer(correct)
+        bossBattle.handleBossAnswer(correct)
         finishChallenge()
         return
       }
       if (modeRef.current === 'bonus') {
-        handleBonusAnswer(correct)
+        bonusRound.handleBonusAnswer(correct)
         finishChallenge()
         return
       }
@@ -578,17 +437,17 @@ export default function Game() {
 
       finishChallenge()
     },
-    [currentChallenge, selectedDifficulty, finishChallenge],
+    [currentChallenge, selectedDifficulty, finishChallenge, bossBattle, bonusRound],
   )
 
   const handleTimeout = useCallback(() => {
     if (modeRef.current === 'boss') {
-      handleBossAnswer(false)
+      bossBattle.handleBossAnswer(false)
       finishChallenge()
       return
     }
     if (modeRef.current === 'bonus') {
-      handleBonusAnswer(false)
+      bonusRound.handleBonusAnswer(false)
       finishChallenge()
       return
     }
@@ -599,7 +458,7 @@ export default function Game() {
     gameRef.current?.setPreferredDifficulty(adaptDiff)
     gameRef.current?.setMultiplier(1)
     finishChallenge()
-  }, [finishChallenge])
+  }, [finishChallenge, bossBattle, bonusRound])
 
   const handleNameSubmit = useCallback(async (name: string) => {
     setShowNameDialog(false)
@@ -625,7 +484,6 @@ export default function Game() {
     setScreen('gameover')
     challengeRef.current = false
     setCurrentChallenge(null)
-    clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
     setHighScore((prev) => {
       const safePrev = isNaN(prev) ? 0 : prev
@@ -656,7 +514,6 @@ export default function Game() {
     setScreen('start')
     setFinalScore(0)
     challengeRef.current = false
-    clearTimeout(bonusTimerRef.current)
     clearTimeout(comboTimeoutRef.current)
     clearTimeout(dailyTimeoutRef.current)
   }, [])
@@ -698,26 +555,10 @@ export default function Game() {
 
   useEffect(() => {
     return () => {
-      clearTimeout(bonusTimerRef.current)
       clearTimeout(comboTimeoutRef.current)
       clearTimeout(dailyTimeoutRef.current)
     }
   }, [])
-
-  useEffect(() => {
-    if (mode !== 'bonus') return
-    bonusTimeLeftRef.current = BONUS_DURATION
-    const id = window.setInterval(() => {
-      bonusTimeLeftRef.current = Math.max(0, bonusTimeLeftRef.current - 0.3)
-      setBonusTimeLeft(bonusTimeLeftRef.current)
-      if (bonusTimeLeftRef.current <= 0) finishBonusRound()
-    }, 300)
-    bonusTimerRef.current = id
-    return () => {
-      clearInterval(id)
-      bonusTimerRef.current = 0
-    }
-  }, [mode])
 
   useEffect(() => {
     if (screen !== 'playing' || hudData.score <= 0) return
@@ -729,23 +570,22 @@ export default function Game() {
       hudData.score >= activeLevelRef.current.scoreTarget
     ) {
       levelTargetReached.current = true
-      triggerLevelBoss()
+      bossBattle.triggerLevelBoss()
       return
     }
 
     if (hudData.score - lastBossScore.current >= BOSS_THRESHOLD) {
       lastBossScore.current = hudData.score
-      triggerBossBattle()
+      bossBattle.triggerBossBattle()
       return
     }
 
     if (hudData.score - lastBonusScore.current >= BONUS_THRESHOLD) {
       lastBonusScore.current = hudData.score
-      triggerBonusRound()
+      bonusRound.triggerBonusRound()
       return
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hudData.score, screen, mode])
+  }, [hudData.score, screen, mode, bossBattle, bonusRound])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -790,6 +630,7 @@ export default function Game() {
   ])
 
   function renderBossBar() {
+    const boss = bossBattle.boss
     if (!boss) return null
     const pct = (boss.hp / boss.maxHp) * 100
     return (
@@ -882,7 +723,7 @@ export default function Game() {
             letterSpacing: 1,
           }}
         >
-          {Math.ceil(bonusTimeLeft)}s LEFT
+          {Math.ceil(bonusRound.bonusTimeLeft)}s LEFT
         </div>
       </div>
     )
@@ -937,7 +778,7 @@ export default function Game() {
 
         {screen === 'playing' && activeLevel && (
           <Suspense fallback={<LoadingScreen />}>
-            <Scene3D levelId={activeLevel.id} onComplete={handleLevelComplete} />
+            <StoryLevelCanvas levelId={activeLevel.id} onComplete={handleLevelComplete} />
           </Suspense>
         )}
 

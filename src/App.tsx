@@ -4,7 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import InstallPrompt from './components/InstallPrompt'
 import OfflineIndicator from './components/OfflineIndicator'
 
-const Game = lazy(() => import('./components/Game'))
+const Game = lazy(() => import('./app/GamePage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 
 function Loader() {

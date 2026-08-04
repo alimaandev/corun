@@ -6,11 +6,12 @@ import { importPuzzleFromUrl } from '../game/puzzleShare'
 interface Props {
   puzzle: CodePuzzle
   onClose: () => void
+  onSolved?: () => void
 }
 
 type TestStatus = 'idle' | 'running' | 'pass' | 'fail'
 
-export default function CodePuzzlePlaytest({ puzzle, onClose }: Props) {
+export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props) {
   const [code, setCode] = useState(puzzle.template)
   const [status, setStatus] = useState<TestStatus>('idle')
   const [output, setOutput] = useState('')
@@ -28,6 +29,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose }: Props) {
     if (result.success) {
       setStatus('pass')
       setOutput(result.output || puzzle.successMessage)
+      onSolved?.()
     } else {
       setStatus('fail')
       setOutput(result.output || 'Test failed')
