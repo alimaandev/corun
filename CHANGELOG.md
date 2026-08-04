@@ -1,3 +1,18 @@
+# [1.6.0](https://github.com/alimaandev/corun/compare/v1.5.2...v1.6.0) (2026-08-04)
+
+
+### Features
+
+* 2D parallax story levels, mode hooks, app/ GamePage ([f9a60dd](https://github.com/alimaandev/corun/commit/f9a60ddda0a8405c4e89e0f0300c64413fa62a81))
+* Dexie v2 storage migration, outbox journal, stale-chunk busting ([42e78e1](https://github.com/alimaandev/corun/commit/42e78e1cef48db5d42a49f9ae1730262438e32e8))
+* extract pure game engine layer with full test coverage ([b8efecd](https://github.com/alimaandev/corun/commit/b8efecd2bfb1865b6fc608c3b89fcb9dc5addf93))
+* resume last run from start screen, session persistence ([fb53312](https://github.com/alimaandev/corun/commit/fb5331219de42728ba552025d2a45a3e984763c3))
+
+
+### Performance Improvements
+
+* lazy-load remaining screen components in GamePage ([e8bce83](https://github.com/alimaandev/corun/commit/e8bce834b63258e12df35beee7d5c6e5b290ead7))
+
 ## [1.5.2](https://github.com/alimaandev/corun/compare/v1.5.1...v1.5.2) (2026-07-30)
 
 
