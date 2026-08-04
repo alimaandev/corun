@@ -11,6 +11,7 @@ import {
   type LeaderboardEntry,
 } from '../lib/leaderboard'
 import { Topic, Difficulty } from '../game/types'
+import type { RunSession } from '../lib/storage'
 import { setLocale, getLocale, getSupportedLocales, type Locale } from '../lib/i18n'
 import { colors, fonts, alpha, radius } from '../lib/theme'
 
@@ -24,9 +25,20 @@ interface Props {
   onCustomPuzzles: () => void
   playerName?: string
   profileId?: string
+  resumeSession?: RunSession | null
+  onResume?: (session: RunSession) => void
 }
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
+
+function resumeLabel(session: RunSession): string {
+  const pts = session.score.toLocaleString()
+  if (session.activeLevelId) return `LEVEL ${session.activeLevelId} — ${pts} PTS`
+  if (session.mode === 'speedrun') return `SPEED RUN — ${pts} PTS`
+  if (session.mode === 'survival') return `SURVIVAL — ${pts} PTS`
+  if (session.isDaily) return `DAILY — ${pts} PTS`
+  return `FREE PLAY — ${pts} PTS`
+}
 
 export default function StartScreen({
   highScore,
@@ -38,6 +50,8 @@ export default function StartScreen({
   onCustomPuzzles,
   playerName,
   profileId,
+  resumeSession,
+  onResume,
 }: Props) {
   const [view, setView] = useState<'main' | 'play' | 'leaderboard'>('main')
   const [subject, setSubject] = useState<Topic | 'all'>('all')
@@ -121,6 +135,33 @@ export default function StartScreen({
             >
               ESCAPE THE MONSTER
             </div>
+
+            {resumeSession && onResume && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  alignItems: 'center',
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: 3,
+                    color: colors.accentBright,
+                    fontFamily: fonts.heading,
+                    fontWeight: 600,
+                  }}
+                >
+                  RUN SAVED
+                </div>
+                <GlassButton size="lg" variant="primary" onClick={() => onResume(resumeSession)}>
+                  CONTINUE — {resumeLabel(resumeSession)}
+                </GlassButton>
+              </div>
+            )}
 
             <div
               style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}

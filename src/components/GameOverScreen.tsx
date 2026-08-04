@@ -36,7 +36,7 @@ function Slab({
     <group>
       <mesh ref={meshRef} position={[0, -2, 0]}>
         <boxGeometry args={[2.5, 0.2, 1.2]} />
-        <meshBasicMaterial color="#2a2a3a" />
+        <meshBasicMaterial color="#141414" />
       </mesh>
       {isNewHighScore && (
         <mesh position={[0, 0.7, 0]}>
@@ -242,7 +242,7 @@ export default function GameOverScreen({
           )}
         </div>
 
-        <div style={{ fontSize: 11, color: '#555' }}>PRESS ENTER</div>
+        <div style={{ fontSize: 11, color: colors.fgFaint }}>PRESS ENTER</div>
 
         <a
           href="https://github.com/alimaandev/corun"

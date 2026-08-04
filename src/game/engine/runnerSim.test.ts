@@ -240,6 +240,28 @@ describe('stepRunner', () => {
   })
 })
 
+describe('restoreScore', () => {
+  it('restores a saved score into a running state', () => {
+    let s = applyCommand(createRunnerState(), { type: 'start' }, 0)
+    s = applyCommand(s, { type: 'restoreScore', score: 1250 }, 0)
+    expect(s.score).toBe(1250)
+  })
+
+  it('clamps negative scores to zero', () => {
+    let s = applyCommand(createRunnerState(), { type: 'start' }, 0)
+    s = applyCommand(s, { type: 'restoreScore', score: -100 }, 0)
+    expect(s.score).toBe(0)
+  })
+
+  it('does not touch other state fields', () => {
+    let s = applyCommand(createRunnerState(), { type: 'start' }, 0)
+    const gapBefore = s.gap
+    s = applyCommand(s, { type: 'restoreScore', score: 500 }, 0)
+    expect(s.gap).toBe(gapBefore)
+    expect(s.phase).toBe('running')
+  })
+})
+
 describe('dangerLevel', () => {
   it('is 0 at full gap and 1 at gap 0', () => {
     expect(dangerLevel(RUNNER.gapStart)).toBe(0)

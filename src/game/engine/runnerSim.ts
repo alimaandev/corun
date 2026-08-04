@@ -81,6 +81,7 @@ export type RunnerCommand =
   | { type: 'timeout' }
   | { type: 'setMultiplier'; multiplier: number }
   | { type: 'setPaused'; paused: boolean }
+  | { type: 'restoreScore'; score: number }
 
 export type RunnerEvent =
   | { type: 'barrierHit' }
@@ -190,6 +191,8 @@ export function applyCommand(
       return { ...state, multiplier: command.multiplier }
     case 'setPaused':
       return { ...state, paused: command.paused }
+    case 'restoreScore':
+      return { ...state, score: Math.max(0, command.score) }
   }
 }
 

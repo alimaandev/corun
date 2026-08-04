@@ -1,12 +1,51 @@
 import { db } from './db'
 import { enqueue, flushOutbox, registerOutboxHandler } from './outbox'
-import { LevelProgress } from '../game/types'
+import { Difficulty, LevelProgress, Topic } from '../game/types'
 
 const HIGH_SCORE_KEY = 'highScore'
 const PROGRESS_ROW_ID = 'main'
 const LOCAL_PROFILE_ID = 'local'
+const SESSION_ROW_ID = 'runSession'
+
+/** Max age of a saved run before it can no longer be resumed. */
+export const SESSION_TTL_MS = 2 * 60 * 60 * 1000
+
+export interface RunSession {
+  mode: 'normal' | 'speedrun' | 'survival'
+  topic: Topic | null
+  difficulty: Difficulty
+  score: number
+  activeLevelId?: number
+  isDaily: boolean
+  savedAt: string
+}
 
 export const DEFAULT_LEVEL_PROGRESS: LevelProgress = { unlockedUpTo: 1, completed: [], stars: {} }
+
+// ── Run session (resume last run) ────────────────────────────
+
+export async function getRunSession(): Promise<RunSession | null> {
+  const row = await db.settings.get(SESSION_ROW_ID)
+  const session = row?.value as RunSession | undefined
+  if (!session) return null
+  const age = Date.now() - new Date(session.savedAt).getTime()
+  if (age > SESSION_TTL_MS) {
+    await clearRunSession()
+    return null
+  }
+  return session
+}
+
+export async function saveRunSession(session: Omit<RunSession, 'savedAt'>): Promise<void> {
+  await db.settings.put({
+    key: SESSION_ROW_ID,
+    value: { ...session, savedAt: new Date().toISOString() },
+  })
+}
+
+export async function clearRunSession(): Promise<void> {
+  await db.settings.delete(SESSION_ROW_ID)
+}
 
 // ── High score ───────────────────────────────────────────────
 

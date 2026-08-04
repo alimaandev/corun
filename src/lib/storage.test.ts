@@ -12,6 +12,10 @@ import {
   saveBadge,
   getLeaderboard,
   addToLeaderboard,
+  getRunSession,
+  saveRunSession,
+  clearRunSession,
+  SESSION_TTL_MS,
   DEFAULT_LEVEL_PROGRESS,
 } from './storage'
 import type { LevelProgress } from '../game/types'
@@ -97,6 +101,61 @@ describe('local leaderboard', () => {
     expect(lb).toHaveLength(10)
     expect(lb[0].score).toBe(1200)
     expect(lb[9].score).toBe(300)
+  })
+})
+
+describe('run session', () => {
+  it('returns null when no session is saved', async () => {
+    expect(await getRunSession()).toBeNull()
+  })
+
+  it('round-trips a saved session', async () => {
+    await saveRunSession({
+      mode: 'speedrun',
+      topic: null,
+      difficulty: 'easy',
+      score: 420,
+      isDaily: false,
+    })
+    const session = await getRunSession()
+    expect(session).toMatchObject({
+      mode: 'speedrun',
+      score: 420,
+      isDaily: false,
+    })
+    expect(session!.savedAt).toBeTruthy()
+  })
+
+  it('clears a saved session', async () => {
+    await saveRunSession({
+      mode: 'normal',
+      topic: 'javascript',
+      difficulty: 'medium',
+      score: 10,
+      isDaily: false,
+    })
+    await clearRunSession()
+    expect(await getRunSession()).toBeNull()
+  })
+
+  it('expires stale sessions and cleans them up', async () => {
+    await saveRunSession({
+      mode: 'normal',
+      topic: null,
+      difficulty: 'medium',
+      score: 10,
+      isDaily: false,
+    })
+    const row = await db.settings.get('runSession')
+    if (!row) throw new Error('session row missing')
+    row.value = {
+      ...(row.value as object),
+      savedAt: new Date(Date.now() - SESSION_TTL_MS - 1000).toISOString(),
+    }
+    await db.settings.put(row)
+
+    expect(await getRunSession()).toBeNull()
+    expect(await db.settings.get('runSession')).toBeUndefined()
   })
 })
 

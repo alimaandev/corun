@@ -26,6 +26,10 @@ import {
   getLevelProgress,
   saveLevelProgress,
   addToLeaderboard,
+  getRunSession,
+  saveRunSession,
+  clearRunSession,
+  RunSession,
 } from '../lib/storage'
 import {
   initSession,
@@ -85,6 +89,13 @@ export default function Game() {
   }, [])
   const [finalStars, setFinalStars] = useState(0)
 
+  const [resumeSession, setResumeSession] = useState<RunSession | null>(null)
+  useEffect(() => {
+    getRunSession().then(setResumeSession)
+  }, [])
+  const lastSessionSaveRef = useRef(0)
+  const pendingResumeRef = useRef<RunSession | null>(null)
+
   const gameRef = useRef<PixelRunnerHandle>(null)
   const challengeRef = useRef(false)
   const lastBossScore = useRef(0)
@@ -141,6 +152,8 @@ export default function Game() {
     setScreen('levelselect')
     setActiveLevel(null)
     activeLevelRef.current = null
+    void clearRunSession()
+    setResumeSession(null)
   }, [])
 
   const handleSelectLevel = useCallback((levelId: number) => {
@@ -148,6 +161,15 @@ export default function Game() {
     if (!level) return
     activeLevelRef.current = level
     setActiveLevel(level)
+    setResumeSession(null)
+    void saveRunSession({
+      mode: 'normal',
+      topic: null,
+      difficulty: 'medium',
+      score: 0,
+      activeLevelId: level.id,
+      isDaily: false,
+    })
     setScreen('levelintro')
   }, [])
 
@@ -172,6 +194,8 @@ export default function Game() {
     await saveLevelProgress(progress)
     setLevelProgressState(progress)
     setFinalStars(stars)
+    void clearRunSession()
+    setResumeSession(null)
     setScreen('leveloutro')
   }, [])
 
@@ -223,6 +247,27 @@ export default function Game() {
   const survival = useSurvival(survivalCtx)
 
   const daily = useDailyChallenge()
+
+  // Persist the run snapshot so a refresh can resume it (throttled).
+  useEffect(() => {
+    if (screen !== 'playing' || activeLevel) return
+    if (hudData.score === 0 && pendingResumeRef.current === null) return
+    const now = Date.now()
+    if (now - lastSessionSaveRef.current < 2000) return
+    lastSessionSaveRef.current = now
+    void saveRunSession({
+      mode:
+        modeRef.current === 'speedrun'
+          ? 'speedrun'
+          : modeRef.current === 'survival'
+            ? 'survival'
+            : 'normal',
+      topic: selectedTopic,
+      difficulty: selectedDifficulty,
+      score: hudData.score,
+      isDaily: daily.isDailyRef.current,
+    })
+  }, [hudData.score, screen, activeLevel, selectedTopic, selectedDifficulty, daily])
 
   interface GameStateOverrides {
     mode: Mode
@@ -295,6 +340,14 @@ export default function Game() {
       setSelectedDifficulty(difficulty)
       setScreen('playing')
       resetGameState({ isDaily: !!isDaily })
+      setResumeSession(null)
+      void saveRunSession({
+        mode: 'normal',
+        topic,
+        difficulty,
+        score: 0,
+        isDaily: !!isDaily,
+      })
       if (isDaily) {
         const dc = getDailyChallenge()
         daily.start(dc, (challenge, time) => {
@@ -311,6 +364,14 @@ export default function Game() {
     setSelectedDifficulty('easy')
     setScreen('playing')
     resetGameState({ mode: 'speedrun', modeRef: 'speedrun' })
+    setResumeSession(null)
+    void saveRunSession({
+      mode: 'speedrun',
+      topic: null,
+      difficulty: 'easy',
+      score: 0,
+      isDaily: false,
+    })
     speedRun.start()
   }, [resetGameState, speedRun])
 
@@ -319,7 +380,59 @@ export default function Game() {
     setSelectedDifficulty('easy')
     setScreen('playing')
     resetGameState({ mode: 'survival', modeRef: 'survival' })
+    setResumeSession(null)
+    void saveRunSession({
+      mode: 'survival',
+      topic: null,
+      difficulty: 'easy',
+      score: 0,
+      isDaily: false,
+    })
   }, [resetGameState])
+
+  const handleResume = useCallback(
+    (session: RunSession) => {
+      setResumeSession(null)
+      void clearRunSession()
+      setSelectedTopic(session.topic)
+      setSelectedDifficulty(session.difficulty)
+      if (session.activeLevelId) {
+        const level = ALL_LEVELS.find((l) => l.id === session.activeLevelId)
+        if (!level) return
+        activeLevelRef.current = level
+        setActiveLevel(level)
+        void saveRunSession({
+          mode: 'normal',
+          topic: null,
+          difficulty: 'medium',
+          score: 0,
+          activeLevelId: level.id,
+          isDaily: false,
+        })
+        setScreen('playing')
+        return
+      }
+      resetGameState({
+        mode: session.mode,
+        modeRef: session.mode,
+        isDaily: session.isDaily,
+        hudData: { score: session.score },
+      })
+      pendingResumeRef.current = session
+      setScreen('playing')
+    },
+    [resetGameState],
+  )
+
+  // Applies the restored score once PixelRunner has mounted.
+  useEffect(() => {
+    if (screen !== 'playing') return
+    const session = pendingResumeRef.current
+    if (!session || session.activeLevelId || !gameRef.current) return
+    pendingResumeRef.current = null
+    gameRef.current.restoreScore(session.score)
+    if (session.mode === 'speedrun') speedRun.start()
+  }, [screen, speedRun])
 
   const handleAnswer = useCallback(
     (answerIndex: number) => {
@@ -417,6 +530,8 @@ export default function Game() {
       setScreen('gameover')
       challengeRef.current = false
       setCurrentChallenge(null)
+      void clearRunSession()
+      setResumeSession(null)
       setHighScore((prev) => {
         const safePrev = isNaN(prev) ? 0 : prev
         const nh = Math.max(safePrev, score)
@@ -446,6 +561,8 @@ export default function Game() {
     setScreen('start')
     setFinalScore(0)
     challengeRef.current = false
+    void clearRunSession()
+    setResumeSession(null)
   }, [])
 
   const handleRetryLevel = useCallback(() => {
@@ -754,6 +871,8 @@ export default function Game() {
               onCustomPuzzles={() => setShowCustomPuzzles(true)}
               playerName={profile?.player_name}
               profileId={profile?.id}
+              resumeSession={resumeSession}
+              onResume={handleResume}
             />
           </Suspense>
         )}

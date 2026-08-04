@@ -25,6 +25,7 @@ const PLAYER_H = () => PX_SCALE * 18
 
 export interface PixelRunnerHandle {
   startGame: (topic?: string, difficulty?: Difficulty) => void
+  restoreScore: (score: number) => void
   handleAnswer: (correct: boolean) => void
   handleTimeout: () => void
   setPaused: (paused: boolean) => void
@@ -561,6 +562,20 @@ const PixelRunner = forwardRef<PixelRunnerHandle, Props>((props, ref) => {
     startGame(topic?: string) {
       topicRef.current = topic
       resetState()
+    },
+    restoreScore(score: number) {
+      stateRef.current = applyCommand(
+        stateRef.current,
+        { type: 'restoreScore', score },
+        performance.now(),
+      )
+      const s = stateRef.current
+      propsRef.current.onHUDUpdate({
+        score: Math.floor(s.score),
+        gap: Math.round(s.gap),
+        speed: Math.round(s.speed * 10) / 10,
+        streak: s.streak,
+      })
     },
     handleAnswer(correct: boolean) {
       if (stateRef.current.phase !== 'running') return
