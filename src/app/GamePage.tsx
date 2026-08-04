@@ -6,11 +6,6 @@ const ChallengeModal = lazy(() => import('../components/ChallengeModal'))
 const StoryLevelCanvas = lazy(() => import('../features/story/StoryLevelCanvas'))
 const PuzzleEditor = lazy(() => import('../components/PuzzleEditor'))
 const CommunityPuzzles = lazy(() => import('../components/CommunityPuzzles'))
-import HUD from '../components/HUD'
-import StartScreen from '../components/StartScreen'
-import GameOverScreen from '../components/GameOverScreen'
-import LevelSelect from '../components/LevelSelect'
-import SceneCanvas from '../components/SceneCanvas'
 import { playGameOver, playSuccess, playError } from '../game/sound'
 import { startMusic, stopMusic } from '../game/audio'
 import {
@@ -43,9 +38,6 @@ import {
   getGlobalLeaderboard,
   PlayerProfile,
 } from '../lib/leaderboard'
-import NameDialog from '../components/NameDialog'
-import CodePuzzlePlaytest from '../components/CodePuzzlePlaytest'
-import LoadingScreen from '../components/LoadingScreen'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
 import { colors, fonts, alpha, radius } from '../lib/theme'
 import { useBossBattle } from '../features/boss/useBossBattle'
@@ -55,6 +47,15 @@ import { useSpeedRun } from '../features/speedrun/useSpeedRun'
 import { useSurvival } from '../features/survival/useSurvival'
 import { useDailyChallenge } from '../features/daily/useDailyChallenge'
 import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features/modes'
+
+const HUD = lazy(() => import('../components/HUD'))
+const StartScreen = lazy(() => import('../components/StartScreen'))
+const GameOverScreen = lazy(() => import('../components/GameOverScreen'))
+const LevelSelect = lazy(() => import('../components/LevelSelect'))
+const SceneCanvas = lazy(() => import('../components/SceneCanvas'))
+const NameDialog = lazy(() => import('../components/NameDialog'))
+const CodePuzzlePlaytest = lazy(() => import('../components/CodePuzzlePlaytest'))
+const LoadingScreen = lazy(() => import('../components/LoadingScreen'))
 
 type Screen =
   'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
@@ -713,14 +714,16 @@ export default function Game() {
         )}
 
         {screen === 'playing' && !activeLevel && (
-          <HUD
-            {...hudData}
-            isBoss={mode === 'boss'}
-            isBonus={mode === 'bonus'}
-            levelName={undefined}
-            speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
-            survivalLives={mode === 'survival' ? survival.lives : undefined}
-          />
+          <Suspense fallback={null}>
+            <HUD
+              {...hudData}
+              isBoss={mode === 'boss'}
+              isBonus={mode === 'bonus'}
+              levelName={undefined}
+              speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
+              survivalLives={mode === 'survival' ? survival.lives : undefined}
+            />
+          </Suspense>
         )}
 
         {screen === 'playing' && currentChallenge && !activeLevel && (
@@ -741,37 +744,47 @@ export default function Game() {
         {renderComboNotification()}
 
         {screen === 'start' && (
-          <StartScreen
-            highScore={highScore}
-            onStart={handleStart}
-            onStoryMode={goToLevelSelect}
-            onSpeedRun={handleSpeedRun}
-            onSurvival={handleSurvival}
-            onPuzzleEditor={() => setShowPuzzleEditor(true)}
-            onCustomPuzzles={() => setShowCustomPuzzles(true)}
-            playerName={profile?.player_name}
-            profileId={profile?.id}
-          />
+          <Suspense fallback={<LoadingScreen />}>
+            <StartScreen
+              highScore={highScore}
+              onStart={handleStart}
+              onStoryMode={goToLevelSelect}
+              onSpeedRun={handleSpeedRun}
+              onSurvival={handleSurvival}
+              onPuzzleEditor={() => setShowPuzzleEditor(true)}
+              onCustomPuzzles={() => setShowCustomPuzzles(true)}
+              playerName={profile?.player_name}
+              profileId={profile?.id}
+            />
+          </Suspense>
         )}
 
         {screen === 'levelselect' && (
-          <LevelSelect
-            progress={levelProgress}
-            onSelectLevel={handleSelectLevel}
-            onBack={() => setScreen('start')}
-          />
+          <Suspense fallback={<LoadingScreen />}>
+            <LevelSelect
+              progress={levelProgress}
+              onSelectLevel={handleSelectLevel}
+              onBack={() => setScreen('start')}
+            />
+          </Suspense>
         )}
 
         {screen === 'levelintro' && activeLevel?.sceneIntro && (
-          <SceneCanvas scene={activeLevel.sceneIntro} onDone={handleStoryDone} />
+          <Suspense fallback={<LoadingScreen />}>
+            <SceneCanvas scene={activeLevel.sceneIntro} onDone={handleStoryDone} />
+          </Suspense>
         )}
 
         {screen === 'leveloutro' && activeLevel?.sceneOutro && (
-          <SceneCanvas scene={activeLevel.sceneOutro} onDone={handleOutroDone} />
+          <Suspense fallback={<LoadingScreen />}>
+            <SceneCanvas scene={activeLevel.sceneOutro} onDone={handleOutroDone} />
+          </Suspense>
         )}
 
         {screen === 'ending' && showEndingScene && (
-          <SceneCanvas scene={ENDING_SCENE} onDone={handleEndingDone} />
+          <Suspense fallback={<LoadingScreen />}>
+            <SceneCanvas scene={ENDING_SCENE} onDone={handleEndingDone} />
+          </Suspense>
         )}
 
         {screen === 'ending' && !showEndingScene && (
@@ -854,21 +867,27 @@ export default function Game() {
         )}
 
         {screen === 'gameover' && (
-          <GameOverScreen
-            score={finalScore}
-            highScore={highScore}
-            onRestart={handleRestart}
-            badges={finalBadges}
-            levelMode={!!activeLevelRef.current}
-            levelName={activeLevelRef.current?.name}
-            onRetryLevel={handleRetryLevel}
-            onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
-            playerRank={playerRank}
-            playerName={profile?.player_name}
-          />
+          <Suspense fallback={<LoadingScreen />}>
+            <GameOverScreen
+              score={finalScore}
+              highScore={highScore}
+              onRestart={handleRestart}
+              badges={finalBadges}
+              levelMode={!!activeLevelRef.current}
+              levelName={activeLevelRef.current?.name}
+              onRetryLevel={handleRetryLevel}
+              onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
+              playerRank={playerRank}
+              playerName={profile?.player_name}
+            />
+          </Suspense>
         )}
 
-        {showNameDialog && <NameDialog onSubmit={handleNameSubmit} />}
+        {showNameDialog && (
+          <Suspense fallback={null}>
+            <NameDialog onSubmit={handleNameSubmit} />
+          </Suspense>
+        )}
 
         {showPuzzleEditor && (
           <Suspense fallback={null}>
@@ -895,7 +914,9 @@ export default function Game() {
         )}
 
         {customPuzzle && (
-          <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
+          <Suspense fallback={null}>
+            <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
+          </Suspense>
         )}
       </div>
     </>
