@@ -702,8 +702,6 @@ export const ALL_LEVELS: LevelConfig[] = [
   },
 ]
 
-const STORAGE_KEY = 'code_level_progress'
-
 export const ENDING_SCENE: SceneConfig = {
   bgTop: '#1a0a1a',
   bgBottom: '#2a1a2a',
@@ -764,20 +762,6 @@ export const ENDING_SCENE: SceneConfig = {
     ['effect', 'fadeOut'],
     ['transition'],
   ],
-}
-
-export function getLevelProgress(): LevelProgress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return { unlockedUpTo: 1, completed: [], stars: {} }
-}
-
-export function saveLevelProgress(p: LevelProgress) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(p))
-  } catch {}
 }
 
 export function isLevelUnlocked(levelId: number, progress: LevelProgress): boolean {

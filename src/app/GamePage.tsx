@@ -17,18 +17,16 @@ import {
   LevelProgress,
   CodePuzzle,
 } from '../game/types'
+import { getRandomChallenge, getDailyChallenge } from '../game/engine/data/challenges'
+import { ALL_LEVELS, ENDING_SCENE } from '../game/engine/data/levels'
+import { getLevelScene } from '../game/engine/data/levelScenes'
 import {
-  getRandomChallenge,
-  getDailyChallenge,
-  addToLeaderboard,
-} from '../game/engine/data/challenges'
-import {
-  ALL_LEVELS,
-  ENDING_SCENE,
+  getHighScore,
+  setHighScore as persistHighScore,
   getLevelProgress,
   saveLevelProgress,
-} from '../game/engine/data/levels'
-import { getLevelScene } from '../game/engine/data/levelScenes'
+  addToLeaderboard,
+} from '../lib/storage'
 import {
   initSession,
   submitScore,
@@ -66,14 +64,10 @@ export default function Game() {
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
   const [timeLimit, setTimeLimit] = useState(5)
   const [mode, setMode] = useState<Mode>('normal')
-  const [highScore, setHighScore] = useState(() => {
-    try {
-      const v = parseInt(localStorage.getItem('coderun_highscore') || '0', 10)
-      return isNaN(v) ? 0 : v
-    } catch {
-      return 0
-    }
-  })
+  const [highScore, setHighScore] = useState(0)
+  useEffect(() => {
+    getHighScore().then(setHighScore)
+  }, [])
   const [finalScore, setFinalScore] = useState(0)
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
@@ -81,7 +75,14 @@ export default function Game() {
 
   // Level state
   const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null)
-  const [levelProgress, setLevelProgressState] = useState<LevelProgress>(getLevelProgress)
+  const [levelProgress, setLevelProgressState] = useState<LevelProgress>({
+    unlockedUpTo: 1,
+    completed: [],
+    stars: {},
+  })
+  useEffect(() => {
+    getLevelProgress().then(setLevelProgressState)
+  }, [])
   const [finalStars, setFinalStars] = useState(0)
 
   const gameRef = useRef<PixelRunnerHandle>(null)
@@ -150,7 +151,7 @@ export default function Game() {
     setScreen('levelintro')
   }, [])
 
-  const handleLevelComplete = useCallback((correctCount?: number) => {
+  const handleLevelComplete = useCallback(async (correctCount?: number) => {
     const level = activeLevelRef.current
     if (!level) return
     let stars = 3
@@ -164,11 +165,11 @@ export default function Game() {
       else if (combined >= 0.5) stars = 2
       else stars = 1
     }
-    const progress = getLevelProgress()
+    const progress = await getLevelProgress()
     if (!progress.completed.includes(level.id)) progress.completed.push(level.id)
     progress.stars[String(level.id)] = Math.max(progress.stars[String(level.id)] || 0, stars)
     if (level.id >= progress.unlockedUpTo) progress.unlockedUpTo = level.id + 1
-    saveLevelProgress(progress)
+    await saveLevelProgress(progress)
     setLevelProgressState(progress)
     setFinalStars(stars)
     setScreen('leveloutro')
@@ -264,12 +265,12 @@ export default function Game() {
 
   const [showEndingScene, setShowEndingScene] = useState(true)
 
-  const handleOutroDone = useCallback(() => {
+  const handleOutroDone = useCallback(async () => {
     const isLast = activeLevelRef.current?.id === ALL_LEVELS.length
     if (isLast) {
       setShowEndingScene(true)
       setScreen('ending')
-    } else goToLevelSelectWithProgress(getLevelProgress())
+    } else goToLevelSelectWithProgress(await getLevelProgress())
   }, [goToLevelSelectWithProgress])
 
   const handleEndingDone = useCallback(() => {
@@ -420,13 +421,11 @@ export default function Game() {
         const safePrev = isNaN(prev) ? 0 : prev
         const nh = Math.max(safePrev, score)
         if (nh > safePrev && !isNaN(nh)) {
-          try {
-            localStorage.setItem('coderun_highscore', String(nh))
-          } catch {}
+          void persistHighScore(nh)
         }
         return nh
       })
-      if (score > 0) addToLeaderboard(Math.floor(score))
+      if (score > 0) void addToLeaderboard(Math.floor(score))
       daily.complete(score)
       if (profileRef.current && score > 0) {
         const mode = activeLevelRef.current
@@ -876,7 +875,9 @@ export default function Game() {
               levelMode={!!activeLevelRef.current}
               levelName={activeLevelRef.current?.name}
               onRetryLevel={handleRetryLevel}
-              onBackToLevels={() => goToLevelSelectWithProgress(getLevelProgress())}
+              onBackToLevels={() => {
+                void getLevelProgress().then(goToLevelSelectWithProgress)
+              }}
               playerRank={playerRank}
               playerName={profile?.player_name}
             />

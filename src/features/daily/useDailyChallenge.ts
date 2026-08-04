@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Challenge } from '../../game/types'
-import { markDailyCompleted } from '../../game/engine/data/challenges'
+import { markDailyCompleted } from '../../lib/storage'
 
 export function useDailyChallenge() {
   const isDailyRef = useRef(false)

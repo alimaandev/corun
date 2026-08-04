@@ -1,30 +1,5 @@
-import Dexie, { type EntityTable } from 'dexie'
-
-interface Profile {
-  id: string
-  player_name: string
-  last_seen: string
-}
-
-interface ScoreRow {
-  id?: number
-  profile_id: string
-  player_name: string
-  score: number
-  mode: 'freeplay' | 'story' | 'daily'
-  level_id: number
-  created_at: string
-}
-
-const db = new Dexie('CorunDB') as Dexie & {
-  profiles: EntityTable<Profile, 'id'>
-  scores: EntityTable<ScoreRow, 'id'>
-}
-
-db.version(1).stores({
-  profiles: 'id, player_name, last_seen',
-  scores: '++id, profile_id, score, mode, created_at',
-})
+import { db } from './db'
+import { enqueue, flushOutbox, registerOutboxHandler } from './outbox'
 
 export interface LeaderboardEntry {
   profile_id: string
@@ -113,7 +88,12 @@ export async function updatePlayerName(
 ): Promise<boolean> {
   setLocalPlayerName(name, userId)
   try {
-    await db.profiles.update(profileId, { player_name: name, last_seen: new Date().toISOString() })
+    await enqueue('name', {
+      profile_id: profileId,
+      player_name: name,
+      last_seen: new Date().toISOString(),
+    })
+    await flushOutbox()
     return true
   } catch {
     return false
@@ -127,20 +107,36 @@ export async function submitScore(
   levelId = 0,
 ): Promise<boolean> {
   try {
-    const profile = await db.profiles.get(profileId)
-    await db.scores.add({
-      profile_id: profileId,
-      player_name: profile?.player_name || 'Runner',
-      score,
-      mode,
-      level_id: levelId,
-      created_at: new Date().toISOString(),
-    })
+    await enqueue('score', { profile_id: profileId, score, mode, level_id: levelId })
+    await flushOutbox()
     return true
   } catch {
     return false
   }
 }
+
+registerOutboxHandler('score', async (payload) => {
+  const p = payload as {
+    profile_id: string
+    score: number
+    mode: 'freeplay' | 'story' | 'daily'
+    level_id: number
+  }
+  const profile = await db.profiles.get(p.profile_id)
+  await db.scores.add({
+    profile_id: p.profile_id,
+    player_name: profile?.player_name || 'Runner',
+    score: p.score,
+    mode: p.mode,
+    level_id: p.level_id,
+    created_at: new Date().toISOString(),
+  })
+})
+
+registerOutboxHandler('name', async (payload) => {
+  const p = payload as { profile_id: string; player_name: string; last_seen: string }
+  await db.profiles.update(p.profile_id, { player_name: p.player_name, last_seen: p.last_seen })
+})
 
 export async function getGlobalLeaderboard(
   profileId: string,

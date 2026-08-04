@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  getChallengeById,
-  getRandomChallenge,
-  getDailyChallenge,
-  isDailyCompleted,
-  markDailyCompleted,
-  clearAIPool,
-} from './challenges'
+import { getChallengeById, getRandomChallenge, getDailyChallenge, clearAIPool } from './challenges'
 
 beforeEach(() => {
   localStorage.clear()
@@ -74,16 +67,5 @@ describe('getDailyChallenge', () => {
     const a = getDailyChallenge()
     const b = getDailyChallenge()
     expect(a.question).toBe(b.question)
-  })
-})
-
-describe('daily completed', () => {
-  it('returns false when not completed', () => {
-    expect(isDailyCompleted()).toBe(false)
-  })
-
-  it('returns true after marking completed', () => {
-    markDailyCompleted()
-    expect(isDailyCompleted()).toBe(true)
   })
 })

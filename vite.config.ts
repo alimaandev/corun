@@ -1,8 +1,25 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import Sitemap from 'vite-plugin-sitemap'
 import { fileURLToPath, URL } from 'node:url'
+import { writeFileSync, mkdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+
+// Emits dist/build.json with a unique build id so the app can detect
+// stale precached chunks and reload when a new build ships.
+function buildInfo(): Plugin {
+  return {
+    name: 'build-info',
+    apply: 'build',
+    closeBundle() {
+      const buildTime = new Date().toISOString()
+      const id = createHash('sha1').update(buildTime).digest('hex').slice(0, 12)
+      mkdirSync('dist', { recursive: true })
+      writeFileSync('dist/build.json', JSON.stringify({ version: '1.0.0', buildTime, id }))
+    },
+  }
+}
 
 export default defineConfig({
   resolve: {
@@ -12,6 +29,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    buildInfo(),
     Sitemap({
       hostname: 'https://corun-zeta.vercel.app',
       dynamicRoutes: ['/', '/game'],

@@ -1,11 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  ALL_LEVELS,
-  ENDING_SCENE,
-  getLevelProgress,
-  saveLevelProgress,
-  isLevelUnlocked,
-} from './levels'
+import { ALL_LEVELS, ENDING_SCENE, isLevelUnlocked } from './levels'
 import type { LevelProgress } from '../../types'
 
 beforeEach(() => {
@@ -69,45 +63,6 @@ describe('ENDING_SCENE', () => {
     expect(ENDING_SCENE.groundColor).toBeTruthy()
     expect(ENDING_SCENE.wallColor).toBeTruthy()
     expect(ENDING_SCENE.script.length).toBeGreaterThan(0)
-  })
-})
-
-describe('getLevelProgress', () => {
-  it('returns default progress when nothing is stored', () => {
-    const progress = getLevelProgress()
-    expect(progress).toEqual({ unlockedUpTo: 1, completed: [], stars: {} })
-  })
-
-  it('returns stored progress from localStorage', () => {
-    const stored: LevelProgress = {
-      unlockedUpTo: 5,
-      completed: [1, 2, 3],
-      stars: { '1': 3, '2': 2 },
-    }
-    localStorage.setItem('code_level_progress', JSON.stringify(stored))
-    expect(getLevelProgress()).toEqual(stored)
-  })
-
-  it('returns default on corrupt data', () => {
-    localStorage.setItem('code_level_progress', '{invalid}')
-    expect(getLevelProgress()).toEqual({ unlockedUpTo: 1, completed: [], stars: {} })
-  })
-})
-
-describe('saveLevelProgress', () => {
-  it('saves progress to localStorage', () => {
-    const progress: LevelProgress = { unlockedUpTo: 3, completed: [1], stars: { '1': 3 } }
-    saveLevelProgress(progress)
-    const raw = localStorage.getItem('code_level_progress')
-    expect(JSON.parse(raw!)).toEqual(progress)
-  })
-
-  it('overwrites previous progress', () => {
-    const old: LevelProgress = { unlockedUpTo: 1, completed: [], stars: {} }
-    const updated: LevelProgress = { unlockedUpTo: 2, completed: [1], stars: { '1': 3 } }
-    saveLevelProgress(old)
-    saveLevelProgress(updated)
-    expect(getLevelProgress()).toEqual(updated)
   })
 })
 

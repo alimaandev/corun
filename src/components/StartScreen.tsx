@@ -3,7 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import TerminalScene from './three/TerminalScene'
 import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
-import { TOPICS, isDailyCompleted } from '../game/engine/data/challenges'
+import { TOPICS } from '../game/engine/data/challenges'
+import { isDailyCompleted } from '../lib/storage'
 import {
   getGlobalLeaderboard,
   getDailyLeaderboard,
@@ -49,7 +50,7 @@ export default function StartScreen({
   const [playerRank, setPlayerRank] = useState<number | null>(null)
 
   useEffect(() => {
-    setDailyDone(isDailyCompleted())
+    isDailyCompleted().then(setDailyDone)
   }, [])
 
   useEffect(() => {
