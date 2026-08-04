@@ -1,11 +1,45 @@
 :root {
-  --beige: #F0EBE3;
-  --green-dark: #769826;
+  /* tokens — mirrors src/lib/theme.ts */
+  --bg: #0a0a0a;
+  --bg-elevated: #141414;
+  --fg: #F0EBE3;
+  --fg-dim: rgba(240, 235, 227, 0.6);
+  --fg-faint: rgba(240, 235, 227, 0.35);
+  --accent: #769826;
+  --accent-bright: #8faf2f;
+  --danger: #ff4444;
+  --gold: #ffd700;
+  --border: rgba(240, 235, 227, 0.12);
   --glass-bg: rgba(118, 152, 38, 0.08);
   --glass-border: rgba(118, 152, 38, 0.2);
   --glass-blur: blur(24px);
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Roboto', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-xs: 10px;
+  --font-sm: 11px;
+  --font-md: 13px;
+  --font-lg: 16px;
+  --font-xl: 22px;
+  --font-xxl: 32px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-xxl: 12px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+  --z-overlay: 100;
+  --z-modal: 200;
+  --z-error: 1000;
+  --z-toast: 1100;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 *, *::before, *::after {
@@ -15,11 +49,11 @@
 }
 
 html {
-  background: var(--green-dark);
+  background: var(--accent);
 }
 
 body {
-  background: var(--green-dark);
+  background: var(--accent);
 }
 
 html, body, #root {

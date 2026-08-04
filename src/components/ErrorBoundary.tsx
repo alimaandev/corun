@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
 import * as Sentry from '@sentry/react'
+import { colors, fonts, radius, z } from '../lib/theme'
 
 interface Props {
   children: ReactNode
@@ -34,23 +35,24 @@ export default class ErrorBoundary extends Component<Props, State> {
           style={{
             position: 'fixed',
             inset: 0,
-            background: '#0a0a0a',
+            zIndex: z.error,
+            background: colors.bg,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             padding: 20,
-            fontFamily: "'Roboto', sans-serif",
+            fontFamily: fonts.body,
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 20 }}>⚠</div>
           <div
             style={{
-              color: '#F0EBE3',
+              color: colors.fg,
               fontSize: 14,
               marginBottom: 12,
               textAlign: 'center',
-              fontFamily: "'Poppins', sans-serif",
+              fontFamily: fonts.heading,
               fontWeight: 600,
             }}
           >
@@ -58,14 +60,14 @@ export default class ErrorBoundary extends Component<Props, State> {
           </div>
           <div
             style={{
-              color: 'rgba(240,235,227,0.6)',
+              color: colors.fgDim,
               fontSize: 11,
               marginBottom: 24,
               textAlign: 'center',
               maxWidth: 400,
               lineHeight: 1.6,
               wordBreak: 'break-word',
-              fontFamily: "'Roboto', sans-serif",
+              fontFamily: fonts.body,
               fontWeight: 300,
             }}
           >
@@ -77,16 +79,16 @@ export default class ErrorBoundary extends Component<Props, State> {
               location.href = '/game'
             }}
             style={{
-              background: '#F0EBE3',
+              background: colors.fg,
               border: 'none',
-              color: '#0a0a0a',
+              color: colors.bg,
               padding: '12px 24px',
               fontSize: 10,
               cursor: 'pointer',
               fontWeight: 500,
               letterSpacing: 2,
-              fontFamily: "'Roboto', sans-serif",
-              borderRadius: 10,
+              fontFamily: fonts.body,
+              borderRadius: radius.xl,
             }}
           >
             RESTART

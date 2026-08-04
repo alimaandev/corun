@@ -147,7 +147,7 @@ export default function LandingPage() {
             </p>
             <button
               style={{ ...ctaStyle, pointerEvents: 'auto' }}
-              onClick={() => navigate('/sign-in')}
+              onClick={() => navigate('/game')}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 0 50px rgba(240,235,227,0.4)'
                 e.currentTarget.style.transform = 'scale(1.05)'
@@ -229,7 +229,7 @@ export default function LandingPage() {
                 color: '#F0EBE3',
                 boxShadow: 'none',
               }}
-              onClick={() => navigate('/sign-in')}
+              onClick={() => navigate('/game')}
             >
               START YOUR RUN
             </button>
@@ -437,7 +437,7 @@ export default function LandingPage() {
             </p>
             <button
               style={{ ...ctaStyle, padding: '10px 28px', fontSize: 11 }}
-              onClick={() => navigate('/sign-in')}
+              onClick={() => navigate('/game')}
             >
               PLAY NOW
             </button>

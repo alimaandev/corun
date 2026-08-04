@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useAuth } from '../lib/auth'
 import type { PixelRunnerHandle } from '../game/PixelRunner'
 const PixelRunner = lazy(() => import('../game/PixelRunner'))
 const ChallengeModal = lazy(() => import('./ChallengeModal'))
@@ -103,7 +102,6 @@ function pick<T>(arr: T[]): T {
 }
 
 export default function Game() {
-  const { user } = useAuth()
   const [screen, setScreen] = useState<Screen>('start')
   const [hudData, setHudData] = useState<HUDData>({ score: 0, gap: 70, speed: 1, streak: 0 })
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
@@ -598,19 +596,16 @@ export default function Game() {
     finishChallenge()
   }, [finishChallenge])
 
-  const handleNameSubmit = useCallback(
-    async (name: string) => {
-      setShowNameDialog(false)
-      if (profileRef.current) {
-        const ok = await updatePlayerName(profileRef.current.id, name, user?.sub)
-        if (ok) {
-          profileRef.current.player_name = name
-          setProfile({ ...profileRef.current })
-        }
+  const handleNameSubmit = useCallback(async (name: string) => {
+    setShowNameDialog(false)
+    if (profileRef.current) {
+      const ok = await updatePlayerName(profileRef.current.id, name)
+      if (ok) {
+        profileRef.current.player_name = name
+        setProfile({ ...profileRef.current })
       }
-    },
-    [user?.sub],
-  )
+    }
+  }, [])
 
   const handleGameOver = useCallback((score: number) => {
     playGameOver()
@@ -671,12 +666,11 @@ export default function Game() {
   }, [handleGameOver])
 
   useEffect(() => {
-    const auth0Id = user?.sub
-    const local = getLocalPlayerName(auth0Id)
+    const local = getLocalPlayerName()
     if (!local || local === 'Runner') {
       setShowNameDialog(true)
     }
-    initSession(auth0Id)
+    initSession()
       .then((p) => {
         if (p) {
           profileRef.current = p
@@ -684,7 +678,7 @@ export default function Game() {
         }
       })
       .catch(() => console.debug('[Game] initSession failed'))
-  }, [user?.sub])
+  }, [])
 
   useEffect(() => {
     const imported = importPuzzleFromUrl()

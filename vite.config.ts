@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     Sitemap({
       hostname: 'https://corun-zeta.vercel.app',
-      dynamicRoutes: ['/', '/sign-in', '/sign-up', '/game'],
+      dynamicRoutes: ['/', '/game'],
       readable: true,
     }),
     VitePWA({

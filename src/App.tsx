@@ -1,14 +1,11 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ErrorBoundary from './components/ErrorBoundary'
-import ProtectedRoute from './components/ProtectedRoute'
 import InstallPrompt from './components/InstallPrompt'
 import OfflineIndicator from './components/OfflineIndicator'
 
 const Game = lazy(() => import('./components/Game'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
-const LoginPage = lazy(() => import('./pages/LoginPage'))
-const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 
 function Loader() {
   return (
@@ -41,16 +38,7 @@ function App() {
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/sign-in" element={<LoginPage />} />
-            <Route path="/sign-up" element={<RegisterPage />} />
-            <Route
-              path="/game/*"
-              element={
-                <ProtectedRoute>
-                  <Game />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/game/*" element={<Game />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
