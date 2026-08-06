@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import TerminalScene from './three/TerminalScene'
 import GlassButton from './GlassButton'
@@ -13,7 +13,7 @@ import {
 import { Topic, Difficulty } from '../game/types'
 import type { RunSession } from '../lib/storage'
 import { setLocale, getLocale, getSupportedLocales, type Locale } from '../lib/i18n'
-import { colors, fonts, alpha, radius } from '../lib/theme'
+import { colors, fonts, alpha, radius, glassPanel, transition, shadows } from '../lib/theme'
 
 interface Props {
   highScore: number
@@ -30,6 +30,13 @@ interface Props {
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 
+const CARD_ACCENTS: Record<string, string> = {
+  freeplay: colors.accentBright,
+  daily: colors.gold,
+  speedrun: '#7aa2ff',
+  survival: '#ff7a7a',
+}
+
 function resumeLabel(session: RunSession): string {
   const pts = session.score.toLocaleString()
   if (session.mode === 'speedrun') return `SPEED RUN — ${pts} PTS`
@@ -38,17 +45,105 @@ function resumeLabel(session: RunSession): string {
   return `FREE PLAY — ${pts} PTS`
 }
 
+function ModeCard({
+  id,
+  title,
+  subtitle,
+  onPlay,
+  disabled,
+  children,
+}: {
+  id: string
+  title: string
+  subtitle: string
+  onPlay?: () => void
+  disabled?: boolean
+  children?: ReactNode
+}) {
+  const [hover, setHover] = useState(false)
+  const accent = CARD_ACCENTS[id]
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        ...glassPanel,
+        padding: 18,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        borderColor: hover ? accent : undefined,
+        boxShadow: hover ? shadows.md : undefined,
+        transform: hover ? 'translateY(-2px)' : undefined,
+        transition,
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <div style={{ color: accent, fontSize: 9, letterSpacing: 3, fontWeight: 600 }}>{title}</div>
+      <div
+        style={{
+          color: alpha(0.5),
+          fontSize: 11,
+          lineHeight: 1.5,
+          fontFamily: fonts.body,
+          flex: 1,
+        }}
+      >
+        {subtitle}
+      </div>
+      {children}
+      {onPlay && !disabled && (
+        <div style={{ marginTop: 'auto', paddingTop: 6 }}>
+          <GlassButton size="sm" onClick={onPlay}>
+            RUN
+          </GlassButton>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StatChip({ label, value, accent }: { label: string; value: string; accent?: string }) {
+  return (
+    <div
+      style={{
+        ...glassPanel,
+        padding: '10px 16px',
+        minWidth: 110,
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ fontSize: 8, letterSpacing: 3, color: alpha(0.35), fontWeight: 300 }}>
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 16,
+          fontWeight: 700,
+          fontFamily: fonts.heading,
+          color: accent ?? colors.fg,
+          marginTop: 2,
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  )
+}
+
 export default function StartScreen({
+  highScore,
   onStart,
   onSpeedRun,
   onSurvival,
   onPuzzleEditor,
+  onCustomPuzzles,
   playerName,
   profileId,
   resumeSession,
   onResume,
 }: Props) {
-  const [view, setView] = useState<'main' | 'play' | 'leaderboard'>('main')
+  const [view, setView] = useState<'main' | 'leaderboard'>('main')
   const [subject, setSubject] = useState<Topic | 'all'>('all')
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [dailyDone, setDailyDone] = useState(false)
@@ -93,6 +188,72 @@ export default function StartScreen({
 
       <div
         style={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 20,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 300,
+            letterSpacing: 2,
+            color: alpha(0.5),
+            fontFamily: fonts.body,
+            background: 'rgba(0,0,0,0.35)',
+            border: `1px solid ${alpha(0.1)}`,
+            borderRadius: radius.xl,
+            padding: '5px 12px',
+          }}
+        >
+          {playerName || 'RUNNER'}
+        </span>
+      </div>
+
+      <div
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 16,
+          zIndex: 20,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+        }}
+      >
+        <select
+          value={getLocale()}
+          onChange={(e) => {
+            setLocale(e.target.value as Locale)
+            window.location.reload()
+          }}
+          style={{
+            background: 'rgba(0,0,0,0.35)',
+            color: alpha(0.5),
+            border: `1px solid ${alpha(0.1)}`,
+            borderRadius: radius.xl,
+            padding: '5px 10px',
+            outline: 'none',
+            fontFamily: fonts.body,
+            fontSize: 10,
+            cursor: 'pointer',
+          }}
+          aria-label="Language"
+        >
+          {getSupportedLocales().map((l) => (
+            <option key={l} value={l}>
+              {l.toUpperCase()}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div
+        style={{
           position: 'absolute',
           inset: 0,
           zIndex: 10,
@@ -104,28 +265,35 @@ export default function StartScreen({
         }}
       >
         {view === 'main' && (
-          <>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              width: '100%',
+              maxWidth: 760,
+            }}
+          >
             <div
               style={{
-                fontSize: 56,
+                fontSize: 52,
                 fontWeight: 800,
                 letterSpacing: 3,
                 color: colors.fg,
                 fontFamily: fonts.heading,
                 textShadow: `0 0 60px ${alpha(0.12)}`,
-                marginBottom: 4,
               }}
             >
               CORUN
             </div>
             <div
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 300,
                 letterSpacing: 6,
                 color: alpha(0.45),
                 fontFamily: fonts.body,
-                marginBottom: 40,
+                marginBottom: 22,
               }}
             >
               ESCAPE THE MONSTER
@@ -138,7 +306,7 @@ export default function StartScreen({
                   flexDirection: 'column',
                   gap: 6,
                   alignItems: 'center',
-                  marginBottom: 14,
+                  marginBottom: 16,
                 }}
               >
                 <div
@@ -159,149 +327,135 @@ export default function StartScreen({
             )}
 
             <div
-              style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}
+              style={{
+                display: 'flex',
+                gap: 10,
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                marginBottom: 24,
+              }}
             >
-              <GlassButton size="lg" onClick={() => setView('play')}>
-                PLAY
-              </GlassButton>
-              <GlassButton size="md" variant="secondary" onClick={onPuzzleEditor}>
-                PUZZLE EDITOR
-              </GlassButton>
+              <StatChip label="HIGH SCORE" value={highScore.toLocaleString()} />
+              <StatChip
+                label="WORLD RANK"
+                value={playerRank !== null ? `#${playerRank}` : '—'}
+                accent={playerRank !== null && playerRank <= 3 ? colors.gold : undefined}
+              />
+              <StatChip
+                label="DAILY"
+                value={dailyDone ? 'DONE' : 'OPEN'}
+                accent={dailyDone ? colors.danger : colors.accentBright}
+              />
             </div>
 
-            <div style={{ display: 'flex', gap: 16, marginTop: 28 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+                gap: 14,
+                width: '100%',
+                marginBottom: 22,
+              }}
+            >
+              <ModeCard
+                id="freeplay"
+                title="FREE PLAY"
+                subtitle="Endless 3-lane escape. Adaptive difficulty, boss battles, combo multipliers."
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <select
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value as Topic | 'all')}
+                    style={{
+                      background: 'rgba(0,0,0,0.4)',
+                      color: colors.fg,
+                      border: `1px solid ${alpha(0.15)}`,
+                      borderRadius: radius.md,
+                      padding: '5px 8px',
+                      outline: 'none',
+                      fontFamily: fonts.body,
+                      fontSize: 10,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <option value="all">ALL TOPICS</option>
+                    {TOPICS.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.label.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {DIFFICULTIES.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setDifficulty(d)}
+                        style={{
+                          flex: 1,
+                          background: difficulty === d ? alpha(0.1) : 'transparent',
+                          color: difficulty === d ? colors.fg : alpha(0.4),
+                          border:
+                            difficulty === d
+                              ? `1px solid ${alpha(0.3)}`
+                              : `1px solid ${alpha(0.1)}`,
+                          borderRadius: radius.md,
+                          padding: '4px 0',
+                          cursor: 'pointer',
+                          fontFamily: fonts.body,
+                          fontSize: 10,
+                          textTransform: 'capitalize',
+                          transition,
+                        }}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ marginTop: 'auto', paddingTop: 6 }}>
+                  <GlassButton
+                    size="sm"
+                    onClick={() => onStart(subject === 'all' ? null : subject, difficulty)}
+                  >
+                    RUN
+                  </GlassButton>
+                </div>
+              </ModeCard>
+
+              <ModeCard
+                id="daily"
+                title="DAILY CHALLENGE"
+                subtitle="One shot, one score, every day. Seeded pool, daily leaderboard."
+                onPlay={dailyDone ? undefined : () => onStart(null, 'medium', true)}
+                disabled={dailyDone}
+              />
+
+              <ModeCard
+                id="speedrun"
+                title="SPEED RUN"
+                subtitle="60-second countdown. Wrong answers cost points. Pure clock pressure."
+                onPlay={onSpeedRun}
+              />
+
+              <ModeCard
+                id="survival"
+                title="SURVIVAL"
+                subtitle="3 lives. Every wrong answer loses one. Questions keep getting harder."
+                onPlay={onSurvival}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
               <GlassButton size="sm" variant="secondary" onClick={() => setView('leaderboard')}>
                 LEADERBOARD
               </GlassButton>
-              <select
-                value={getLocale()}
-                onChange={(e) => {
-                  setLocale(e.target.value as Locale)
-                  window.location.reload()
-                }}
-                style={{
-                  background: 'none',
-                  color: alpha(0.3),
-                  border: `1px solid ${alpha(0.1)}`,
-                  borderRadius: radius.sm,
-                  padding: '2px 6px',
-                  outline: 'none',
-                  fontFamily: fonts.body,
-                  fontSize: 10,
-                  cursor: 'pointer',
-                }}
-                aria-label="Language"
-              >
-                {getSupportedLocales().map((l) => (
-                  <option key={l} value={l}>
-                    {l.toUpperCase()}
-                  </option>
-                ))}
-              </select>
+              <GlassButton size="sm" variant="secondary" onClick={onPuzzleEditor}>
+                PUZZLE EDITOR
+              </GlassButton>
+              <GlassButton size="sm" variant="secondary" onClick={onCustomPuzzles}>
+                COMMUNITY PUZZLES
+              </GlassButton>
             </div>
-          </>
-        )}
-
-        {view === 'play' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 300,
-                letterSpacing: 4,
-                color: alpha(0.4),
-                fontFamily: fonts.body,
-                marginBottom: 4,
-              }}
-            >
-              SELECT MODE
-            </div>
-
-            <GlassButton
-              size="lg"
-              onClick={() => onStart(subject === 'all' ? null : subject, difficulty)}
-            >
-              FREE PLAY
-            </GlassButton>
-            <GlassButton
-              size="lg"
-              onClick={dailyDone ? undefined : () => onStart(null, 'medium', true)}
-              style={{ opacity: dailyDone ? 0.4 : 1 }}
-            >
-              {dailyDone ? 'DAILY — DONE' : 'DAILY CHALLENGE'}
-            </GlassButton>
-            <GlassButton size="md" onClick={onSpeedRun}>
-              SPEED RUN
-            </GlassButton>
-            <GlassButton size="md" onClick={onSurvival}>
-              SURVIVAL
-            </GlassButton>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: 12,
-                alignItems: 'center',
-                marginTop: 4,
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-              }}
-            >
-              <select
-                value={subject}
-                onChange={(e) => setSubject(e.target.value as Topic | 'all')}
-                style={{
-                  background: 'rgba(0,0,0,0.4)',
-                  color: colors.fg,
-                  border: `1px solid ${alpha(0.15)}`,
-                  borderRadius: radius.md,
-                  padding: '5px 8px',
-                  outline: 'none',
-                  fontFamily: fonts.body,
-                  fontSize: 10,
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="all">ALL TOPICS</option>
-                {TOPICS.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {DIFFICULTIES.map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDifficulty(d)}
-                    style={{
-                      background: difficulty === d ? alpha(0.1) : 'transparent',
-                      color: difficulty === d ? colors.fg : alpha(0.4),
-                      border:
-                        difficulty === d ? `1px solid ${alpha(0.3)}` : `1px solid ${alpha(0.1)}`,
-                      borderRadius: radius.md,
-                      padding: '4px 10px',
-                      cursor: 'pointer',
-                      fontFamily: fonts.body,
-                      fontSize: 10,
-                      textTransform: 'capitalize',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <GlassButton
-              size="sm"
-              variant="secondary"
-              onClick={() => setView('main')}
-              style={{ marginTop: 8 }}
-            >
-              ← BACK
-            </GlassButton>
           </div>
         )}
 
@@ -313,8 +467,22 @@ export default function StartScreen({
               padding: 20,
               maxHeight: '80vh',
               overflow: 'auto',
+              position: 'relative',
             }}
           >
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: 3,
+                color: colors.accentBright,
+                fontFamily: fonts.heading,
+                fontWeight: 600,
+                marginBottom: 12,
+                textAlign: 'center',
+              }}
+            >
+              LEADERBOARD
+            </div>
             <div style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
               {['ALL TIME', 'TODAY'].map((tab, i) => (
                 <button
@@ -413,29 +581,6 @@ export default function StartScreen({
             </GlassButton>
           </GlassPanel>
         )}
-      </div>
-
-      <div
-        style={{
-          position: 'fixed',
-          top: 12,
-          right: 12,
-          zIndex: 20,
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-        }}
-      >
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 300,
-            color: alpha(0.4),
-            fontFamily: fonts.body,
-          }}
-        >
-          {playerName || 'RUNNER'}
-        </span>
       </div>
     </div>
   )
