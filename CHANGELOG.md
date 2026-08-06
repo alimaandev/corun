@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/alimaandev/corun/compare/v1.8.0...v1.9.0) (2026-08-06)
+
+
+### Features
+
+* add 150 quick-fire challenges (JS, Python, TypeScript) ([a15d885](https://github.com/alimaandev/corun/commit/a15d885b76f1a7f16d8964ecfe8983230286a191))
+
 # [1.8.0](https://github.com/alimaandev/corun/compare/v1.7.0...v1.8.0) (2026-08-06)
 
 
