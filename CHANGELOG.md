@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/alimaandev/corun/compare/v1.7.0...v1.8.0) (2026-08-06)
+
+
+### Features
+
+* redesign start screen as arcade mode cards ([4e596ee](https://github.com/alimaandev/corun/commit/4e596eed3fb0bc49bf29ecb7c768953758ba7811))
+
 # [1.7.0](https://github.com/alimaandev/corun/compare/v1.6.0...v1.7.0) (2026-08-06)
 
 
