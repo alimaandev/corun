@@ -1,4 +1,5 @@
 import { Challenge } from '../../types'
+import { EXTRA_CHALLENGES } from './challengesExtra'
 
 const POOL: Challenge[] = []
 
@@ -323,6 +324,7 @@ const FALLBACKS: Challenge[] = [
     explanation:
       'A closure needs a local variable (count) that persists between calls to the inner function.',
   },
+  ...EXTRA_CHALLENGES,
 ]
 
 function pick<T>(arr: T[]): T {
@@ -335,6 +337,10 @@ export function clearAIPool() {
 
 export function getChallengeById(id: number): Challenge | undefined {
   return POOL.find((c) => c.id === id) || FALLBACKS.find((c) => c.id === id)
+}
+
+export function getChallengePool(): Challenge[] {
+  return FALLBACKS
 }
 
 export async function getRandomChallenge(
@@ -367,6 +373,7 @@ export const TOPICS = [
   { id: 'general', label: 'General CS', description: 'Computer science fundamentals' },
   { id: 'javascript', label: 'JavaScript', description: 'JS, Node.js & frontend' },
   { id: 'python', label: 'Python', description: 'Python programming' },
+  { id: 'typescript', label: 'TypeScript', description: 'TypeScript & static typing' },
   { id: 'web', label: 'Web Dev', description: 'HTML, CSS & HTTP' },
   { id: 'databases', label: 'Databases', description: 'SQL & data storage' },
   { id: 'algorithms', label: 'Algorithms', description: 'Data structures & complexity' },

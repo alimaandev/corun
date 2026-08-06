@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { getChallengeById, getRandomChallenge, getDailyChallenge, clearAIPool } from './challenges'
+import {
+  getChallengeById,
+  getRandomChallenge,
+  getDailyChallenge,
+  getChallengePool,
+  clearAIPool,
+} from './challenges'
 
 beforeEach(() => {
   localStorage.clear()
@@ -51,6 +57,41 @@ describe('getRandomChallenge', () => {
     ])
     const c = await getRandomChallenge(allIds)
     expect(c).toBeDefined()
+  })
+})
+
+describe('challenge pool', () => {
+  it('contains at least 50 challenges for each language topic', () => {
+    const pool = getChallengePool()
+    for (const topic of ['javascript', 'python', 'typescript']) {
+      expect(pool.filter((c) => c.topic === topic).length).toBeGreaterThanOrEqual(50)
+    }
+  })
+
+  it('has unique ids', () => {
+    const ids = getChallengePool().map((c) => c.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('has a reasonable difficulty spread per language', () => {
+    const pool = getChallengePool()
+    for (const topic of ['javascript', 'python', 'typescript']) {
+      const byDifficulty = pool.filter((c) => c.topic === topic)
+      expect(byDifficulty.filter((c) => c.difficulty === 'easy').length).toBeGreaterThanOrEqual(10)
+      expect(byDifficulty.filter((c) => c.difficulty === 'medium').length).toBeGreaterThanOrEqual(
+        10,
+      )
+      expect(byDifficulty.filter((c) => c.difficulty === 'hard').length).toBeGreaterThanOrEqual(10)
+    }
+  })
+
+  it('has valid options and correct indexes everywhere', () => {
+    for (const c of getChallengePool()) {
+      expect(c.options.length).toBeGreaterThanOrEqual(2)
+      expect(c.correct).toBeGreaterThanOrEqual(0)
+      expect(c.correct).toBeLessThan(c.options.length)
+      if (c.type !== 'multiple') expect(c.code).toBeTruthy()
+    }
   })
 })
 

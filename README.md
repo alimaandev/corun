@@ -68,7 +68,7 @@ A monster is breaking through the wall.
 The only way out is to code.
 ```
 
-- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 code puzzles** plus **26 quick-fire runner challenges** across strings, arrays, objects, regex, math, logic, and ES6+.
+- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 code puzzles** plus **176 quick-fire runner challenges** across JavaScript, Python, TypeScript, web, databases, and general CS.
 - **Offline-first** — Reliable storage, migrations, and sync are handled on-device with **Dexie (IndexedDB) v2** and a retrying **outbox queue**. Install it as a PWA and it works with no connection.
 - **Pick up where you left off** — An unfinished run is saved and resumable from the start screen for up to 2 hours.
 - **Stale-proof deploys** — A `build.json` fingerprint detected at boot (and on tab focus) reloads only when a true new build appears, so you never play a half-updated bundle.
@@ -97,7 +97,7 @@ The only way out is to code.
   <tr>
     <td>
       <h4>🏃 <strong>Endless Runner (Free Play)</strong></h4>
-      <p>3-lane escape with adaptive difficulty, combo multipliers up to 4×, boss battles, and 5-second bonus rounds. 26 quick-fire challenges.</p>
+      <p>3-lane escape with adaptive difficulty, combo multipliers up to 4×, boss battles, and 5-second bonus rounds. 176 quick-fire challenges.</p>
     </td>
     <td>
       <h4>⚡ <strong>Speed Run & Survival</strong></h4>

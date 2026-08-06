@@ -1,5 +1,6 @@
 export type Difficulty = 'easy' | 'medium' | 'hard'
-export type Topic = 'javascript' | 'python' | 'web' | 'databases' | 'general' | 'algorithms'
+export type Topic =
+  'javascript' | 'python' | 'typescript' | 'web' | 'databases' | 'general' | 'algorithms'
 export type QuestionType = 'multiple' | 'fill-blank' | 'output' | 'spot-bug'
 
 export interface Challenge {
