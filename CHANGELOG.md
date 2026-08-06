@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/alimaandev/corun/compare/v1.6.0...v1.7.0) (2026-08-06)
+
+
+### Features
+
+* remove story mode entirely ([1ae8c45](https://github.com/alimaandev/corun/commit/1ae8c459a6db0ddafb2a4726d7dff98adbefb0fb))
+
 # [1.6.0](https://github.com/alimaandev/corun/compare/v1.5.2...v1.6.0) (2026-08-04)
 
 
