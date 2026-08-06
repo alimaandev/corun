@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000`. No Auth0 account needed — the game falls back to guest/demo mode automatically.
+Visit `http://localhost:3000`. No account needed — the game creates a local profile in IndexedDB automatically.
 
 ## Development Scripts
 
@@ -31,10 +31,10 @@ Visit `http://localhost:3000`. No Auth0 account needed — the game falls back t
 src/
 ├── game/           Core game logic, 52 puzzles, audio engine
 ├── components/
-│   ├── three/      3D components (editor, player, NPC, environment, particles)
+│   ├── three/      3D components (terminal scene, chamber, particles)
 │   ├── *.tsx       React components (UI, HUD, modals, screens)
-├── lib/            Auth, i18n, focus trap
-├── pages/          Route-level pages (landing, login, register)
+├── lib/            Storage (Dexie), outbox, leaderboard, profile, i18n, focus trap
+├── pages/          Route-level pages (landing)
 └── main.tsx + App.tsx
 ```
 

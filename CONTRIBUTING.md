@@ -44,7 +44,7 @@ npm run lint
 npm run build
 ```
 
-> **No Auth0 account needed.** The game auto-detects missing env vars and falls back to guest/demo mode.
+> **No account needed.** Players get a local profile stored in IndexedDB — no auth vendor, no external database.
 
 <br />
 
@@ -112,10 +112,10 @@ Push your branch and open a [pull request](https://github.com/alimaandev/corun/c
 src/
 ├── game/          Core game logic — runner, puzzles, audio
 ├── components/
-│   ├── three/     3D React components (editor, player, NPC, environment)
+│   ├── three/     3D React components (terminal scene, chamber, particles)
 │   └── *.tsx      UI components (HUD, modals, screens)
-├── lib/           Auth, i18n, focus trap
-├── pages/         Route-level pages (landing, login, register)
+├── lib/           Storage (Dexie), outbox, leaderboard, profile, i18n, focus trap
+├── pages/         Route-level pages (landing)
 ├── main.tsx       App entry point
 ├── App.tsx        Router + global components
 └── index.css      Global styles
@@ -125,11 +125,10 @@ Key files to know:
 
 | File | What it does |
 |------|-------------|
-| `src/components/Game.tsx` | Main screen state machine — routes between start, playing, game-over |
+| `src/app/GamePage.tsx` | Screen state machine — routes between start, playing, game-over |
 | `src/game/PixelRunner.tsx` | Endless runner game loop (3 lanes, monster, challenges) |
-| `src/game/codePuzzles.ts` | 52 puzzles + sandbox evaluator (`evaluateCode()`) |
+| `src/game/engine/data/codePuzzles.ts` | Puzzle bank + sandbox evaluator (`evaluateCode()`) |
 | `src/game/audio.ts` | Procedural soundtrack engine (Web Audio API) |
-| `src/lib/i18n.ts` | Translation system (EN, ES, FR) |
 | `src/lib/i18n.ts` | Translation system (EN, ES, FR) |
 | `src/components/PuzzleEditor.tsx` | User-generated content creation form |
 | `src/game/puzzleShare.ts` | UGC base64 encode/decode + localStorage CRUD |
