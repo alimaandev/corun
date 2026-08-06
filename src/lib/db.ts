@@ -1,5 +1,4 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { LevelProgress } from '../game/types'
 
 export interface Profile {
   id: string
@@ -28,11 +27,6 @@ export interface DailyRow {
   completed_at: string
 }
 
-export interface ProgressRow {
-  id: string
-  value: LevelProgress
-}
-
 export interface SettingRow {
   key: string
   value: unknown
@@ -55,7 +49,6 @@ const db = new Dexie('CorunDB') as Dexie & {
   scores: EntityTable<ScoreRow, 'id'>
   badges: EntityTable<BadgeRow, 'id'>
   daily: EntityTable<DailyRow, 'date'>
-  levelProgress: EntityTable<ProgressRow, 'id'>
   settings: EntityTable<SettingRow, 'key'>
   outbox: EntityTable<OutboxRow, 'id'>
 }
@@ -71,7 +64,6 @@ db.version(2)
   .stores({
     badges: '++id, &topic, earned_at',
     daily: '&date, completed_at',
-    levelProgress: '&id, value',
     settings: '&key, value',
     outbox: '++id, type, status, next_attempt_at, created_at',
   })
@@ -98,17 +90,6 @@ db.version(2)
         await tx.table('settings').put({ key: 'highScore', value })
       }
       remove('coderun_highscore')
-    }
-
-    // Level progress
-    const progressRaw = read('code_level_progress')
-    if (progressRaw) {
-      try {
-        await tx
-          .table('levelProgress')
-          .put({ id: 'main', value: JSON.parse(progressRaw) as LevelProgress })
-      } catch {}
-      remove('code_level_progress')
     }
 
     // Daily completion markers (keyed by date)

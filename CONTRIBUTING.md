@@ -110,7 +110,7 @@ Push your branch and open a [pull request](https://github.com/alimaandev/corun/c
 
 ```
 src/
-├── game/          Core game logic — runner, puzzles, audio, levels
+├── game/          Core game logic — runner, puzzles, audio
 ├── components/
 │   ├── three/     3D React components (editor, player, NPC, environment)
 │   └── *.tsx      UI components (HUD, modals, screens)
@@ -127,10 +127,9 @@ Key files to know:
 |------|-------------|
 | `src/components/Game.tsx` | Main screen state machine — routes between start, playing, game-over |
 | `src/game/PixelRunner.tsx` | Endless runner game loop (3 lanes, monster, challenges) |
-| `src/components/Scene3D.tsx` | 3D story mode Canvas with lighting, camera, scene orchestration |
 | `src/game/codePuzzles.ts` | 52 puzzles + sandbox evaluator (`evaluateCode()`) |
 | `src/game/audio.ts` | Procedural soundtrack engine (Web Audio API) |
-| `src/game/levels.ts` | Level configs, progress (localStorage), star calculation |
+| `src/lib/i18n.ts` | Translation system (EN, ES, FR) |
 | `src/lib/i18n.ts` | Translation system (EN, ES, FR) |
 | `src/components/PuzzleEditor.tsx` | User-generated content creation form |
 | `src/game/puzzleShare.ts` | UGC base64 encode/decode + localStorage CRUD |

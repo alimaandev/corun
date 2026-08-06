@@ -3,28 +3,15 @@ import { Helmet } from 'react-helmet-async'
 import type { PixelRunnerHandle } from '../game/PixelRunner'
 const PixelRunner = lazy(() => import('../game/PixelRunner'))
 const ChallengeModal = lazy(() => import('../components/ChallengeModal'))
-const StoryLevelCanvas = lazy(() => import('../features/story/StoryLevelCanvas'))
 const PuzzleEditor = lazy(() => import('../components/PuzzleEditor'))
 const CommunityPuzzles = lazy(() => import('../components/CommunityPuzzles'))
 import { playGameOver, playSuccess, playError } from '../game/sound'
 import { startMusic, stopMusic } from '../game/audio'
-import {
-  Challenge,
-  HUDData,
-  Difficulty,
-  Topic,
-  LevelConfig,
-  LevelProgress,
-  CodePuzzle,
-} from '../game/types'
-import { getRandomChallenge, getDailyChallenge } from '../game/engine/data/challenges'
-import { ALL_LEVELS, ENDING_SCENE } from '../game/engine/data/levels'
-import { getLevelScene } from '../game/engine/data/levelScenes'
+import { Challenge, HUDData, Difficulty, Topic, CodePuzzle } from '../game/types'
+import { getDailyChallenge } from '../game/engine/data/challenges'
 import {
   getHighScore,
   setHighScore as persistHighScore,
-  getLevelProgress,
-  saveLevelProgress,
   addToLeaderboard,
   getRunSession,
   saveRunSession,
@@ -36,12 +23,11 @@ import {
   submitScore,
   updatePlayerName,
   getLocalPlayerName,
-  setLocalPlayerName,
   getGlobalLeaderboard,
   PlayerProfile,
 } from '../lib/leaderboard'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
-import { colors, fonts, alpha, radius } from '../lib/theme'
+import { colors, fonts, alpha } from '../lib/theme'
 import { useBossBattle } from '../features/boss/useBossBattle'
 import { useBonusRound } from '../features/bonus/useBonusRound'
 import { useEndless, Badge } from '../features/endless/useEndless'
@@ -53,14 +39,11 @@ import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features
 const HUD = lazy(() => import('../components/HUD'))
 const StartScreen = lazy(() => import('../components/StartScreen'))
 const GameOverScreen = lazy(() => import('../components/GameOverScreen'))
-const LevelSelect = lazy(() => import('../components/LevelSelect'))
-const SceneCanvas = lazy(() => import('../components/SceneCanvas'))
 const NameDialog = lazy(() => import('../components/NameDialog'))
 const CodePuzzlePlaytest = lazy(() => import('../components/CodePuzzlePlaytest'))
 const LoadingScreen = lazy(() => import('../components/LoadingScreen'))
 
-type Screen =
-  'start' | 'playing' | 'gameover' | 'levelselect' | 'levelintro' | 'leveloutro' | 'ending'
+type Screen = 'start' | 'playing' | 'gameover'
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>('start')
@@ -76,18 +59,6 @@ export default function Game() {
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
-
-  // Level state
-  const [activeLevel, setActiveLevel] = useState<LevelConfig | null>(null)
-  const [levelProgress, setLevelProgressState] = useState<LevelProgress>({
-    unlockedUpTo: 1,
-    completed: [],
-    stars: {},
-  })
-  useEffect(() => {
-    getLevelProgress().then(setLevelProgressState)
-  }, [])
-  const [finalStars, setFinalStars] = useState(0)
 
   const [resumeSession, setResumeSession] = useState<RunSession | null>(null)
   useEffect(() => {
@@ -106,7 +77,6 @@ export default function Game() {
   useEffect(() => {
     hudScoreRef.current = hudData.score
   }, [hudData.score])
-  // Supabase
   const [profile, setProfile] = useState<PlayerProfile | null>(null)
   const profileRef = useRef<PlayerProfile | null>(null)
   const [showNameDialog, setShowNameDialog] = useState(false)
@@ -115,9 +85,6 @@ export default function Game() {
   const [showCustomPuzzles, setShowCustomPuzzles] = useState(false)
   const [customPuzzle, setCustomPuzzle] = useState<CodePuzzle | null>(null)
 
-  // Level refs
-  const activeLevelRef = useRef<LevelConfig | null>(null)
-  const levelTargetReached = useRef(false)
   const hudDataRef = useRef<HUDData>(hudData)
 
   useEffect(() => {
@@ -130,74 +97,14 @@ export default function Game() {
     const prev = prevScreen.current
     prevScreen.current = screen
     if (prev === 'playing') stopMusic()
-    if (screen === 'start' || screen === 'levelselect') {
+    if (screen === 'start') {
       startMusic(0, 0.15)
     } else if (screen === 'gameover') {
       startMusic(1, 0.1)
-    } else if (screen === 'playing' && !activeLevel) {
+    } else if (screen === 'playing') {
       startMusic(0, 0.3)
-    } else if (screen === 'levelintro' || screen === 'leveloutro' || screen === 'ending') {
-      startMusic(activeLevelRef.current?.id || 1, 0.2)
     }
-  }, [screen, activeLevel])
-
-  const goToLevelSelect = useCallback(() => {
-    setScreen('levelselect')
-    setActiveLevel(null)
-    activeLevelRef.current = null
-  }, [])
-
-  const goToLevelSelectWithProgress = useCallback((progress: LevelProgress) => {
-    setLevelProgressState(progress)
-    setScreen('levelselect')
-    setActiveLevel(null)
-    activeLevelRef.current = null
-    void clearRunSession()
-    setResumeSession(null)
-  }, [])
-
-  const handleSelectLevel = useCallback((levelId: number) => {
-    const level = ALL_LEVELS.find((l) => l.id === levelId)
-    if (!level) return
-    activeLevelRef.current = level
-    setActiveLevel(level)
-    setResumeSession(null)
-    void saveRunSession({
-      mode: 'normal',
-      topic: null,
-      difficulty: 'medium',
-      score: 0,
-      activeLevelId: level.id,
-      isDaily: false,
-    })
-    setScreen('levelintro')
-  }, [])
-
-  const handleLevelComplete = useCallback(async (correctCount?: number) => {
-    const level = activeLevelRef.current
-    if (!level) return
-    let stars = 3
-    if (correctCount !== undefined) {
-      const scene = getLevelScene(level.id)
-      const total = Math.max(1, scene?.triggers.length ?? 1)
-      const accuracy = correctCount / total
-      const scoreRatio = Math.min(1, hudDataRef.current.score / level.scoreTarget)
-      const combined = (accuracy + scoreRatio) / 2
-      if (combined >= 0.8) stars = 3
-      else if (combined >= 0.5) stars = 2
-      else stars = 1
-    }
-    const progress = await getLevelProgress()
-    if (!progress.completed.includes(level.id)) progress.completed.push(level.id)
-    progress.stars[String(level.id)] = Math.max(progress.stars[String(level.id)] || 0, stars)
-    if (level.id >= progress.unlockedUpTo) progress.unlockedUpTo = level.id + 1
-    await saveLevelProgress(progress)
-    setLevelProgressState(progress)
-    setFinalStars(stars)
-    void clearRunSession()
-    setResumeSession(null)
-    setScreen('leveloutro')
-  }, [])
+  }, [screen])
 
   const showChallenge = useCallback((challenge: Challenge, timeLimitSeconds: number) => {
     setCurrentChallenge(challenge)
@@ -212,10 +119,8 @@ export default function Game() {
       setMode,
       topic: selectedTopic,
       showChallenge,
-      onLevelComplete: handleLevelComplete,
-      getLevel: () => activeLevelRef.current,
     }),
-    [selectedTopic, showChallenge, handleLevelComplete],
+    [selectedTopic, showChallenge],
   )
 
   const bossBattle = useBossBattle(bossCtx)
@@ -250,7 +155,7 @@ export default function Game() {
 
   // Persist the run snapshot so a refresh can resume it (throttled).
   useEffect(() => {
-    if (screen !== 'playing' || activeLevel) return
+    if (screen !== 'playing') return
     if (hudData.score === 0 && pendingResumeRef.current === null) return
     const now = Date.now()
     if (now - lastSessionSaveRef.current < 2000) return
@@ -267,7 +172,7 @@ export default function Game() {
       score: hudData.score,
       isDaily: daily.isDailyRef.current,
     })
-  }, [hudData.score, screen, activeLevel, selectedTopic, selectedDifficulty, daily])
+  }, [hudData.score, screen, selectedTopic, selectedDifficulty, daily])
 
   interface GameStateOverrides {
     mode: Mode
@@ -296,31 +201,6 @@ export default function Game() {
     },
     [bossBattle, bonusRound, endless, speedRun, survival, daily],
   )
-
-  const handleStoryDone = useCallback(() => {
-    const level = activeLevelRef.current
-    if (!level) {
-      setScreen('levelselect')
-      return
-    }
-    levelTargetReached.current = false
-    setScreen('playing')
-    resetGameState()
-  }, [resetGameState])
-
-  const [showEndingScene, setShowEndingScene] = useState(true)
-
-  const handleOutroDone = useCallback(async () => {
-    const isLast = activeLevelRef.current?.id === ALL_LEVELS.length
-    if (isLast) {
-      setShowEndingScene(true)
-      setScreen('ending')
-    } else goToLevelSelectWithProgress(await getLevelProgress())
-  }, [goToLevelSelectWithProgress])
-
-  const handleEndingDone = useCallback(() => {
-    setShowEndingScene(false)
-  }, [])
 
   const handleChallenge = useCallback((challenge: Challenge) => {
     if (challengeRef.current) return
@@ -396,22 +276,6 @@ export default function Game() {
       void clearRunSession()
       setSelectedTopic(session.topic)
       setSelectedDifficulty(session.difficulty)
-      if (session.activeLevelId) {
-        const level = ALL_LEVELS.find((l) => l.id === session.activeLevelId)
-        if (!level) return
-        activeLevelRef.current = level
-        setActiveLevel(level)
-        void saveRunSession({
-          mode: 'normal',
-          topic: null,
-          difficulty: 'medium',
-          score: 0,
-          activeLevelId: level.id,
-          isDaily: false,
-        })
-        setScreen('playing')
-        return
-      }
       resetGameState({
         mode: session.mode,
         modeRef: session.mode,
@@ -428,7 +292,7 @@ export default function Game() {
   useEffect(() => {
     if (screen !== 'playing') return
     const session = pendingResumeRef.current
-    if (!session || session.activeLevelId || !gameRef.current) return
+    if (!session || !gameRef.current) return
     pendingResumeRef.current = null
     gameRef.current.restoreScore(session.score)
     if (session.mode === 'speedrun') speedRun.start()
@@ -509,7 +373,7 @@ export default function Game() {
     gameRef.current?.setPreferredDifficulty(adaptDiff)
     gameRef.current?.setMultiplier(1)
     finishChallenge()
-  }, [finishChallenge, bossBattle, bonusRound, endless])
+  }, [finishChallenge, bossBattle, bonusRound, endless, selectedDifficulty])
 
   const handleNameSubmit = useCallback(async (name: string) => {
     setShowNameDialog(false)
@@ -543,12 +407,8 @@ export default function Game() {
       if (score > 0) void addToLeaderboard(Math.floor(score))
       daily.complete(score)
       if (profileRef.current && score > 0) {
-        const mode = activeLevelRef.current
-          ? 'story'
-          : daily.isDailyRef.current
-            ? 'daily'
-            : ('freeplay' as const)
-        submitScore(profileRef.current.id, Math.floor(score), mode, activeLevelRef.current?.id || 0)
+        const mode = daily.isDailyRef.current ? ('daily' as const) : ('freeplay' as const)
+        submitScore(profileRef.current.id, Math.floor(score), mode)
           .then(() => getGlobalLeaderboard(profileRef.current!.id))
           .then((res) => setPlayerRank(res.yourRank))
           .catch(() => console.debug('[Game] leaderboard submit failed'))
@@ -564,11 +424,6 @@ export default function Game() {
     void clearRunSession()
     setResumeSession(null)
   }, [])
-
-  const handleRetryLevel = useCallback(() => {
-    const level = activeLevelRef.current
-    if (level) handleSelectLevel(level.id)
-  }, [handleSelectLevel])
 
   useEffect(() => {
     gameOverRef.current = handleGameOver
@@ -611,16 +466,6 @@ export default function Game() {
     if (screen !== 'playing' || hudData.score <= 0) return
     if (mode !== 'normal') return
 
-    if (
-      activeLevelRef.current &&
-      !levelTargetReached.current &&
-      hudData.score >= activeLevelRef.current.scoreTarget
-    ) {
-      levelTargetReached.current = true
-      bossBattle.triggerLevelBoss()
-      return
-    }
-
     if (hudData.score - lastBossScore.current >= BOSS_THRESHOLD) {
       lastBossScore.current = hudData.score
       bossBattle.triggerBossBattle()
@@ -638,12 +483,7 @@ export default function Game() {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Enter') {
         if (screen === 'start') handleStart(null, 'medium')
-        else if (screen === 'gameover') {
-          const level = activeLevelRef.current
-          if (level) handleRetryLevel()
-          else handleRestart()
-        } else if (screen === 'levelintro') handleStoryDone()
-        else if (screen === 'leveloutro') handleOutroDone()
+        else if (screen === 'gameover') handleRestart()
       }
       if (e.key === 'Escape') {
         if (currentChallenge) {
@@ -664,17 +504,7 @@ export default function Game() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [
-    screen,
-    handleStart,
-    handleRestart,
-    handleRetryLevel,
-    handleStoryDone,
-    handleOutroDone,
-    currentChallenge,
-    handleAnswer,
-    showNameDialog,
-  ])
+  }, [screen, handleStart, handleRestart, currentChallenge, handleAnswer, showNameDialog])
 
   function renderBossBar() {
     const boss = bossBattle.boss
@@ -806,11 +636,11 @@ export default function Game() {
         <title>Corun — Play</title>
         <meta
           name="description"
-          content="Play Corun — a free open-source coding game. Story mode with 12 levels, endless runner, speed run, and survival modes."
+          content="Play Corun — a free open-source coding game. Endless runner, speed run, survival, and daily challenge modes."
         />
       </Helmet>
       <div style={styles.root}>
-        {screen === 'playing' && !activeLevel && (
+        {screen === 'playing' && (
           <Suspense fallback={<LoadingScreen />}>
             <PixelRunner
               ref={gameRef}
@@ -823,26 +653,19 @@ export default function Game() {
           </Suspense>
         )}
 
-        {screen === 'playing' && activeLevel && (
-          <Suspense fallback={<LoadingScreen />}>
-            <StoryLevelCanvas levelId={activeLevel.id} onComplete={handleLevelComplete} />
-          </Suspense>
-        )}
-
-        {screen === 'playing' && !activeLevel && (
+        {screen === 'playing' && (
           <Suspense fallback={null}>
             <HUD
               {...hudData}
               isBoss={mode === 'boss'}
               isBonus={mode === 'bonus'}
-              levelName={undefined}
               speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
               survivalLives={mode === 'survival' ? survival.lives : undefined}
             />
           </Suspense>
         )}
 
-        {screen === 'playing' && currentChallenge && !activeLevel && (
+        {screen === 'playing' && currentChallenge && (
           <Suspense fallback={null}>
             <ChallengeModal
               challenge={currentChallenge}
@@ -855,8 +678,8 @@ export default function Game() {
           </Suspense>
         )}
 
-        {screen === 'playing' && !activeLevel && renderBossBar()}
-        {screen === 'playing' && !activeLevel && renderBonusTimer()}
+        {screen === 'playing' && renderBossBar()}
+        {screen === 'playing' && renderBonusTimer()}
         {renderComboNotification()}
 
         {screen === 'start' && (
@@ -864,7 +687,6 @@ export default function Game() {
             <StartScreen
               highScore={highScore}
               onStart={handleStart}
-              onStoryMode={goToLevelSelect}
               onSpeedRun={handleSpeedRun}
               onSurvival={handleSurvival}
               onPuzzleEditor={() => setShowPuzzleEditor(true)}
@@ -877,113 +699,6 @@ export default function Game() {
           </Suspense>
         )}
 
-        {screen === 'levelselect' && (
-          <Suspense fallback={<LoadingScreen />}>
-            <LevelSelect
-              progress={levelProgress}
-              onSelectLevel={handleSelectLevel}
-              onBack={() => setScreen('start')}
-            />
-          </Suspense>
-        )}
-
-        {screen === 'levelintro' && activeLevel?.sceneIntro && (
-          <Suspense fallback={<LoadingScreen />}>
-            <SceneCanvas scene={activeLevel.sceneIntro} onDone={handleStoryDone} />
-          </Suspense>
-        )}
-
-        {screen === 'leveloutro' && activeLevel?.sceneOutro && (
-          <Suspense fallback={<LoadingScreen />}>
-            <SceneCanvas scene={activeLevel.sceneOutro} onDone={handleOutroDone} />
-          </Suspense>
-        )}
-
-        {screen === 'ending' && showEndingScene && (
-          <Suspense fallback={<LoadingScreen />}>
-            <SceneCanvas scene={ENDING_SCENE} onDone={handleEndingDone} />
-          </Suspense>
-        )}
-
-        {screen === 'ending' && !showEndingScene && (
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: colors.bg,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 300,
-              fontFamily: fonts.body,
-              padding: 20,
-              overflow: 'auto',
-            }}
-          >
-            <div
-              style={{
-                color: colors.fg,
-                fontSize: 16,
-                fontFamily: fonts.heading,
-                fontWeight: 700,
-                letterSpacing: 6,
-                marginBottom: 30,
-              }}
-            >
-              ✦ THE END ✦
-            </div>
-            <div
-              style={{
-                color: alpha(0.6),
-                fontSize: 10,
-                lineHeight: 2,
-                marginBottom: 30,
-                textAlign: 'center' as const,
-                fontFamily: fonts.body,
-                fontWeight: 300,
-              }}
-            >
-              <div style={{ color: colors.accent, marginBottom: 12, fontWeight: 500 }}>
-                STORY COMPLETE
-              </div>
-              <div>Created by — Ali Sher</div>
-              <div style={{ marginTop: 8, color: alpha(0.3), fontSize: 11 }}>
-                Built with React · TypeScript · Vite
-              </div>
-              <div
-                style={{
-                  marginTop: 16,
-                  color: alpha(0.4),
-                  fontSize: 11,
-                  fontStyle: 'italic',
-                }}
-              >
-                "Every line of code brought you home."
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setShowEndingScene(true)
-                setScreen('start')
-              }}
-              style={{
-                background: 'transparent',
-                border: `1px solid ${alpha(0.3)}`,
-                color: colors.fg,
-                fontFamily: fonts.body,
-                fontWeight: 500,
-                fontSize: 10,
-                padding: '12px 24px',
-                cursor: 'pointer',
-                borderRadius: radius.sm,
-              }}
-            >
-              ◀ BACK TO MENU
-            </button>
-          </div>
-        )}
-
         {screen === 'gameover' && (
           <Suspense fallback={<LoadingScreen />}>
             <GameOverScreen
@@ -991,12 +706,6 @@ export default function Game() {
               highScore={highScore}
               onRestart={handleRestart}
               badges={finalBadges}
-              levelMode={!!activeLevelRef.current}
-              levelName={activeLevelRef.current?.name}
-              onRetryLevel={handleRetryLevel}
-              onBackToLevels={() => {
-                void getLevelProgress().then(goToLevelSelectWithProgress)
-              }}
               playerRank={playerRank}
               playerName={profile?.player_name}
             />

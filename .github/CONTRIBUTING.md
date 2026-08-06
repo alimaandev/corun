@@ -29,7 +29,7 @@ Visit `http://localhost:3000`. No Auth0 account needed — the game falls back t
 
 ```
 src/
-├── game/           Core game logic, 52 puzzles, levels, audio engine
+├── game/           Core game logic, 52 puzzles, audio engine
 ├── components/
 │   ├── three/      3D components (editor, player, NPC, environment, particles)
 │   ├── *.tsx       React components (UI, HUD, modals, screens)

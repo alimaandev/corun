@@ -4,8 +4,6 @@ import { db, resetDatabase } from './db'
 import {
   getHighScore,
   setHighScore,
-  getLevelProgress,
-  saveLevelProgress,
   isDailyCompleted,
   markDailyCompleted,
   getSavedBadges,
@@ -16,9 +14,7 @@ import {
   saveRunSession,
   clearRunSession,
   SESSION_TTL_MS,
-  DEFAULT_LEVEL_PROGRESS,
 } from './storage'
-import type { LevelProgress } from '../game/types'
 
 beforeEach(async () => {
   localStorage.clear()
@@ -34,29 +30,6 @@ describe('high score', () => {
     await setHighScore(420)
     await setHighScore(500)
     expect(await getHighScore()).toBe(500)
-  })
-})
-
-describe('level progress', () => {
-  it('returns the default progress when nothing is stored', async () => {
-    expect(await getLevelProgress()).toEqual(DEFAULT_LEVEL_PROGRESS)
-  })
-
-  it('round-trips saved progress', async () => {
-    const progress: LevelProgress = {
-      unlockedUpTo: 5,
-      completed: [1, 2, 3],
-      stars: { '1': 3, '2': 2 },
-    }
-    await saveLevelProgress(progress)
-    expect(await getLevelProgress()).toEqual(progress)
-  })
-
-  it('overwrites previous progress', async () => {
-    await saveLevelProgress({ unlockedUpTo: 1, completed: [], stars: {} })
-    const updated: LevelProgress = { unlockedUpTo: 2, completed: [1], stars: { '1': 3 } }
-    await saveLevelProgress(updated)
-    expect(await getLevelProgress()).toEqual(updated)
   })
 })
 
@@ -176,13 +149,7 @@ describe('v2 migration from localStorage', () => {
   }
 
   it('migrates all legacy keys and removes them', async () => {
-    const stored: LevelProgress = {
-      unlockedUpTo: 4,
-      completed: [1, 2],
-      stars: { '1': 3, '2': 2, '3': 1 },
-    }
     localStorage.setItem('coderun_highscore', '900')
-    localStorage.setItem('code_level_progress', JSON.stringify(stored))
     localStorage.setItem('code_daily_2025-08-04', 'done')
     localStorage.setItem('code_badges', JSON.stringify(['javascript', 'web']))
     localStorage.setItem('code_leaderboard', JSON.stringify([{ score: 500, date: '2026-08-01' }]))
@@ -190,27 +157,22 @@ describe('v2 migration from localStorage', () => {
     await seedLegacyV1Database()
 
     expect(await getHighScore()).toBe(900)
-    expect(await getLevelProgress()).toEqual(stored)
     expect(await isDailyCompleted()).toBe(false)
     expect(await getSavedBadges()).toEqual(['javascript', 'web'])
     expect(await getLeaderboard()).toEqual([{ score: 500, date: '2026-08-01' }])
 
     expect(localStorage.getItem('coderun_highscore')).toBeNull()
-    expect(localStorage.getItem('code_level_progress')).toBeNull()
     expect(localStorage.getItem('code_daily_2025-08-04')).toBeNull()
     expect(localStorage.getItem('code_badges')).toBeNull()
     expect(localStorage.getItem('code_leaderboard')).toBeNull()
   })
 
   it('skips corrupt legacy data gracefully', async () => {
-    localStorage.setItem('code_level_progress', '{invalid}')
     localStorage.setItem('coderun_highscore', 'not-a-number')
 
     await seedLegacyV1Database()
 
     expect(await getHighScore()).toBe(0)
-    expect(await getLevelProgress()).toEqual(DEFAULT_LEVEL_PROGRESS)
-    expect(localStorage.getItem('code_level_progress')).toBeNull()
     expect(localStorage.getItem('coderun_highscore')).toBeNull()
   })
 

@@ -10,9 +10,9 @@
 
 | Feature | Release |
 |---------|---------|
-| 12-level 3D story mode with diegetic code editor | v1.0 |
+| Endless runner free-play mode with adaptive difficulty | v1.0 |
 | 52 hand-crafted JavaScript puzzles | v1.0 |
-| Procedural soundtrack (12 presets, Web Audio API) | v1.0 |
+| Procedural soundtrack (Web Audio API) | v1.0 |
 | Particle effects (burst/trail, 500-pool) | v1.0 |
 | Touch controls (virtual joystick) | v1.0 |
 | 3D scene polish (7 scenery types, starfield, sky) | v1.0 |
@@ -26,6 +26,7 @@
 | CI/CD (GitHub Actions, semantic-release) | v1.0 |
 | SEO (JSON-LD, sitemap, OG tags, hreflang) | v1.1 |
 | Contributor templates (issues, PR, funding, stale bot) | v1.1 |
+| 2D parallax story mode + level select (removed in v1.7) | v1.6 |
 
 <br />
 
@@ -37,7 +38,7 @@
 - [ ] Keyboard shortcut hints overlay (press `?`)
 - [ ] Confirmation dialog before leaving an active game
 - [ ] Challenge difficulty indicators (★☆☆ / ★★★)
-- [ ] Loading skeleton for Level Select
+- [ ] Loading skeleton for game start
 - [ ] Full mobile responsiveness audit
 - [ ] Proper OG image / social preview card (1200×630)
 
@@ -48,7 +49,7 @@
 ## 📅 Mid-Term (v1.5 — v2.0)
 
 - [ ] Community-sourced puzzle pack expansion
-- [ ] Visual level editor (drag-and-drop scene builder)
+- [ ] Visual puzzle editor (drag-and-drop builder)
 - [ ] Multiplayer races — real-time challenge battles
 - [ ] Seasonal leaderboard resets + tier rankings
 - [ ] Achievement system with milestone badges
@@ -61,7 +62,7 @@
 
 ## 🔭 Long-Term (v2.0+)
 
-- [ ] Procedural level generation
+- [ ] Procedural mode variants
 - [ ] Corun Creator program — featured community challenges
 - [ ] Mobile native app (React Native)
 - [ ] Learning analytics — track progress per topic

@@ -39,7 +39,7 @@ body:
       label: Game mode
       description: Which game mode were you playing?
       options:
-        - Story Mode
+        - Gameplay
         - Endless Runner
         - Speed Run
         - Survival

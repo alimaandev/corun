@@ -11,11 +11,7 @@ interface Props {
   playerRank: number | null
   playerName?: string
   badges?: { topic: string; label: string; count: number }[]
-  levelMode?: boolean
-  levelName?: string
   onRestart?: () => void
-  onRetryLevel?: () => void
-  onBackToLevels?: () => void
 }
 
 function Slab({
@@ -70,14 +66,9 @@ export default function GameOverScreen({
   highScore,
   playerRank,
   badges = [],
-  levelMode,
-  levelName,
   onRestart,
-  onRetryLevel,
-  onBackToLevels,
 }: Props) {
   const [canvasKey, setCanvasKey] = useState(0)
-  const isStoryMode = !!levelMode
   const isNewHighScore = score > 0 && score >= highScore
 
   return (
@@ -155,29 +146,16 @@ export default function GameOverScreen({
         >
           GAME OVER
         </div>
-        {levelName ? (
-          <div
-            style={{
-              fontSize: 12,
-              color: alpha(0.5),
-              fontFamily: fonts.body,
-              fontWeight: 300,
-            }}
-          >
-            {levelName} — CAUGHT
-          </div>
-        ) : (
-          <div
-            style={{
-              fontSize: 12,
-              color: alpha(0.5),
-              fontFamily: fonts.body,
-              fontWeight: 300,
-            }}
-          >
-            THE MONSTER CAUGHT YOU
-          </div>
-        )}
+        <div
+          style={{
+            fontSize: 12,
+            color: alpha(0.5),
+            fontFamily: fonts.body,
+            fontWeight: 300,
+          }}
+        >
+          THE MONSTER CAUGHT YOU
+        </div>
         <div
           style={{
             fontSize: 36,
@@ -226,20 +204,9 @@ export default function GameOverScreen({
             justifyContent: 'center',
           }}
         >
-          {isStoryMode ? (
-            <>
-              <GlassButton variant="primary" onClick={onRetryLevel ?? onRestart}>
-                RETRY
-              </GlassButton>
-              <GlassButton variant="secondary" onClick={onBackToLevels ?? onRestart}>
-                LEVELS
-              </GlassButton>
-            </>
-          ) : (
-            <GlassButton variant="primary" onClick={onRestart}>
-              PLAY AGAIN
-            </GlassButton>
-          )}
+          <GlassButton variant="primary" onClick={onRestart}>
+            PLAY AGAIN
+          </GlassButton>
         </div>
 
         <div style={{ fontSize: 11, color: colors.fgFaint }}>PRESS ENTER</div>

@@ -1,9 +1,8 @@
 import { db } from './db'
 import { enqueue, flushOutbox, registerOutboxHandler } from './outbox'
-import { Difficulty, LevelProgress, Topic } from '../game/types'
+import { Difficulty, Topic } from '../game/types'
 
 const HIGH_SCORE_KEY = 'highScore'
-const PROGRESS_ROW_ID = 'main'
 const LOCAL_PROFILE_ID = 'local'
 const SESSION_ROW_ID = 'runSession'
 
@@ -15,12 +14,9 @@ export interface RunSession {
   topic: Topic | null
   difficulty: Difficulty
   score: number
-  activeLevelId?: number
   isDaily: boolean
   savedAt: string
 }
-
-export const DEFAULT_LEVEL_PROGRESS: LevelProgress = { unlockedUpTo: 1, completed: [], stars: {} }
 
 // ── Run session (resume last run) ────────────────────────────
 
@@ -56,22 +52,6 @@ export async function getHighScore(): Promise<number> {
 
 export async function setHighScore(score: number): Promise<void> {
   await db.settings.put({ key: HIGH_SCORE_KEY, value: score })
-}
-
-// ── Level progress ───────────────────────────────────────────
-
-export async function getLevelProgress(): Promise<LevelProgress> {
-  const row = await db.levelProgress.get(PROGRESS_ROW_ID)
-  if (!row) return { ...DEFAULT_LEVEL_PROGRESS }
-  return {
-    unlockedUpTo: row.value.unlockedUpTo ?? DEFAULT_LEVEL_PROGRESS.unlockedUpTo,
-    completed: row.value.completed ?? [],
-    stars: row.value.stars ?? {},
-  }
-}
-
-export async function saveLevelProgress(progress: LevelProgress): Promise<void> {
-  await db.levelProgress.put({ id: PROGRESS_ROW_ID, value: progress })
 }
 
 // ── Daily challenge ──────────────────────────────────────────

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="public/demo.gif" alt="Corun gameplay — 2D parallax story level with inline code editor" width="720" style="border-radius:12px;border:1px solid rgba(240,235,227,0.1)" />
+  <img src="public/demo.gif" alt="Corun gameplay — 3-lane endless runner with inline code editor" width="720" style="border-radius:12px;border:1px solid rgba(240,235,227,0.1)" />
 </p>
 
 <p align="center">
@@ -68,11 +68,11 @@ A monster is breaking through the wall.
 The only way out is to code.
 ```
 
-- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 story puzzles** plus **26 quick-fire runner challenges** across strings, arrays, objects, regex, math, logic, and ES6+.
+- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 code puzzles** plus **26 quick-fire runner challenges** across strings, arrays, objects, regex, math, logic, and ES6+.
 - **Offline-first** — Reliable storage, migrations, and sync are handled on-device with **Dexie (IndexedDB) v2** and a retrying **outbox queue**. Install it as a PWA and it works with no connection.
 - **Pick up where you left off** — An unfinished run is saved and resumable from the start screen for up to 2 hours.
 - **Stale-proof deploys** — A `build.json` fingerprint detected at boot (and on tab focus) reloads only when a true new build appears, so you never play a half-updated bundle.
-- **Procedural soundtrack** — Every level has a unique Web Audio API composition. Zero audio files. BPM scales with your progress.
+- **Procedural soundtrack** — Every mode has a unique Web Audio API composition. Zero audio files. BPM scales with your progress.
 - **Works everywhere** — Installable PWA, touch controls, full offline support, 3 locales (EN/ES/FR).
 
 > _"Every line of code brought you home."_
@@ -86,8 +86,8 @@ The only way out is to code.
 <table>
   <tr>
     <td width="50%">
-      <h4>🏰 <strong>2D Parallax Story Mode</strong></h4>
-      <p>12 hand-crafted levels with an inline code editor, NPCs, and a Tokyo-to-escape narrative. (3D/three.js retained as main-menu ambiance.)</p>
+      <h4>🎮 <strong>Boss Battles & Bonus Rounds</strong></h4>
+      <p>Fight a monster boss every ~150 points with hard questions, and hit 5-second 2× lightning bonus rounds.</p>
     </td>
     <td width="50%">
       <h4>✍️ <strong>52 Real Code Puzzles</strong></h4>
@@ -111,13 +111,13 @@ The only way out is to code.
     </td>
     <td>
       <h4>💾 <strong>Local-First Persistence</strong></h4>
-      <p>Scores, badges, level progress, daily stats, and profile live in IndexedDB (Dexie v2). A write-ahead outbox retries queued writes with backoff.</p>
+      <p>Scores, badges, daily stats, and profile live in IndexedDB (Dexie v2). A write-ahead outbox retries queued writes with backoff.</p>
     </td>
   </tr>
   <tr>
     <td>
       <h4>🔄 <strong>Run Resume</strong></h4>
-      <p>An in-progress run is snapshotted (mode, topic, difficulty, score, level) and offered as “RUN SAVED — CONTINUE” on the start screen.</p>
+      <p>An in-progress run is snapshotted (mode, topic, difficulty, score) and offered as “RUN SAVED — CONTINUE” on the start screen.</p>
     </td>
     <td>
       <h4>🌐 <strong>i18n</strong></h4>
@@ -150,7 +150,7 @@ flowchart LR
   Engine --> Sim[runnerSim / stateMachine]
   Engine --> Solve[puzzleEngine + codeEvaluator]
   Engine --> Data[Data Modules]
-  Data --> Challenges[challenges · codePuzzles · levels]
+  Data --> Challenges[challenges · codePuzzles]
   Sandbox[Sandbox Web Worker] --> Sim
   Hooks --> Modes["endless · speedrun · survival · daily · boss · bonus"]
   Storage --> Db[(Dexie / IndexedDB v2)]
@@ -172,30 +172,6 @@ flowchart LR
 ---
 
 ## Game Modes
-
-<details>
-<summary><strong>🏰 Story Mode</strong> — 12 hand-crafted 2D levels</summary>
-
-<br />
-
-A story-driven 2D parallax adventure. Walk through the world, talk to NPCs, and solve **52 code puzzles** at inline code editors to escape each zone.
-
-| Level | Name            | Theme                          |
-| ----- | --------------- | ------------------------------ |
-| 1     | The Cell        | `if` statements, guard patrol  |
-| 2     | The Dungeon     | Loops, array filtering         |
-| 3     | The Sewers      | String manipulation, recursion |
-| 4     | The Forest      | Object manipulation            |
-| 5     | The Village     | Sorting, comparison            |
-| 6     | The Bridge      | Math utilities, geometry       |
-| 7     | The Courtyard   | Stack/queue, validation        |
-| 8     | The Hall        | State machines                 |
-| 9     | The Throne Room | Combined + final boss          |
-| 10    | The Library     | Array methods, indexOf         |
-| 11    | The Laboratory  | String ops, sequences          |
-| 12    | The Tower Spire | Advanced logic                 |
-
-</details>
 
 <details>
 <summary><strong>🏃 Endless Runner (Free Play)</strong> — Procedural arcade mode</summary>
@@ -242,7 +218,7 @@ A seeded, fixed question pool for the day. One score per day, globally ranked on
 
 Corun is deliberately **local-first**: no auth vendor, no external database.
 
-- **Dexie v2 (IndexedDB)** — profiles, scores, badges, daily runs, level progress, settings, outbox.
+- **Dexie v2 (IndexedDB)** — profiles, scores, badges, daily runs, settings, outbox.
 - **Migration** — a v1→v2 upgrade path migrates legacy `localStorage` data into the new schema automatically.
 - **Outbox** — writes are enqueued, flushed with exponential backoff (max 5 attempts), and retried on the next boot. Nothing is lost when you're offline.
 - **Sessions** — unfinished runs are snapshotted and offered on the start screen (2-hour TTL).
@@ -289,7 +265,7 @@ git tag -l --sort=-version:refname
 
 | Category       | Tools                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------------- |
-| **Frontend**   | React 18, TypeScript, Vite 6, Three.js + @react-three/fiber (menu ambiance), Canvas 2D (story levels) |
+| **Frontend**   | React 18, TypeScript, Vite 6, Three.js + @react-three/fiber (menu ambiance), Canvas 2D (gameplay rendering) |
 | **Storage**    | Dexie 4 (IndexedDB v2), localStorage, outbox queue                                                    |
 | **Audio**      | Web Audio API (procedural synthesis, zero audio files)                                                |
 | **Testing**    | Vitest, React Testing Library, fake-indexeddb, jsdom — **110 tests / 13 suites**                      |

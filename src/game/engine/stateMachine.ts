@@ -1,6 +1,6 @@
 /**
  * Mode-agnostic game lifecycle state machine.
- * All game modes (endless, speedrun, survival, boss, bonus, daily, story)
+ * All game modes (endless, speedrun, survival, boss, bonus, daily)
  * share the same phase flow; per-mode logic reacts to the phase.
  */
 

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { Challenge, Difficulty, LevelConfig, Topic } from '../../game/types'
+import { Challenge, Difficulty, Topic } from '../../game/types'
 import { getRandomChallenge } from '../../game/engine/data/challenges'
 import { playBossAppear } from '../../game/sound'
 import { PixelRunnerHandle } from '../../game/PixelRunner'
@@ -11,14 +11,11 @@ export interface BossBattleCtx {
   setMode: (mode: Mode) => void
   topic: Topic | null
   showChallenge: (challenge: Challenge, timeLimit: number) => void
-  onLevelComplete: (correctCount: number) => void
-  getLevel: () => LevelConfig | null
 }
 
 export function useBossBattle(ctx: BossBattleCtx) {
   const [boss, setBoss] = useState<BossState | null>(null)
   const bossRef = useRef<BossState | null>(null)
-  const isLevelBossRef = useRef(false)
 
   const beginBoss = useCallback(
     (bs: BossState) => {
@@ -41,12 +38,6 @@ export function useBossBattle(ctx: BossBattleCtx) {
       ctx.gameRef.current?.setPaused(false)
       ctx.gameRef.current?.setMultiplier(1)
 
-      if (isLevelBossRef.current) {
-        isLevelBossRef.current = false
-        ctx.onLevelComplete(bs.correctCount)
-        return
-      }
-
       for (let i = 0; i < bs.correctCount; i++) {
         ctx.gameRef.current?.handleAnswer(true)
       }
@@ -60,7 +51,7 @@ export function useBossBattle(ctx: BossBattleCtx) {
         finishBossBattle(bs)
         return
       }
-      const diff: Difficulty = ctx.getLevel()?.boss.difficulty ?? 'hard'
+      const diff: Difficulty = 'hard'
       const q = await getRandomChallenge(new Set(), ctx.topic ?? undefined, diff)
       ctx.showChallenge(q, getTimeLimit(diff))
     },
@@ -80,25 +71,6 @@ export function useBossBattle(ctx: BossBattleCtx) {
     void scheduleBossQuestion(bs)
   }, [beginBoss, scheduleBossQuestion])
 
-  const triggerLevelBoss = useCallback(() => {
-    const lev = ctx.getLevel()
-    if (!lev) {
-      triggerBossBattle()
-      return
-    }
-    isLevelBossRef.current = true
-    const bossCfg = lev.boss
-    const bs: BossState = {
-      hp: bossCfg.hp,
-      maxHp: bossCfg.hp,
-      name: bossCfg.name,
-      questionsLeft: bossCfg.hp,
-      correctCount: 0,
-    }
-    beginBoss(bs)
-    void scheduleBossQuestion(bs)
-  }, [ctx, beginBoss, scheduleBossQuestion, triggerBossBattle])
-
   const handleBossAnswer = useCallback(
     async (correct: boolean) => {
       const bs = bossRef.current
@@ -113,7 +85,7 @@ export function useBossBattle(ctx: BossBattleCtx) {
         return
       }
       setBoss({ ...bs })
-      const diff: Difficulty = ctx.getLevel()?.boss.difficulty ?? 'hard'
+      const diff: Difficulty = 'hard'
       const q = await getRandomChallenge(new Set(), ctx.topic ?? undefined, diff)
       ctx.showChallenge(q, getTimeLimit(diff))
     },
@@ -122,9 +94,8 @@ export function useBossBattle(ctx: BossBattleCtx) {
 
   const reset = useCallback(() => {
     bossRef.current = null
-    isLevelBossRef.current = false
     setBoss(null)
   }, [])
 
-  return { boss, triggerBossBattle, triggerLevelBoss, handleBossAnswer, reset }
+  return { boss, triggerBossBattle, handleBossAnswer, reset }
 }

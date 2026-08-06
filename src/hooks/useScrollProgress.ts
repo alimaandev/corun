@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 
-const SECTIONS = ['hero', 'story', 'modes', 'arcs']
+const SECTIONS = ['hero', 'modes']
 const SECTION_COUNT = SECTIONS.length
 
 export function useScrollProgress() {
@@ -27,7 +27,7 @@ export function useScrollProgress() {
       const raw = e.progress
       progressRef.current = Math.max(0, Math.min(1, raw))
       const idx = Math.min(SECTION_COUNT - 1, Math.floor(raw * SECTION_COUNT))
-      const sp = (raw * SECTION_COUNT) - idx
+      const sp = raw * SECTION_COUNT - idx
       sectionProgressRef.current = Math.max(0, Math.min(1, sp))
       if (idx !== sectionRef.current) {
         sectionRef.current = idx

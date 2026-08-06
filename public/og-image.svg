@@ -122,7 +122,7 @@
 
   <!-- Features -->
   <g font-family="'Roboto', 'Segoe UI', sans-serif" font-size="13" fill="rgba(240,235,227,0.4)" letter-spacing="1">
-    <text x="160" y="450">✦ 12-level 3D story mode</text>
+    <text x="160" y="450">✦ Endless runner + boss battles</text>
     <text x="460" y="450">✦ 52 JavaScript puzzles</text>
     <text x="760" y="450">✦ Procedural soundtrack</text>
     <text x="160" y="475">✦ User-generated content</text>

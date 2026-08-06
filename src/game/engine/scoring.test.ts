@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clampScore, getComboMultiplier, getLevelStars } from './scoring'
+import { clampScore, getComboMultiplier } from './scoring'
 
 describe('getComboMultiplier', () => {
   it('matches the combo table', () => {
@@ -12,27 +12,6 @@ describe('getComboMultiplier', () => {
   it('caps at 4x for 10+ streak', () => {
     expect(getComboMultiplier(10)).toBe(4)
     expect(getComboMultiplier(50)).toBe(4)
-  })
-})
-
-describe('getLevelStars', () => {
-  it('awards 3 stars at combined >= 0.8', () => {
-    expect(getLevelStars(1, 1)).toBe(3)
-    expect(getLevelStars(0.8, 0.8)).toBe(3)
-  })
-
-  it('awards 2 stars at combined >= 0.5', () => {
-    expect(getLevelStars(0.5, 0.5)).toBe(2)
-    expect(getLevelStars(0.7, 0.3)).toBe(2)
-  })
-
-  it('awards 1 star otherwise', () => {
-    expect(getLevelStars(0.1, 0.1)).toBe(1)
-    expect(getLevelStars(0.49, 0.49)).toBe(1)
-  })
-
-  it('clamps inputs above 1', () => {
-    expect(getLevelStars(2, 2)).toBe(3)
   })
 })
 

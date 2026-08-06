@@ -6,20 +6,11 @@ import { colors, fonts, alpha } from '../lib/theme'
 interface Props extends HUDData {
   isBoss?: boolean
   isBonus?: boolean
-  levelName?: string
   speedRunTime?: number
   survivalLives?: number
 }
 
-export default function HUD({
-  score,
-  gap,
-  streak,
-  isBoss,
-  levelName,
-  speedRunTime,
-  survivalLives,
-}: Props) {
+export default function HUD({ score, gap, streak, isBoss, speedRunTime, survivalLives }: Props) {
   const [muted, setMuted] = useState(isMuted())
   const [showKeys, setShowKeys] = useState(false)
   const barColor = gap > 40 ? colors.accent : gap > 20 ? colors.fg : alpha(0.4)
@@ -85,22 +76,6 @@ export default function HUD({
             <span style={{ color: colors.fg, fontSize: 10, fontFamily: fonts.mono }}>
               {streak}x
             </span>
-          </div>
-        )}
-
-        {levelName && (
-          <div
-            style={{
-              color: alpha(0.15),
-              fontSize: 11,
-              fontFamily: fonts.heading,
-              fontWeight: 600,
-              letterSpacing: 1,
-              textAlign: 'center',
-              flexShrink: 0,
-            }}
-          >
-            {levelName}
           </div>
         )}
 

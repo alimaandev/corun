@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import { CodePuzzle } from '../game/types'
 import { getCustomPuzzles, deleteCustomPuzzle } from '../game/puzzleShare'
 import { useFocusTrap } from '../lib/useFocusTrap'
-import { getPuzzle } from '../game/engine/data/codePuzzles'
 
 interface Props {
   onSelect: (puzzle: CodePuzzle) => void

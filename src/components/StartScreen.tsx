@@ -18,7 +18,6 @@ import { colors, fonts, alpha, radius } from '../lib/theme'
 interface Props {
   highScore: number
   onStart: (topic: Topic | null, difficulty: Difficulty, isDaily?: boolean) => void
-  onStoryMode: () => void
   onSpeedRun: () => void
   onSurvival: () => void
   onPuzzleEditor: () => void
@@ -33,7 +32,6 @@ const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 
 function resumeLabel(session: RunSession): string {
   const pts = session.score.toLocaleString()
-  if (session.activeLevelId) return `LEVEL ${session.activeLevelId} — ${pts} PTS`
   if (session.mode === 'speedrun') return `SPEED RUN — ${pts} PTS`
   if (session.mode === 'survival') return `SURVIVAL — ${pts} PTS`
   if (session.isDaily) return `DAILY — ${pts} PTS`
@@ -41,13 +39,10 @@ function resumeLabel(session: RunSession): string {
 }
 
 export default function StartScreen({
-  highScore,
   onStart,
-  onStoryMode,
   onSpeedRun,
   onSurvival,
   onPuzzleEditor,
-  onCustomPuzzles,
   playerName,
   profileId,
   resumeSession,
@@ -168,9 +163,6 @@ export default function StartScreen({
             >
               <GlassButton size="lg" onClick={() => setView('play')}>
                 PLAY
-              </GlassButton>
-              <GlassButton size="lg" onClick={onStoryMode}>
-                STORY MODE
               </GlassButton>
               <GlassButton size="md" variant="secondary" onClick={onPuzzleEditor}>
                 PUZZLE EDITOR

@@ -34,7 +34,6 @@ export function toggleMute(): boolean {
 
 let beatTimeoutId: ReturnType<typeof setTimeout> | null = null
 let currentIntensity = 0.3
-let activeLevel = 0
 
 let initResume = false
 export function resumeAudio() {
@@ -77,32 +76,24 @@ interface DronePreset {
   gain: number
 }
 
-const DRONE_PRESETS: Record<number, DronePreset> = {
-  1: { baseFreq: 55, detune: 7, filterFreq: 200, filterQ: 0.5, gain: 0.05 },
-  2: { baseFreq: 45, detune: 5, filterFreq: 150, filterQ: 0.8, gain: 0.06 },
-  3: { baseFreq: 65, detune: 12, filterFreq: 400, filterQ: 0.3, gain: 0.04 },
-  4: { baseFreq: 80, detune: 3, filterFreq: 500, filterQ: 0.2, gain: 0.035 },
-  5: { baseFreq: 100, detune: 4, filterFreq: 600, filterQ: 0.4, gain: 0.03 },
-  6: { baseFreq: 70, detune: 8, filterFreq: 350, filterQ: 0.6, gain: 0.05 },
-  7: { baseFreq: 60, detune: 6, filterFreq: 250, filterQ: 0.7, gain: 0.055 },
-  8: { baseFreq: 90, detune: 10, filterFreq: 450, filterQ: 0.5, gain: 0.04 },
-  9: { baseFreq: 50, detune: 15, filterFreq: 180, filterQ: 1.0, gain: 0.07 },
-  10: { baseFreq: 75, detune: 3, filterFreq: 300, filterQ: 0.3, gain: 0.03 },
-  11: { baseFreq: 110, detune: 9, filterFreq: 550, filterQ: 0.6, gain: 0.05 },
-  12: { baseFreq: 85, detune: 11, filterFreq: 400, filterQ: 0.7, gain: 0.055 },
+const DRONE_PRESET: DronePreset = {
+  baseFreq: 55,
+  detune: 7,
+  filterFreq: 200,
+  filterQ: 0.5,
+  gain: 0.05,
 }
 
-export function startMusic(levelId: number, intensity = 0.3) {
+export function startMusic(theme: number, intensity = 0.3) {
   const c = getAudioContext()
   if (!c) return
   stopMusic()
-  activeLevel = levelId
   currentIntensity = intensity
 
   const mg = getMasterGain()
   if (!mg) return
 
-  const preset = DRONE_PRESETS[levelId] || DRONE_PRESETS[1]
+  const preset = DRONE_PRESET
 
   droneGain = c.createGain()
   droneGain.gain.setValueAtTime(0, c.currentTime)
@@ -229,7 +220,6 @@ export function stopMusic() {
     clearTimeout(beatTimeoutId)
     beatTimeoutId = null
   }
-  activeLevel = 0
 
   if (droneGain && droneGain.gain && c) {
     droneGain.gain.setValueAtTime(droneGain.gain.value, c.currentTime)
