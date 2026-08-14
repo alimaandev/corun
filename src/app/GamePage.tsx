@@ -42,6 +42,7 @@ const GameOverScreen = lazy(() => import('../components/GameOverScreen'))
 const NameDialog = lazy(() => import('../components/NameDialog'))
 const CodePuzzlePlaytest = lazy(() => import('../components/CodePuzzlePlaytest'))
 const LoadingScreen = lazy(() => import('../components/LoadingScreen'))
+const SidePlayground = lazy(() => import('../components/SidePlayground'))
 
 type Screen = 'start' | 'playing' | 'gameover'
 
@@ -745,6 +746,12 @@ export default function Game() {
         {customPuzzle && (
           <Suspense fallback={null}>
             <CodePuzzlePlaytest puzzle={customPuzzle} onClose={() => setCustomPuzzle(null)} />
+          </Suspense>
+        )}
+
+        {import.meta.env.DEV && location.hash === '#side-debug' && (
+          <Suspense fallback={null}>
+            <SidePlayground />
           </Suspense>
         )}
       </div>

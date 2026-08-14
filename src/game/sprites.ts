@@ -1,4 +1,10 @@
-export function drawPlayerSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawPlayerSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const legSwing = Math.sin(frame * 0.1) * 2
   ctx.fillStyle = '#fc0000'
   ctx.fillRect(x - 6 * s, y - 18 * s, 12 * s, 5 * s)
@@ -24,7 +30,13 @@ export function drawPlayerSprite(ctx: CanvasRenderingContext2D, x: number, y: nu
   ctx.fillRect(x + 1 * s, y + 4 * s - legSwing, 4 * s, 3 * s)
 }
 
-export function drawGuardSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawGuardSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.08) * 1
   ctx.fillStyle = '#888'
   ctx.fillRect(x - 6 * s, y - 20 * s + b, 12 * s, 6 * s)
@@ -47,7 +59,13 @@ export function drawGuardSprite(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fillRect(x + 12 * s, y - 14 * s + b, 3 * s, 2 * s)
 }
 
-export function drawWardenSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, _frame: number) {
+export function drawWardenSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  _frame: number,
+) {
   ctx.fillStyle = '#3a1a1a'
   ctx.fillRect(x - 8 * s, y - 20 * s, 16 * s, 8 * s)
   ctx.fillRect(x - 10 * s, y - 12 * s, 20 * s, 14 * s)
@@ -67,7 +85,13 @@ export function drawWardenSprite(ctx: CanvasRenderingContext2D, x: number, y: nu
   ctx.fillRect(x + 1 * s, y + 8 * s, 6 * s, 4 * s)
 }
 
-export function drawDeepOneSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawDeepOneSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const w = Math.sin(frame * 0.05) * 2
   ctx.fillStyle = '#1a4a1a'
   ctx.fillRect(x - 10 * s, y - 14 * s + w, 20 * s, 12 * s)
@@ -92,7 +116,13 @@ export function drawDeepOneSprite(ctx: CanvasRenderingContext2D, x: number, y: n
   ctx.fillRect(x + 2 * s, y + 6 * s, 4 * s, 4 * s)
 }
 
-export function drawBanditSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawBanditSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.1) * 1
   ctx.fillStyle = '#5a3a1a'
   ctx.fillRect(x - 6 * s, y - 18 * s + b, 12 * s, 8 * s)
@@ -115,7 +145,13 @@ export function drawBanditSprite(ctx: CanvasRenderingContext2D, x: number, y: nu
   ctx.fillRect(x - 8 * s, y - 10 * s + b, 2 * s, 4 * s)
 }
 
-export function drawVarkSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawVarkSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   ctx.fillStyle = '#1a1a1a'
   ctx.fillRect(x - 7 * s, y - 18 * s, 14 * s, 8 * s)
   ctx.fillStyle = '#ff0000'
@@ -137,7 +173,13 @@ export function drawVarkSprite(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.fillRect(x + 7 * s, y - 16 * s + wx, 6 * s, 2 * s)
 }
 
-export function drawStoneheartSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawStoneheartSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.06) * 2
   ctx.fillStyle = '#6a6a6a'
   ctx.fillRect(x - 12 * s, y - 24 * s + b, 24 * s, 12 * s)
@@ -161,7 +203,13 @@ export function drawStoneheartSprite(ctx: CanvasRenderingContext2D, x: number, y
   ctx.fillRect(x - 20 * s, y - 22 * s + b, 8 * s, 4 * s)
 }
 
-export function drawCommanderSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawCommanderSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.08) * 1
   ctx.fillStyle = '#aaa'
   ctx.fillRect(x - 7 * s, y - 22 * s + b, 14 * s, 8 * s)
@@ -186,7 +234,13 @@ export function drawCommanderSprite(ctx: CanvasRenderingContext2D, x: number, y:
   ctx.fillRect(x - 11 * s, y - 12 * s + b, 2 * s, 4 * s)
 }
 
-export function drawDravenSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawDravenSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.08) * 1
   ctx.fillStyle = '#1a1a2a'
   ctx.fillRect(x - 7 * s, y - 22 * s + b, 14 * s, 10 * s)
@@ -211,7 +265,13 @@ export function drawDravenSprite(ctx: CanvasRenderingContext2D, x: number, y: nu
   ctx.fillRect(x + 7 * s, y + 6 * s + b, 6 * s, 2 * s)
 }
 
-export function drawKingSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, _frame: number) {
+export function drawKingSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  _frame: number,
+) {
   ctx.fillStyle = '#ffd700'
   ctx.fillRect(x - 6 * s, y - 26 * s, 12 * s, 5 * s)
   ctx.fillRect(x - 4 * s, y - 28 * s, 3 * s, 3 * s)
@@ -242,7 +302,13 @@ export function drawKingSprite(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.fillRect(x + 11 * s, y + 2 * s, 5 * s, 3 * s)
 }
 
-export function drawElenaSprite(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) {
+export function drawElenaSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
   const b = Math.sin(frame * 0.06) * 1
   ctx.fillStyle = '#6a3a1a'
   ctx.fillRect(x - 4 * s, y - 18 * s + b, 8 * s, 4 * s)
@@ -266,9 +332,22 @@ export function drawElenaSprite(ctx: CanvasRenderingContext2D, x: number, y: num
   ctx.fillRect(x - 3 * s, y + 2 * s + b, 6 * s, 3 * s)
 }
 
-export type NpcId = 'guard' | 'warden' | 'deepOne' | 'bandit' | 'vark' | 'stoneheart' | 'commander' | 'draven' | 'king' | 'elena'
+export type NpcId =
+  | 'guard'
+  | 'warden'
+  | 'deepOne'
+  | 'bandit'
+  | 'vark'
+  | 'stoneheart'
+  | 'commander'
+  | 'draven'
+  | 'king'
+  | 'elena'
 
-export const NPC_DRAWERS: Record<NpcId, (ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) => void> = {
+export const NPC_DRAWERS: Record<
+  NpcId,
+  (ctx: CanvasRenderingContext2D, x: number, y: number, s: number, frame: number) => void
+> = {
   guard: drawGuardSprite,
   warden: drawWardenSprite,
   deepOne: drawDeepOneSprite,
@@ -292,4 +371,65 @@ export const NPC_NAMES: Record<NpcId, string> = {
   draven: 'CAPTAIN DRAVEN',
   king: 'THE KING',
   elena: 'ELENA',
+}
+
+export type SidePlayerAnim = 'idle' | 'run' | 'jump' | 'fall'
+
+export function drawSidePlayerSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+  anim: SidePlayerAnim,
+  facing: 1 | -1,
+) {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.scale(facing, 1)
+  const step = Math.sin(frame * 0.6) * 3 * s
+  const legL = anim === 'run' ? step : anim === 'jump' ? -4 * s : anim === 'fall' ? 2 * s : 0
+  const legR = anim === 'run' ? -step : anim === 'jump' ? -3 * s : anim === 'fall' ? 4 * s : 0
+  const lean = anim === 'run' ? 1 : 0
+  ctx.fillStyle = '#fc0000'
+  ctx.fillRect(-2 * s + lean, -20 * s, 12 * s, 5 * s)
+  ctx.fillStyle = '#fcb8a0'
+  ctx.fillRect(0 * s + lean, -15 * s, 9 * s, 5 * s)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(3 * s + lean, -13 * s, 2 * s, 2 * s)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(4 * s + lean, -12 * s, 1 * s, 1 * s)
+  ctx.fillStyle = '#fcb8a0'
+  ctx.fillRect(9 * s + lean, -16 * s, 2 * s, 3 * s)
+  ctx.fillStyle = '#ff7a00'
+  ctx.fillRect(4 * s + lean, -10 * s, 2 * s, 2 * s)
+  ctx.fillStyle = '#fc0000'
+  ctx.fillRect(0 * s + lean, -10 * s, 11 * s, 9 * s)
+  ctx.fillStyle = '#0000b0'
+  ctx.fillRect(2 * s + lean, -2 * s + legL, 4 * s, 10 * s)
+  ctx.fillRect(7 * s + lean, -2 * s + legR, 4 * s, 10 * s)
+  ctx.fillStyle = '#8B4513'
+  ctx.fillRect(1 * s + lean, 8 * s + legL, 6 * s, 3 * s)
+  ctx.fillRect(6 * s + lean, 8 * s + legR, 6 * s, 3 * s)
+  ctx.restore()
+}
+
+export function drawSideDroneSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  frame: number,
+) {
+  const bob = Math.sin(frame * 0.5) * 1.5 * s
+  ctx.fillStyle = '#ff2d78'
+  ctx.fillRect(x - 7 * s, y - 5 * s + bob, 14 * s, 4 * s)
+  ctx.fillStyle = '#1c1030'
+  ctx.fillRect(x - 4 * s, y - 8 * s + bob, 8 * s, 4 * s)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(x - 2 * s, y - 7 * s + bob, 1.5 * s, 1.5 * s)
+  ctx.fillRect(x + 1 * s, y - 7 * s + bob, 1.5 * s, 1.5 * s)
+  ctx.fillStyle = '#ff2d78'
+  ctx.fillRect(x - 9 * s, y - 1 * s + bob, 3 * s, 2 * s)
+  ctx.fillRect(x + 6 * s, y - 1 * s + bob, 3 * s, 2 * s)
 }
