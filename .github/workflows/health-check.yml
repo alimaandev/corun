@@ -22,6 +22,18 @@ jobs:
         with:
           ref: main
 
+      - name: Switch to health branch
+        shell: bash
+        run: |
+          git config user.name "corun-health-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin health || true
+          if git rev-parse --verify origin/health >/dev/null 2>&1; then
+            git checkout -B health origin/health
+          else
+            git checkout -b health
+          fi
+
       - name: Probe live site
         id: probe
         shell: bash
@@ -76,14 +88,6 @@ jobs:
       - name: Commit to health branch
         shell: bash
         run: |
-          git config user.name "corun-health-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin health || true
-          if git rev-parse --verify origin/health >/dev/null 2>&1; then
-            git checkout -B health origin/health
-          else
-            git checkout -b health
-          fi
           git add health/
           if git diff --cached --quiet; then
             echo "No change in health payload — nothing to commit."
