@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/alimaandev/corun/compare/v1.9.0...v1.10.0) (2026-08-14)
+
+
+### Features
+
+* add 2D side-view engine core with parallax renderer ([44b3d15](https://github.com/alimaandev/corun/commit/44b3d153fed4fc4ec45e2891c4d6eaf467ecf3f9))
+
 # [1.9.0](https://github.com/alimaandev/corun/compare/v1.8.0...v1.9.0) (2026-08-06)
 
 
