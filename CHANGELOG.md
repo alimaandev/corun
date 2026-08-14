@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/alimaandev/corun/compare/v1.15.0...v1.15.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* health check switches to health branch before writing files ([f3f5cfd](https://github.com/alimaandev/corun/commit/f3f5cfdfa5f2058b5a841071728cd1aea67b7c59))
+
 # [1.15.0](https://github.com/alimaandev/corun/compare/v1.14.0...v1.15.0) (2026-08-14)
 
 
