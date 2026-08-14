@@ -666,7 +666,7 @@ export default function Game() {
         <title>Corun — Play</title>
         <meta
           name="description"
-          content="Play Corun — a free open-source coding game. Endless runner, speed run, survival, and daily challenge modes."
+          content="Play Corun — a free open-source coding game. Story campaign, endless runner, speed run, survival, and daily challenge modes."
         />
       </Helmet>
       <div style={styles.root}>

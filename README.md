@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="public/demo.gif" alt="Corun gameplay — 3-lane endless runner with inline code editor" width="720" style="border-radius:12px;border:1px solid rgba(240,235,227,0.1)" />
+    <img src="public/demo.gif" alt="Corun gameplay — side-view platformer with split-screen code editor" width="720" style="border-radius:12px;border:1px solid rgba(240,235,227,0.1)" />
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ No accounts needed — guest/demo mode works out of the box. All progress is sto
 ```bash
 npm run typecheck  # tsc -b
 npm run lint       # eslint src/
-npm run test       # vitest run (110 tests, 13 suites)
+npm run test       # vitest run (148 tests, 21 suites)
 npm run build      # vite build → dist/
 ```
 
@@ -68,8 +68,10 @@ A monster is breaking through the wall.
 The only way out is to code.
 ```
 
-- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 code puzzles** plus **176 quick-fire runner challenges** across JavaScript, Python, TypeScript, web, databases, and general CS.
-- **Offline-first** — Reliable storage, migrations, and sync are handled on-device with **Dexie (IndexedDB) v2** and a retrying **outbox queue**. Install it as a PWA and it works with no connection.
+- **Real JavaScript** — Write and evaluate actual JS (sandboxed in a Web Worker), not pseudo-code. **52 code puzzles**, **36 story-mode coding tasks**, plus **176 quick-fire runner challenges** across JavaScript, Python, TypeScript, web, databases, and general CS.
+- **Story Mode** — A 4-node campaign: The Cell → The Vents → The Core → **The Warden**. Type code into a split-screen editor while the world runs beside you; in the boss fight, the arena never stops.
+- **A real platformer** — A custom 2D side-view engine with coyote time, jump buffering, variable jump height, particles, screen shake, and a fire-combo multiplier.
+- **Offline-first** — Reliable storage, migrations, and sync are handled on-device with **Dexie (IndexedDB) v3** and a retrying **outbox queue**. Install it as a PWA and it works with no connection.
 - **Pick up where you left off** — An unfinished run is saved and resumable from the start screen for up to 2 hours.
 - **Stale-proof deploys** — A `build.json` fingerprint detected at boot (and on tab focus) reloads only when a true new build appears, so you never play a half-updated bundle.
 - **Procedural soundtrack** — Every mode has a unique Web Audio API composition. Zero audio files. BPM scales with your progress.
@@ -86,8 +88,8 @@ The only way out is to code.
 <table>
   <tr>
     <td width="50%">
-      <h4>🎮 <strong>Boss Battles & Bonus Rounds</strong></h4>
-      <p>Fight a monster boss every ~150 points with hard questions, and hit 5-second 2× lightning bonus rounds.</p>
+      <h4>🎮 <strong>Story Mode & The Warden</strong></h4>
+      <p>Four-node campaign with a typewriter-story intro. The final node is a boss fight: dodge his attack patterns while you type algorithms into the editor.</p>
     </td>
     <td width="50%">
       <h4>✍️ <strong>52 Real Code Puzzles</strong></h4>
@@ -96,8 +98,8 @@ The only way out is to code.
   </tr>
   <tr>
     <td>
-      <h4>🏃 <strong>Endless Runner (Free Play)</strong></h4>
-      <p>3-lane escape with adaptive difficulty, combo multipliers up to 4×, boss battles, and 5-second bonus rounds. 176 quick-fire challenges.</p>
+      <h4>🏃 <strong>Endless Run (Free Play)</strong></h4>
+      <p>A 2D side-view escape with pits, spikes and drones. Challenges pop up mid-run — answer fast and your combo fires up to a ×4 multiplier.</p>
     </td>
     <td>
       <h4>⚡ <strong>Speed Run & Survival</strong></h4>
@@ -111,13 +113,13 @@ The only way out is to code.
     </td>
     <td>
       <h4>💾 <strong>Local-First Persistence</strong></h4>
-      <p>Scores, badges, daily stats, and profile live in IndexedDB (Dexie v2). A write-ahead outbox retries queued writes with backoff.</p>
+      <p>Scores, badges, story progress, daily stats, and profile live in IndexedDB (Dexie v3). A write-ahead outbox retries queued writes with backoff.</p>
     </td>
   </tr>
   <tr>
     <td>
-      <h4>🔄 <strong>Run Resume</strong></h4>
-      <p>An in-progress run is snapshotted (mode, topic, difficulty, score) and offered as “RUN SAVED — CONTINUE” on the start screen.</p>
+      <h4>🔥 <strong>Fire Combo</strong></h4>
+      <p>Chain correct answers to light up a fire combo: multipliers up to 2×, glyph bursts, and screen shake on every hit.</p>
     </td>
     <td>
       <h4>🌐 <strong>i18n</strong></h4>
@@ -147,13 +149,13 @@ flowchart LR
   UI[React App] --> Hooks[Mode Hooks]
   Hooks --> Engine[Game Engine]
   UI --> Storage[Storage Layer]
-  Engine --> Sim[runnerSim / stateMachine]
+  Engine --> Sim[sideSim / story tasks]
   Engine --> Solve[puzzleEngine + codeEvaluator]
   Engine --> Data[Data Modules]
-  Data --> Challenges[challenges · codePuzzles]
+  Data --> Challenges[challenges · codePuzzles · storyTasks]
   Sandbox[Sandbox Web Worker] --> Sim
-  Hooks --> Modes["endless · speedrun · survival · daily · boss · bonus"]
-  Storage --> Db[(Dexie / IndexedDB v2)]
+  Hooks --> Modes["freeplay · speedrun · survival · daily · story"]
+  Storage --> Db[(Dexie / IndexedDB v3)]
   Storage --> Outbox[Outbox Queue]
   UI --> SW[Service Worker]
   SW --> BuildCheck[build.json stale detection]
@@ -162,9 +164,9 @@ flowchart LR
 
 **Layers**
 
-- **Engine** — `src/game/engine/` — pure, framework-free simulation (runner sim, puzzle engine, scorer, code evaluator, state machine) fully unit-tested.
+- **Engine** — `src/game/engine/` — pure, framework-free simulation (side-view physics, parallax renderer, particles, shake, boss AI, story dialogue/tasks, puzzle engine, scorer, code evaluator) fully unit-tested.
 - **Features** — `src/features/` — React hooks per game mode wired into the engine.
-- **Storage** — `src/lib/` — `db.ts` (Dexie schema v2 + localStorage migration), `outbox.ts` (retry queue), `storage.ts` (high scores, badges, daily, sessions).
+- **Storage** — `src/lib/` — `db.ts` (Dexie schema v3 + localStorage migration), `outbox.ts` (retry queue), `storage.ts` (high scores, badges, daily, sessions).
 - **App** — `src/app/` — screens and routing; heavy screens are lazily code-split.
 
 <br />
@@ -174,12 +176,27 @@ flowchart LR
 ## Game Modes
 
 <details>
-<summary><strong>🏃 Endless Runner (Free Play)</strong> — Procedural arcade mode</summary>
+<summary><strong>📖 Story Mode</strong> — A 4-node campaign</summary>
 
 <br />
 
-Classic 3-lane escape. Quick-fire questions pop up mid-run — answer fast or the monster closes in.
+A campaign of four nodes across Corun's world: **The Cell** (strings & variables), **The Vents** (arrays & loops), **The Core** (objects & functions), and **Boss: The Warden** (algorithms).
 
+- **Split-screen coding** — The side-view world runs beside a lightweight editor. Type real JS; RUN TEST evaluates in the sandbox worker.
+- **36 coding tasks** — Each with a hidden test, a hint, and a verified solution. 12 of them belong to the Warden.
+- **Continuous boss fight** — No pauses. The Warden attacks with aimed orbs, rain, and ground waves while you type; your solutions damage him one HP at a time.
+- **Progression** — 3-star scoring per node, best scores, and unlocks. Progress is saved locally and synced through the outbox.
+
+</details>
+
+<details>
+<summary><strong>🏃 Endless Run (Free Play)</strong> — Procedural side-view mode</summary>
+
+<br />
+
+A 2D side-view escape on procedurally generated arenas — pits, spike hazards, patrolling drones, and coin trails. Quick-fire questions pop up by distance; answer fast to keep the combo fire alive.
+
+- **Procedural arenas** — Seeded generation per difficulty; segments grow harder with every exit you reach.
 - **4 question types** — Multiple choice, fill-in-blank, output prediction, spot the bug
 - **Adaptive difficulty** — 3 correct = harder, 2 wrong = easier
 - **Combo multiplier** — 3+ streak → 1.5× up to 4× at 10+
@@ -218,8 +235,8 @@ A seeded, fixed question pool for the day. One score per day, globally ranked on
 
 Corun is deliberately **local-first**: no auth vendor, no external database.
 
-- **Dexie v2 (IndexedDB)** — profiles, scores, badges, daily runs, settings, outbox.
-- **Migration** — a v1→v2 upgrade path migrates legacy `localStorage` data into the new schema automatically.
+- **Dexie v3 (IndexedDB)** — profiles, scores, badges, daily runs, story progress, settings, outbox.
+- **Migration** — a v1→v2→v3 upgrade path migrates legacy `localStorage` data into the new schema automatically.
 - **Outbox** — writes are enqueued, flushed with exponential backoff (max 5 attempts), and retried on the next boot. Nothing is lost when you're offline.
 - **Sessions** — unfinished runs are snapshotted and offered on the start screen (2-hour TTL).
 
@@ -235,7 +252,17 @@ Releases are **fully automated** with [semantic-release](https://github.com/sema
 
 | Tag        | Date       | Highlights                                                                                                    |
 | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
-| **v1.6.0** | 2026-08-04 | 2D parallax story levels, Dexie v2 storage + outbox journal, engine extraction, resume last run, lazy screens |
+| **v1.15.0** | 2026-08-14 | Polish pass — 60Hz fixed timestep, story SFX, story mode i18n (EN/ES/FR)                                      |
+| **v1.14.0** | 2026-08-14 | Free play migrated to the 2D side-view engine; 3-lane runner deleted (v2.0 cutover)                           |
+| **v1.13.0** | 2026-08-14 | The Warden boss fight — dodge patterns, HP bar, continuous mode (no pause while coding)                       |
+| **v1.12.0** | 2026-08-14 | Split-screen code editor + 36 story coding tasks with hidden tests                                            |
+| **v1.11.0** | 2026-08-14 | Story mode campaign — The Cell, The Vents, The Core, The Warden (dialogue, stars, unlocks)                   |
+| **v1.10.1** | 2026-08-14 | Fix: strict build type errors (`tsc -b`)                                                                      |
+| **v1.10.0** | 2026-08-14 | 2D side-view engine core — physics, parallax, particles, screen shake, fire combo                             |
+| v1.9.0     | 2026-08-14 | 150 quick-fire challenges (JS, Python, TypeScript, web, CS)                                                   |
+| v1.8.0     | 2026-08-14 | Start screen redesigned as arcade mode cards                                                                  |
+| v1.7.0     | 2026-08-14 | Engine extraction, dead-code removal                                                                          |
+| v1.6.0     | 2026-08-04 | 2D parallax story levels, Dexie v2 storage + outbox journal, resume last run, lazy screens                   |
 | v1.5.2     | 2026-07-30 | Fix: deduped challenge IDs, unified audio context, theme tokens, dead-code removal                            |
 | v1.5.1     | 2026-07-30 | Fix: AudioContext resumes on user gesture, meta-tag cleanup                                                   |
 | v1.5.0     | 2026-07-30 | Menu music, loading screen, shortcuts overlay                                                                 |
@@ -253,7 +280,7 @@ Releases are **fully automated** with [semantic-release](https://github.com/sema
 git tag -l --sort=-version:refname
 ```
 
-`v1.0.0` · `v1.1.0` · `v1.1.1` · `v1.2.0` · `v1.3.0` · `v1.4.0` · `v1.5.0` · `v1.5.1` · `v1.5.2` · `v1.6.0`
+`v1.0.0` · `v1.1.0` · `v1.1.1` · `v1.2.0` · `v1.3.0` · `v1.4.0` · `v1.5.0` · `v1.5.1` · `v1.5.2` · `v1.6.0` · `v1.7.0` · `v1.8.0` · `v1.9.0` · `v1.10.0` · `v1.10.1` · `v1.11.0` · `v1.12.0` · `v1.13.0` · `v1.14.0` · `v1.15.0`
 
 </details>
 
@@ -265,10 +292,10 @@ git tag -l --sort=-version:refname
 
 | Category       | Tools                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------------- |
-| **Frontend**   | React 18, TypeScript, Vite 6, Three.js + @react-three/fiber (menu ambiance), Canvas 2D (gameplay rendering) |
-| **Storage**    | Dexie 4 (IndexedDB v2), localStorage, outbox queue                                                    |
-| **Audio**      | Web Audio API (procedural synthesis, zero audio files)                                                |
-| **Testing**    | Vitest, React Testing Library, fake-indexeddb, jsdom — **110 tests / 13 suites**                      |
+| **Frontend**   | React 18, TypeScript, Vite 6, Three.js + @react-three/fiber (menu ambiance), Canvas 2D (side-view gameplay rendering) |
+| **Storage**    | Dexie 4 (IndexedDB v3), localStorage, outbox queue                                                            |
+| **Audio**      | Web Audio API (procedural synthesis, zero audio files)                                                        |
+| **Testing**    | Vitest, React Testing Library, fake-indexeddb, jsdom — **148 tests / 21 suites**                               |
 | **CI/CD**      | GitHub Actions (CI, semantic-release, PR title/label, stale)                                          |
 | **PWA**        | vite-plugin-pwa, Workbox, service-worker precaching, build.json update check                          |
 | **Monitoring** | Sentry (opt-in via `VITE_SENTRY_DSN`)                                                                 |
