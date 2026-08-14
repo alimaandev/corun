@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Challenge, Topic } from '../../game/types'
 import { getRandomChallenge } from '../../game/engine/data/challenges'
-import { PixelRunnerHandle } from '../../game/PixelRunner'
+import { SideRunScreenHandle } from '../../game/SideRunScreen'
 import { BONUS_DURATION, Mode } from '../modes'
 
 export interface BonusRoundCtx {
-  gameRef: React.RefObject<PixelRunnerHandle | null>
+  gameRef: React.RefObject<SideRunScreenHandle | null>
   modeRef: React.MutableRefObject<Mode>
   setMode: (mode: Mode) => void
   topic: Topic | null

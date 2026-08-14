@@ -1,4 +1,4 @@
-import { Difficulty, Topic } from '../game/types'
+import { Difficulty } from '../game/types'
 
 export type Mode = 'normal' | 'boss' | 'bonus' | 'speedrun' | 'survival'
 

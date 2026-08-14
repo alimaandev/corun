@@ -2,11 +2,11 @@ import { useCallback, useRef, useState } from 'react'
 import { Challenge, Difficulty, Topic } from '../../game/types'
 import { getRandomChallenge } from '../../game/engine/data/challenges'
 import { playBossAppear } from '../../game/sound'
-import { PixelRunnerHandle } from '../../game/PixelRunner'
+import { SideRunScreenHandle } from '../../game/SideRunScreen'
 import { BOSS_NAMES, BossState, getTimeLimit, pick, Mode } from '../modes'
 
 export interface BossBattleCtx {
-  gameRef: React.RefObject<PixelRunnerHandle | null>
+  gameRef: React.RefObject<SideRunScreenHandle | null>
   modeRef: React.MutableRefObject<Mode>
   setMode: (mode: Mode) => void
   topic: Topic | null

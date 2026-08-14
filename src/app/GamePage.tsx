@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
-import type { PixelRunnerHandle } from '../game/PixelRunner'
-const PixelRunner = lazy(() => import('../game/PixelRunner'))
+import type { SideRunScreenHandle } from '../game/SideRunScreen'
+const SideRunScreen = lazy(() => import('../game/SideRunScreen'))
 const ChallengeModal = lazy(() => import('../components/ChallengeModal'))
 const PuzzleEditor = lazy(() => import('../components/PuzzleEditor'))
 const CommunityPuzzles = lazy(() => import('../components/CommunityPuzzles'))
@@ -72,7 +72,7 @@ export default function Game() {
   const lastSessionSaveRef = useRef(0)
   const pendingResumeRef = useRef<RunSession | null>(null)
 
-  const gameRef = useRef<PixelRunnerHandle>(null)
+  const gameRef = useRef<SideRunScreenHandle>(null)
   const challengeRef = useRef(false)
   const lastBossScore = useRef(0)
   const lastBonusScore = useRef(0)
@@ -672,10 +672,11 @@ export default function Game() {
       <div style={styles.root}>
         {screen === 'playing' && (
           <Suspense fallback={<LoadingScreen />}>
-            <PixelRunner
+            <SideRunScreen
               ref={gameRef}
               topic={selectedTopic ?? undefined}
               difficulty={selectedDifficulty}
+              challengeActive={!!currentChallenge}
               onChallenge={handleChallenge}
               onGameOver={handleGameOver}
               onHUDUpdate={setHudData}

@@ -21,6 +21,10 @@ export interface SideViewCanvasHandle {
   applyAnswer: (correct: boolean) => void
   applyDamage: (amount: number) => void
   applyBossDamage: (amount: number) => void
+  addScore: (amount: number) => void
+  setScore: (amount: number) => void
+  getScore: () => number
+  setWorld: (world: SideWorld, score?: number) => void
 }
 
 export interface SideHudSnapshot {
@@ -127,10 +131,51 @@ export const SideViewCanvas = forwardRef<SideViewCanvasHandle, SideViewCanvasPro
       }
     }, [])
 
+    const addScore = useCallback((amount: number) => {
+      const sim = simRef.current
+      if (!sim) return
+      sim.player.score += amount
+    }, [])
+
+    const setScore = useCallback((amount: number) => {
+      const sim = simRef.current
+      if (!sim) return
+      sim.player.score = amount
+    }, [])
+
+    const getScore = useCallback(() => simRef.current?.player.score ?? 0, [])
+
+    const setWorld = useCallback((w: SideWorld, score?: number) => {
+      const deps: SideSimDeps = { rng: Math.random, nowMs: () => performance.now() }
+      const s = createSideSim(w, deps)
+      if (score !== undefined) s.player.score = score
+      simRef.current = s
+    }, [])
+
     useImperativeHandle(
       ref,
-      () => ({ restart, pause: setPaused, applyAnswer, applyDamage, applyBossDamage }),
-      [restart, setPaused, applyAnswer, applyDamage, applyBossDamage],
+      () => ({
+        restart,
+        pause: setPaused,
+        applyAnswer,
+        applyDamage,
+        applyBossDamage,
+        addScore,
+        setScore,
+        getScore,
+        setWorld,
+      }),
+      [
+        restart,
+        setPaused,
+        applyAnswer,
+        applyDamage,
+        applyBossDamage,
+        addScore,
+        setScore,
+        getScore,
+        setWorld,
+      ],
     )
 
     useEffect(() => {
