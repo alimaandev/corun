@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/alimaandev/corun/compare/v1.14.0...v1.15.0) (2026-08-14)
+
+
+### Features
+
+* polish pass - 60hz sim, story sfx, story mode i18n ([8a375ed](https://github.com/alimaandev/corun/commit/8a375ed83027e561612c5f4b9d8a3a26ca88fedc))
+
 # [1.14.0](https://github.com/alimaandev/corun/compare/v1.13.0...v1.14.0) (2026-08-14)
 
 
