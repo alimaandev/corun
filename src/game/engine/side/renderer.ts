@@ -1,4 +1,4 @@
-import { CYBERPUNK_TOKYO, generateSkyline, windowPositions } from './parallax'
+import { CYBERPUNK_TOKYO, generateSkyline, ParallaxLayer, windowPositions } from './parallax'
 import { SideEnemy, SideSimState } from './types'
 import { shakeOffset } from './shake'
 import { drawSideDroneSprite, drawSidePlayerSprite } from '../../sprites'
@@ -31,11 +31,7 @@ function drawStars(ctx: CanvasRenderingContext2D) {
   }
 }
 
-function drawLayer(
-  ctx: CanvasRenderingContext2D,
-  layer: typeof CYBERPUNK_TOKYO.back,
-  cameraX: number,
-) {
+function drawLayer(ctx: CanvasRenderingContext2D, layer: ParallaxLayer, cameraX: number) {
   const rects = generateSkyline(layer, cameraX, VIEW_W, 64)
   for (const r of rects) {
     ctx.fillStyle = r.c

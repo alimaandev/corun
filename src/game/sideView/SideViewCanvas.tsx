@@ -130,14 +130,18 @@ export const SideViewCanvas = forwardRef<SideViewCanvasHandle, SideViewCanvasPro
       const canvas = canvasRef.current
       if (!canvas) return
       function pointerDown(e: PointerEvent) {
-        const rect = canvas.getBoundingClientRect()
+        const el = canvasRef.current
+        if (!el) return
+        const rect = el.getBoundingClientRect()
         const x = (e.clientX - rect.left) / rect.width
         if (x < 0.5) touchRef.current.left = true
         else touchRef.current.right = true
         jumpEdgeRef.current.pressed = true
       }
       function pointerUp(e: PointerEvent) {
-        const rect = canvas.getBoundingClientRect()
+        const el = canvasRef.current
+        if (!el) return
+        const rect = el.getBoundingClientRect()
         const x = (e.clientX - rect.left) / rect.width
         if (x < 0.5) touchRef.current.left = false
         else touchRef.current.right = false

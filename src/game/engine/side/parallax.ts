@@ -2,7 +2,7 @@ export interface ParallaxLayer {
   factor: number
   y: number
   seed: number
-  palette: string[]
+  palette: readonly string[]
 }
 
 export const CYBERPUNK_TOKYO = {
