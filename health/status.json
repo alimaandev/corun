@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-08-14T21:16:12Z",
+  "timestamp": "2026-08-14T21:46:29Z",
   "url": "https://corun-zeta.vercel.app",
   "status": "ok",
   "httpCode": "200",
-  "responseTimeMs": 85,
+  "responseTimeMs": 43,
   "checkedBy": "github-actions"
 }
