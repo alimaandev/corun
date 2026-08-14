@@ -1,3 +1,10 @@
+## [1.15.2](https://github.com/alimaandev/corun/compare/v1.15.1...v1.15.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* unignore health/health.log so the health check log is committed ([2e6c7b4](https://github.com/alimaandev/corun/commit/2e6c7b4622d27ced6bb21b39ab4f2b193e8b9028))
+
 ## [1.15.1](https://github.com/alimaandev/corun/compare/v1.15.0...v1.15.1) (2026-08-14)
 
 
