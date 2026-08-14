@@ -1,0 +1,93 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: health-check
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Probe live site
+        id: probe
+        shell: bash
+        run: |
+          URL="https://corun-zeta.vercel.app"
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          CODE="000"
+          TIME_MS="0"
+          for attempt in 1 2; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL" || echo 000)
+            TIME_MS=$(curl -s -o /dev/null -w '%{time_total}' --max-time 20 "$URL" || echo 0)
+            if [ "$CODE" = "200" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$CODE" = "200" ] && curl -s --max-time 20 "$URL" | grep -q 'Corun'; then
+            STATUS="ok"
+          else
+            STATUS="down"
+          fi
+
+          RESPONSE_MS=$(awk -v t="$TIME_MS" 'BEGIN { printf "%d", t * 1000 }')
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "response_ms=$RESPONSE_MS" >> "$GITHUB_OUTPUT"
+          echo "ts=$TS" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Write status files
+        shell: bash
+        run: |
+          mkdir -p health
+          cat > health/status.json <<'EOF'
+          {
+            "timestamp": "${{ steps.probe.outputs.ts }}",
+            "url": "${{ steps.probe.outputs.url }}",
+            "status": "${{ steps.probe.outputs.status }}",
+            "httpCode": "${{ steps.probe.outputs.code }}",
+            "responseTimeMs": ${{ steps.probe.outputs.response_ms }},
+            "checkedBy": "github-actions"
+          }
+          EOF
+          printf '%s\t%s\t%s\t%s\n' \
+            "${{ steps.probe.outputs.ts }}" \
+            "${{ steps.probe.outputs.status }}" \
+            "${{ steps.probe.outputs.code }}" \
+            "${{ steps.probe.outputs.response_ms }}" >> health/health.log
+
+      - name: Commit to health branch
+        shell: bash
+        run: |
+          git config user.name "corun-health-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin health || true
+          if git rev-parse --verify origin/health >/dev/null 2>&1; then
+            git checkout -B health origin/health
+          else
+            git checkout -b health
+          fi
+          git add health/
+          if git diff --cached --quiet; then
+            echo "No change in health payload — nothing to commit."
+            exit 0
+          fi
+          git commit -m "ci(health): ${{ steps.probe.outputs.status }} HTTP ${{ steps.probe.outputs.code }} (${{ steps.probe.outputs.response_ms }}ms)"
+          git push origin health
