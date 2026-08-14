@@ -88,6 +88,14 @@ function damagePlayer(s: SideSimState, amount: number, deps: SideSimDeps): SideE
   return events
 }
 
+export function applySideDamage(
+  s: SideSimState,
+  amount: number,
+  deps: SideSimDeps = { rng: Math.random, nowMs: () => Date.now() },
+): SideEvent[] {
+  return damagePlayer(s, amount, deps)
+}
+
 export function applySideAnswer(s: SideSimState, correct: boolean, deps: SideSimDeps): SideEvent[] {
   const now = deps.nowMs()
   s.combo = recordComboAnswer(s.combo, correct, now)

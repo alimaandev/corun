@@ -1,6 +1,8 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import { useGameLoop } from '../useGameLoop'
 import {
+  applySideAnswer,
+  applySideDamage,
   createSideSim,
   pauseSideSim,
   resetSideSim,
@@ -15,6 +17,8 @@ export const SIM_STEP = 1 / 120
 export interface SideViewCanvasHandle {
   restart: () => void
   pause: (paused: boolean) => void
+  applyAnswer: (correct: boolean) => void
+  applyDamage: (amount: number) => void
 }
 
 export interface SideHudSnapshot {
@@ -95,7 +99,29 @@ export const SideViewCanvas = forwardRef<SideViewCanvasHandle, SideViewCanvasPro
       if (simRef.current) simRef.current = pauseSideSim(simRef.current, p)
     }, [])
 
-    useImperativeHandle(ref, () => ({ restart, pause: setPaused }), [restart, setPaused])
+    const applyAnswer = useCallback((correct: boolean) => {
+      const sim = simRef.current
+      if (!sim) return
+      const deps: SideSimDeps = { rng: Math.random, nowMs: () => performance.now() }
+      applySideAnswer(sim, correct, deps)
+    }, [])
+
+    const applyDamage = useCallback((amount: number) => {
+      const sim = simRef.current
+      if (!sim) return
+      const deps: SideSimDeps = { rng: Math.random, nowMs: () => performance.now() }
+      const result = applySideDamage(sim, amount, deps)
+      for (const e of result) {
+        propsRef.current.onEvent?.(e, sim)
+      }
+    }, [])
+
+    useImperativeHandle(ref, () => ({ restart, pause: setPaused, applyAnswer, applyDamage }), [
+      restart,
+      setPaused,
+      applyAnswer,
+      applyDamage,
+    ])
 
     useEffect(() => {
       function keyDown(e: KeyboardEvent) {

@@ -27,6 +27,19 @@ export interface DailyRow {
   completed_at: string
 }
 
+export interface StoryProgressRow {
+  id: string
+  unlocked_up_to: number
+  completed: Record<string, StoryProgressEntry>
+  updated_at: string
+}
+
+export interface StoryProgressEntry {
+  stars: number
+  best_score: number
+  completed_at: string
+}
+
 export interface SettingRow {
   key: string
   value: unknown
@@ -51,6 +64,7 @@ const db = new Dexie('CorunDB') as Dexie & {
   daily: EntityTable<DailyRow, 'date'>
   settings: EntityTable<SettingRow, 'key'>
   outbox: EntityTable<OutboxRow, 'id'>
+  storyProgress: EntityTable<StoryProgressRow, 'id'>
 }
 
 db.version(1).stores({
@@ -135,6 +149,11 @@ db.version(2)
       remove('code_leaderboard')
     }
   })
+
+// v3: story mode progress (campaign nodes, stars, best scores).
+db.version(3).stores({
+  storyProgress: '&id, unlocked_up_to, updated_at',
+})
 
 export async function resetDatabase(): Promise<void> {
   await db.delete()

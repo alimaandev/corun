@@ -22,6 +22,7 @@ interface Props {
   onSurvival: () => void
   onPuzzleEditor: () => void
   onCustomPuzzles: () => void
+  onStory: () => void
   playerName?: string
   profileId?: string
   resumeSession?: RunSession | null
@@ -35,6 +36,7 @@ const CARD_ACCENTS: Record<string, string> = {
   daily: colors.gold,
   speedrun: '#7aa2ff',
   survival: '#ff7a7a',
+  story: '#8faf2f',
 }
 
 function resumeLabel(session: RunSession): string {
@@ -138,6 +140,7 @@ export default function StartScreen({
   onSurvival,
   onPuzzleEditor,
   onCustomPuzzles,
+  onStory,
   playerName,
   profileId,
   resumeSession,
@@ -435,6 +438,13 @@ export default function StartScreen({
                 title="SPEED RUN"
                 subtitle="60-second countdown. Wrong answers cost points. Pure clock pressure."
                 onPlay={onSpeedRun}
+              />
+
+              <ModeCard
+                id="story"
+                title="STORY MODE"
+                subtitle="Campaign of four nodes — The Cell, The Vents, The Core... and the Warden himself."
+                onPlay={onStory}
               />
 
               <ModeCard

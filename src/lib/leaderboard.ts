@@ -103,7 +103,7 @@ export async function updatePlayerName(
 export async function submitScore(
   profileId: string,
   score: number,
-  mode: 'freeplay' | 'daily',
+  mode: 'freeplay' | 'daily' | 'story',
 ): Promise<boolean> {
   try {
     await enqueue('score', { profile_id: profileId, score, mode })
@@ -118,7 +118,7 @@ registerOutboxHandler('score', async (payload) => {
   const p = payload as {
     profile_id: string
     score: number
-    mode: 'freeplay' | 'daily'
+    mode: 'freeplay' | 'daily' | 'story'
   }
   const profile = await db.profiles.get(p.profile_id)
   await db.scores.add({

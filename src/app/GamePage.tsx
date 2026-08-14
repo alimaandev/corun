@@ -35,6 +35,8 @@ import { useSpeedRun } from '../features/speedrun/useSpeedRun'
 import { useSurvival } from '../features/survival/useSurvival'
 import { useDailyChallenge } from '../features/daily/useDailyChallenge'
 import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features/modes'
+import { StoryLevelNode } from '../game/engine/story/levels'
+import { completeStoryLevel, getStoryProgress, StoryProgress } from '../game/engine/story/progress'
 
 const HUD = lazy(() => import('../components/HUD'))
 const StartScreen = lazy(() => import('../components/StartScreen'))
@@ -43,8 +45,10 @@ const NameDialog = lazy(() => import('../components/NameDialog'))
 const CodePuzzlePlaytest = lazy(() => import('../components/CodePuzzlePlaytest'))
 const LoadingScreen = lazy(() => import('../components/LoadingScreen'))
 const SidePlayground = lazy(() => import('../components/SidePlayground'))
+const StoryLevelSelect = lazy(() => import('../components/StoryLevelSelect'))
+const StoryRunScreen = lazy(() => import('../components/StoryRunScreen'))
 
-type Screen = 'start' | 'playing' | 'gameover'
+type Screen = 'start' | 'storyselect' | 'story' | 'playing' | 'gameover'
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>('start')
@@ -85,6 +89,31 @@ export default function Game() {
   const [showPuzzleEditor, setShowPuzzleEditor] = useState(false)
   const [showCustomPuzzles, setShowCustomPuzzles] = useState(false)
   const [customPuzzle, setCustomPuzzle] = useState<CodePuzzle | null>(null)
+  const [storyProgress, setStoryProgress] = useState<StoryProgress | null>(null)
+  const [storyNode, setStoryNode] = useState<StoryLevelNode | null>(null)
+
+  useEffect(() => {
+    getStoryProgress().then(setStoryProgress)
+  }, [screen])
+
+  const handleStoryPlay = useCallback((node: StoryLevelNode) => {
+    setStoryNode(node)
+    setScreen('story')
+  }, [])
+
+  const handleStoryComplete = useCallback(
+    (stars: number, score: number) => {
+      const node = storyNode
+      if (node) {
+        completeStoryLevel(node, stars, score).then(setStoryProgress)
+      }
+      if (profileRef.current) {
+        submitScore(profileRef.current.id, score, 'story')
+      }
+      setScreen('storyselect')
+    },
+    [storyNode],
+  )
 
   const hudDataRef = useRef<HUDData>(hudData)
 
@@ -97,12 +126,12 @@ export default function Game() {
     if (screen === prevScreen.current) return
     const prev = prevScreen.current
     prevScreen.current = screen
-    if (prev === 'playing') stopMusic()
+    if (prev === 'playing' || prev === 'story') stopMusic()
     if (screen === 'start') {
       startMusic(0, 0.15)
     } else if (screen === 'gameover') {
       startMusic(1, 0.1)
-    } else if (screen === 'playing') {
+    } else if (screen === 'playing' || screen === 'story') {
       startMusic(0, 0.3)
     }
   }, [screen])
@@ -692,10 +721,31 @@ export default function Game() {
               onSurvival={handleSurvival}
               onPuzzleEditor={() => setShowPuzzleEditor(true)}
               onCustomPuzzles={() => setShowCustomPuzzles(true)}
+              onStory={() => setScreen('storyselect')}
               playerName={profile?.player_name}
               profileId={profile?.id}
               resumeSession={resumeSession}
               onResume={handleResume}
+            />
+          </Suspense>
+        )}
+
+        {screen === 'storyselect' && (
+          <Suspense fallback={<LoadingScreen />}>
+            <StoryLevelSelect
+              progress={storyProgress ?? { unlockedUpTo: 0, completed: {} }}
+              onPlay={handleStoryPlay}
+              onBack={() => setScreen('start')}
+            />
+          </Suspense>
+        )}
+
+        {screen === 'story' && storyNode && (
+          <Suspense fallback={<LoadingScreen />}>
+            <StoryRunScreen
+              node={storyNode}
+              onComplete={handleStoryComplete}
+              onExit={() => setScreen('storyselect')}
             />
           </Suspense>
         )}
