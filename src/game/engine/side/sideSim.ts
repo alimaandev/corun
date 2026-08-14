@@ -4,6 +4,7 @@ import { createCombo, recordComboAnswer, updateCombo } from './combo'
 import { addTrauma, updateShake } from './shake'
 import { burst, createParticles, stepParticles } from './particles'
 import { CELL_LEVEL } from './world'
+import { applyBossDamage, createSideBoss, updateBoss, updateBossProjectiles } from './boss'
 
 export const GLYPH_COLORS = ['#8faf2f', '#7aa2ff', '#ff2d78', '#ffd700', '#4fe3c1']
 export const SPARK_COLORS = ['#ffd700', '#ff9e2c', '#ffffff', '#ff2d78']
@@ -58,6 +59,8 @@ export function createSideSim(
     flashTimer: 0,
     flashGreen: false,
     gameOverReason: null,
+    boss: createSideBoss(world.boss),
+    projectiles: [],
   }
 }
 
@@ -94,6 +97,14 @@ export function applySideDamage(
   deps: SideSimDeps = { rng: Math.random, nowMs: () => Date.now() },
 ): SideEvent[] {
   return damagePlayer(s, amount, deps)
+}
+
+export function applySideBossDamage(s: SideSimState, amount: number): SideEvent[] {
+  const events = applyBossDamage(s, amount)
+  if (events.some((e) => e.type === 'bossDefeated')) {
+    s.phase = 'complete'
+  }
+  return events
 }
 
 export function applySideAnswer(s: SideSimState, correct: boolean, deps: SideSimDeps): SideEvent[] {
@@ -211,6 +222,30 @@ export function stepSideSim(
     }
     if (s.player.invulnTimer <= 0 && overlaps(box, { x: e.pos.x, y: e.pos.y, w: e.w, h: e.h })) {
       events.push(...damagePlayer(s, 1, deps))
+    }
+  }
+
+  if (s.boss && s.boss.active && !s.boss.defeated) {
+    const targetX = Math.max(
+      s.world.bounds.minX + 60,
+      Math.min(
+        s.world.bounds.maxX - 60 - s.boss.w,
+        s.player.pos.x + s.player.w / 2 + s.player.facing * 90,
+      ),
+    )
+    s.boss.x += (targetX - s.boss.x) * Math.min(1, dt * 2)
+    s.boss.y = s.world.boss!.y + Math.sin(s.time * 2) * 8
+    const bossEvents = updateBoss(s, dt, { rng: deps.rng })
+    for (const b of bossEvents) {
+      if (b.type === 'damage') {
+        events.push(...damagePlayer(s, b.amount, deps))
+      }
+    }
+  }
+  const projEvents = updateBossProjectiles(s, dt, { rng: deps.rng })
+  for (const p of projEvents) {
+    if (p.type === 'damage') {
+      events.push(...damagePlayer(s, p.amount, deps))
     }
   }
 

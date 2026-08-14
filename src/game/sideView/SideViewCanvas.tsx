@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 
 import { useGameLoop } from '../useGameLoop'
 import {
   applySideAnswer,
+  applySideBossDamage,
   applySideDamage,
   createSideSim,
   pauseSideSim,
@@ -19,6 +20,7 @@ export interface SideViewCanvasHandle {
   pause: (paused: boolean) => void
   applyAnswer: (correct: boolean) => void
   applyDamage: (amount: number) => void
+  applyBossDamage: (amount: number) => void
 }
 
 export interface SideHudSnapshot {
@@ -116,16 +118,29 @@ export const SideViewCanvas = forwardRef<SideViewCanvasHandle, SideViewCanvasPro
       }
     }, [])
 
-    useImperativeHandle(ref, () => ({ restart, pause: setPaused, applyAnswer, applyDamage }), [
-      restart,
-      setPaused,
-      applyAnswer,
-      applyDamage,
-    ])
+    const applyBossDamage = useCallback((amount: number) => {
+      const sim = simRef.current
+      if (!sim) return
+      const result = applySideBossDamage(sim, amount)
+      for (const e of result) {
+        propsRef.current.onEvent?.(e, sim)
+      }
+    }, [])
+
+    useImperativeHandle(
+      ref,
+      () => ({ restart, pause: setPaused, applyAnswer, applyDamage, applyBossDamage }),
+      [restart, setPaused, applyAnswer, applyDamage, applyBossDamage],
+    )
 
     useEffect(() => {
+      function isTypingTarget(el: EventTarget | null): boolean {
+        if (!(el instanceof HTMLElement)) return false
+        return el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.isContentEditable
+      }
       function keyDown(e: KeyboardEvent) {
         if (e.repeat) return
+        if (isTypingTarget(e.target)) return
         const code = e.code
         if (code === 'ArrowLeft' || code === 'KeyA') keysRef.current.left = true
         if (code === 'ArrowRight' || code === 'KeyD') keysRef.current.right = true
@@ -136,6 +151,7 @@ export const SideViewCanvas = forwardRef<SideViewCanvasHandle, SideViewCanvasPro
         }
       }
       function keyUp(e: KeyboardEvent) {
+        if (isTypingTarget(e.target)) return
         const code = e.code
         if (code === 'ArrowLeft' || code === 'KeyA') keysRef.current.left = false
         if (code === 'ArrowRight' || code === 'KeyD') keysRef.current.right = false

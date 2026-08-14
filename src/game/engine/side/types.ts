@@ -25,6 +25,8 @@ export type SideEvent =
   | { type: 'die' }
   | { type: 'levelComplete' }
   | { type: 'coin'; value: number }
+  | { type: 'bossHit' }
+  | { type: 'bossDefeated' }
 
 export type SidePhase = 'idle' | 'running' | 'paused' | 'gameover' | 'complete'
 
@@ -37,6 +39,42 @@ export interface SideWorld {
   spawn: Vec2
   exit: AABB
   enemies: SideEnemySpawn[]
+  boss?: SideBossConfig
+}
+
+export interface SideBossConfig {
+  x: number
+  y: number
+  w: number
+  h: number
+  maxHp: number
+}
+
+export type ProjectileKind = 'orb' | 'rain' | 'wave'
+
+export interface SideProjectile {
+  kind: ProjectileKind
+  x: number
+  y: number
+  vx: number
+  vy: number
+  w: number
+  h: number
+  active: boolean
+}
+
+export interface SideBoss {
+  active: boolean
+  x: number
+  y: number
+  w: number
+  h: number
+  hp: number
+  maxHp: number
+  phase: number
+  attackTimer: number
+  pattern: number
+  defeated: boolean
 }
 
 export interface SideEnemySpawn {
@@ -106,6 +144,8 @@ export interface SideSimState {
   world: SideWorld
   player: SidePlayer
   enemies: SideEnemy[]
+  boss: SideBoss | null
+  projectiles: SideProjectile[]
   camera: { x: number; y: number }
   trauma: number
   combo: SideCombo
@@ -114,6 +154,17 @@ export interface SideSimState {
   flashGreen: boolean
   gameOverReason: 'hp' | 'fall' | null
 }
+
+export const BOSS = {
+  strafeSpeed: 120,
+  hoverAmp: 8,
+  attackEvery: 2.4,
+  orbSpeed: 300,
+  rainSpeed: 160,
+  waveSpeed: 420,
+  projW: 10,
+  projH: 10,
+} as const
 
 export const SIDE = {
   gravity: 2600,

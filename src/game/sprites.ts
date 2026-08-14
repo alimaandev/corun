@@ -433,3 +433,38 @@ export function drawSideDroneSprite(
   ctx.fillRect(x - 9 * s, y - 1 * s + bob, 3 * s, 2 * s)
   ctx.fillRect(x + 6 * s, y - 1 * s + bob, 3 * s, 2 * s)
 }
+
+export function drawSideWardenSprite(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  time: number,
+) {
+  const flick = time % 2 < 0.08 ? 0.55 : 1
+  ctx.fillStyle = '#1a1030'
+  ctx.fillRect(x - 9 * s, y - 30 * s, 18 * s, 26 * s)
+  ctx.fillStyle = '#ff2d78'
+  ctx.fillRect(x - 9 * s, y - 34 * s, 18 * s, 5 * s)
+  ctx.fillRect(x - 11 * s, y - 34 * s, 2 * s, 8 * s)
+  ctx.fillRect(x + 9 * s, y - 34 * s, 2 * s, 8 * s)
+  ctx.fillStyle = '#2a1a4a'
+  ctx.fillRect(x - 6 * s, y - 22 * s, 12 * s, 12 * s)
+  ctx.fillStyle = `rgba(255,45,120,${0.5 + 0.5 * flick})`
+  ctx.fillRect(x - 5 * s, y - 21 * s, 4 * s, 4 * s)
+  ctx.fillRect(x + 1 * s, y - 21 * s, 4 * s, 4 * s)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(x - 4 * s, y - 20 * s, 2 * s, 2 * s)
+  ctx.fillRect(x + 2 * s, y - 20 * s, 2 * s, 2 * s)
+  ctx.fillStyle = '#1a1030'
+  ctx.fillRect(x - 4 * s, y - 10 * s, 8 * s, 4 * s)
+  ctx.fillStyle = '#ffd700'
+  ctx.fillRect(x - 1 * s, y - 9 * s, 2 * s, 2 * s)
+  ctx.fillStyle = '#1a1030'
+  ctx.fillRect(x - 8 * s, y - 6 * s, 6 * s, 6 * s)
+  ctx.fillRect(x + 2 * s, y - 6 * s, 6 * s, 6 * s)
+  const glow = 0.3 + 0.3 * Math.sin(time * 5)
+  ctx.fillStyle = `rgba(255,45,120,${glow})`
+  ctx.fillRect(x - 8 * s, y - 6 * s, 2 * s, 6 * s)
+  ctx.fillRect(x + 6 * s, y - 6 * s, 2 * s, 6 * s)
+}

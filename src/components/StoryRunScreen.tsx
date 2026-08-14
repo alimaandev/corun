@@ -9,6 +9,7 @@ import CodeEditor from './CodeEditor'
 import { StoryLevelNode } from '../game/engine/story/levels'
 import { getStoryTasks, StoryTask } from '../game/engine/story/tasks'
 import { evaluateCode } from '../game/engine/codeEvaluator'
+import { WARDEN_ARENA } from '../game/engine/side/world'
 import { colors, fonts, alpha, glassPanel, radius } from '../lib/theme'
 
 interface Props {
@@ -248,7 +249,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
 
   const startQuestion = useCallback(() => {
     setPhase('question')
-    canvasRef.current?.pause(true)
+    if (!nodeRef.current.boss) canvasRef.current?.pause(true)
   }, [])
 
   useEffect(() => {
@@ -289,6 +290,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
     setTaskState('solved')
     const gained = SCORE_PER_TASK * (hudRef.current?.multiplier ?? 1)
     canvasRef.current?.applyAnswer(true)
+    if (nodeRef.current.boss) canvasRef.current?.applyBossDamage(1)
     setScore((s) => s + gained)
     setPhase('feedback')
     feedbackTimer.current = window.setTimeout(advance, FEEDBACK_MS)
@@ -302,15 +304,25 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
     }
   }, [taskIndex])
 
-  const handleCanvasEvent = useCallback((event: { type: string }) => {
-    if (event.type === 'die') {
-      if (feedbackTimer.current) {
-        clearTimeout(feedbackTimer.current)
-        feedbackTimer.current = null
+  const handleCanvasEvent = useCallback(
+    (event: { type: string }) => {
+      if (event.type === 'die') {
+        if (feedbackTimer.current) {
+          clearTimeout(feedbackTimer.current)
+          feedbackTimer.current = null
+        }
+        setPhase('gameover')
       }
-      setPhase('gameover')
-    }
-  }, [])
+      if (event.type === 'bossDefeated') {
+        if (feedbackTimer.current) {
+          clearTimeout(feedbackTimer.current)
+          feedbackTimer.current = null
+        }
+        finishCleared()
+      }
+    },
+    [finishCleared],
+  )
 
   useEffect(() => {
     return () => {
@@ -366,7 +378,12 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
             background: '#05030f',
           }}
         >
-          <SideViewCanvas ref={canvasRef} onEvent={handleCanvasEvent} onHud={setHud} />
+          <SideViewCanvas
+            ref={canvasRef}
+            world={node.boss ? WARDEN_ARENA : undefined}
+            onEvent={handleCanvasEvent}
+            onHud={setHud}
+          />
           <div
             style={{
               position: 'absolute',
@@ -404,6 +421,34 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 setPhase('play')
               }}
             />
+          )}
+          {node.boss && (phase === 'question' || phase === 'feedback') && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 26,
+                left: 0,
+                right: 0,
+                textAlign: 'center',
+                pointerEvents: 'none',
+                zIndex: 5,
+              }}
+            >
+              <span
+                style={{
+                  background: 'rgba(255,45,120,0.2)',
+                  border: '1px solid rgba(255,45,120,0.5)',
+                  color: '#ff7a7a',
+                  fontFamily: fonts.heading,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  padding: '4px 14px',
+                  borderRadius: 4,
+                }}
+              >
+                ⚠ CONTINUOUS — KEEP MOVING · HOLD CANVAS TO RUN · TAP TO JUMP
+              </span>
+            </div>
           )}
           {(phase === 'complete' || phase === 'gameover') && (
             <div
@@ -498,9 +543,11 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              Run the pipe. The next terminal activates as you progress.
+              {node.boss
+                ? 'The Warden is in front of you. Solve his algorithms to break his core.'
+                : 'Run the pipe. The next terminal activates as you progress.'}
               <div style={{ marginTop: 6, color: node.accent, fontSize: 10, letterSpacing: 2 }}>
-                [A/D or \u2190/\u2192 move — SPACE jump]
+                [A/D or ←/→ move — SPACE jump]
               </div>
             </div>
           )}

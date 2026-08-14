@@ -1,7 +1,7 @@
 import { CYBERPUNK_TOKYO, generateSkyline, ParallaxLayer, windowPositions } from './parallax'
 import { SideEnemy, SideSimState } from './types'
 import { shakeOffset } from './shake'
-import { drawSideDroneSprite, drawSidePlayerSprite } from '../../sprites'
+import { drawSideDroneSprite, drawSidePlayerSprite, drawSideWardenSprite } from '../../sprites'
 
 export const VIEW_W = 480
 export const VIEW_H = 270
@@ -112,6 +112,55 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: SideEnemy, camX: number, sh
   }
 }
 
+function drawBoss(
+  ctx: CanvasRenderingContext2D,
+  s: SideSimState,
+  camX: number,
+  showHitbox: boolean,
+) {
+  const b = s.boss
+  if (!b || (!b.active && !b.defeated)) return
+  const px = Math.round(b.x - camX)
+  const py = Math.round(b.y)
+  const pulse = 0.75 + 0.25 * Math.sin(s.time * 6)
+  ctx.fillStyle = `rgba(255,45,120,${0.12 * pulse})`
+  ctx.fillRect(px - 14, py - 12, b.w + 28, b.h + 20)
+  drawSideWardenSprite(ctx, px + b.w / 2, py + b.h, 1, s.time)
+  if (showHitbox) {
+    ctx.strokeStyle = '#ffd700'
+    ctx.strokeRect(px, py, b.w, b.h)
+  }
+}
+
+function drawProjectiles(ctx: CanvasRenderingContext2D, s: SideSimState, camX: number) {
+  for (const p of s.projectiles) {
+    if (!p.active) continue
+    const px = Math.round(p.x - camX)
+    const py = Math.round(p.y)
+    const color = p.kind === 'rain' ? '#7aa2ff' : p.kind === 'wave' ? '#ffd700' : '#ff2d78'
+    ctx.fillStyle = color
+    ctx.fillRect(px - p.w / 2, py - p.h / 2, p.w, p.h)
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'
+    ctx.fillRect(px - p.w / 4, py - p.h / 4, p.w / 2, p.h / 2)
+  }
+}
+
+function drawBossBar(ctx: CanvasRenderingContext2D, s: SideSimState) {
+  const b = s.boss
+  if (!b) return
+  const w = 220
+  const x = (VIEW_W - w) / 2
+  const y = 10
+  ctx.fillStyle = 'rgba(5,3,15,0.6)'
+  ctx.fillRect(x - 2, y - 2, w + 4, 10)
+  ctx.fillStyle = '#2a2a3f'
+  ctx.fillRect(x, y, w, 6)
+  ctx.fillStyle = '#ff2d78'
+  ctx.fillRect(x, y, (w * b.hp) / b.maxHp, 6)
+  ctx.fillStyle = '#ffd700'
+  ctx.fillRect(x + (w * b.hp) / b.maxHp - 2, y, 2, 6)
+}
+
 function drawPlayer(
   ctx: CanvasRenderingContext2D,
   s: SideSimState,
@@ -183,8 +232,11 @@ export function renderSide(
     if (!e.alive) continue
     drawEnemy(ctx, e, camX, !!options.showHitboxes)
   }
+  drawBoss(ctx, s, camX, !!options.showHitboxes)
+  drawProjectiles(ctx, s, camX)
   drawPlayer(ctx, s, camX, !!options.showHitboxes)
   drawParticles(ctx, s, camX)
   ctx.restore()
+  drawBossBar(ctx, s)
   drawFlash(ctx, s)
 }

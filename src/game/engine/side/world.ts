@@ -50,6 +50,25 @@ export const CELL_LEVEL: SideWorld = {
   ],
 }
 
+export const WARDEN_ARENA: SideWorld = {
+  bounds: { minX: 0, maxX: 1500 },
+  groundY: WORLD.groundY,
+  spawn: { x: 80, y: WORLD.groundY - 24 },
+  platforms: [
+    { x: 0, y: WORLD.groundY, w: 1500, h: 64 },
+    { x: 280, y: 150, w: 110, h: 16 },
+    { x: 560, y: 105, w: 110, h: 16 },
+    { x: 820, y: 150, w: 110, h: 16 },
+    { x: 1090, y: 105, w: 110, h: 16 },
+    { x: 1250, y: 160, w: 110, h: 16 },
+  ],
+  hazards: [],
+  coins: [],
+  exit: { x: -100, y: WORLD.groundY - 40, w: 48, h: 40 },
+  enemies: [],
+  boss: { x: 900, y: 70, w: 44, h: 64, maxHp: 12 },
+}
+
 export function buildWorld(
   bounds: { minX: number; maxX: number },
   groundY: number,
