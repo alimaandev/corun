@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/alimaandev/corun/compare/v1.10.0...v1.10.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* resolve strict build type errors in side engine ([19d97b0](https://github.com/alimaandev/corun/commit/19d97b032125f85fd93961fa154a1bae14d12888))
+
 # [1.10.0](https://github.com/alimaandev/corun/compare/v1.9.0...v1.10.0) (2026-08-14)
 
 
