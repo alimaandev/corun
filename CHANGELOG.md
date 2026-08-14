@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/alimaandev/corun/compare/v1.13.0...v1.14.0) (2026-08-14)
+
+
+### Features
+
+* migrate freeplay modes to the side-view engine ([ce19b74](https://github.com/alimaandev/corun/commit/ce19b747400dab3c3a0497a13b4818159885383f))
+
 # [1.13.0](https://github.com/alimaandev/corun/compare/v1.12.0...v1.13.0) (2026-08-14)
 
 
