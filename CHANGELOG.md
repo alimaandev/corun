@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/alimaandev/corun/compare/v1.10.1...v1.11.0) (2026-08-14)
+
+
+### Features
+
+* add story mode campaign with level select and dialogue ([9661952](https://github.com/alimaandev/corun/commit/9661952f3c869556783d1c16ff1586aca07a2666))
+
 ## [1.10.1](https://github.com/alimaandev/corun/compare/v1.10.0...v1.10.1) (2026-08-14)
 
 
