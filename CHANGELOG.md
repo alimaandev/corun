@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/alimaandev/corun/compare/v1.12.0...v1.13.0) (2026-08-14)
+
+
+### Features
+
+* add warden boss fight with dodge patterns and continuous mode ([5786870](https://github.com/alimaandev/corun/commit/57868707902e7d04b64ee9b95c8f1c113e8e3464))
+
 # [1.12.0](https://github.com/alimaandev/corun/compare/v1.11.0...v1.12.0) (2026-08-14)
 
 
