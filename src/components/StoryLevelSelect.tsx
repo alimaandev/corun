@@ -8,6 +8,7 @@ import {
   storyStarsTotal,
 } from '../game/engine/story/progress'
 import { colors, fonts, alpha, glassPanel, transition, shadows } from '../lib/theme'
+import { t } from '../lib/i18n'
 
 interface Props {
   progress: StoryProgress
@@ -54,7 +55,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
               marginBottom: 6,
             }}
           >
-            STORY MODE
+            {t('story.title')}
           </div>
           <div
             style={{
@@ -76,7 +77,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
               marginTop: 8,
             }}
           >
-            {totalStars} / {STORY_NODES.length * 3} STARS EARNED
+            {t('story.stars', { n: totalStars })}
           </div>
         </div>
 
@@ -125,7 +126,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                       fontWeight: 700,
                     }}
                   >
-                    BOSS
+                    {t('story.boss')}
                   </span>
                 )}
                 <div
@@ -182,7 +183,11 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                 >
                   <Stars filled={stars} accent={node.accent} />
                   <span style={{ color: alpha(0.3), fontSize: 9, fontFamily: fonts.body }}>
-                    {unlocked ? (stars > 0 ? 'REPLAY' : 'PLAY') : '\uD83D\uDD12 LOCKED'}
+                    {unlocked
+                      ? stars > 0
+                        ? 'REPLAY'
+                        : 'PLAY'
+                      : `\uD83D\uDD12 ${t('story.locked')}`}
                   </span>
                 </div>
               </div>
@@ -192,7 +197,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
 
         <div style={{ textAlign: 'center', marginTop: 24 }}>
           <GlassButton size="sm" variant="secondary" onClick={onBack}>
-            ← BACK
+            ← {t('story.back')}
           </GlassButton>
         </div>
       </div>

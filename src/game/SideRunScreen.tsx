@@ -4,6 +4,7 @@ import { Challenge, Difficulty, HUDData } from './types'
 import { getRandomChallenge } from './engine/data/challenges'
 import { generateFreeplayWorld } from './engine/side/freeplayWorld'
 import { VIEW_W, VIEW_H } from './engine/side/renderer'
+import { playError, playInteract, playLevelComplete } from './sound'
 
 const CHALLENGE_MIN = 500
 const CHALLENGE_MAX = 1100
@@ -116,6 +117,7 @@ export const SideRunScreen = forwardRef<SideRunScreenHandle, Props>(function Sid
         onGameOverRef.current(state.player.score)
       }
       if (event.type === 'levelComplete') {
+        playLevelComplete()
         const seg = Math.min(MAX_SEGMENT, segmentRef.current + 1)
         segmentRef.current = seg
         const total = (canvasRef.current?.getScore() ?? 0) + SEGMENT_CLEAR_SCORE
@@ -124,6 +126,8 @@ export const SideRunScreen = forwardRef<SideRunScreenHandle, Props>(function Sid
           total,
         )
       }
+      if (event.type === 'coin') playInteract()
+      if (event.type === 'damage') playError()
     },
     [],
   )

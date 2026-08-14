@@ -13,7 +13,7 @@ import {
 import { SideEvent, SideInput, SideSimState, SideWorld } from '../engine/side/types'
 import { renderSide, VIEW_H, VIEW_W } from '../engine/side/renderer'
 
-export const SIM_STEP = 1 / 120
+export const SIM_STEP = 1 / 60
 
 export interface SideViewCanvasHandle {
   restart: () => void

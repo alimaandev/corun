@@ -10,7 +10,9 @@ import { StoryLevelNode } from '../game/engine/story/levels'
 import { getStoryTasks, StoryTask } from '../game/engine/story/tasks'
 import { evaluateCode } from '../game/engine/codeEvaluator'
 import { WARDEN_ARENA } from '../game/engine/side/world'
+import { playError, playInteract, playLevelComplete, playSuccess } from '../game/sound'
 import { colors, fonts, alpha, glassPanel, radius } from '../lib/theme'
+import { t } from '../lib/i18n'
 
 interface Props {
   node: StoryLevelNode
@@ -91,7 +93,7 @@ function TaskPanel({
             fontWeight: 600,
           }}
         >
-          TASK
+          {t('story.task')}
         </span>
         <span
           style={{ color: colors.fg, fontSize: 11, fontFamily: fonts.heading, fontWeight: 700 }}
@@ -107,7 +109,7 @@ function TaskPanel({
             letterSpacing: 1,
           }}
         >
-          {failedBefore ? '-1 HP IF THIS FAILS' : 'FIRST FAILURE COSTS 1 HP'}
+          {failedBefore ? t('story.failedOnce') : t('story.firstFail')}
         </span>
       </div>
 
@@ -146,7 +148,7 @@ function TaskPanel({
             opacity: status === 'running' ? 0.5 : 1,
           }}
         >
-          {status === 'running' ? 'RUNNING...' : 'RUN TEST'}
+          {status === 'running' ? t('story.running') : t('story.runTest')}
         </button>
         <button
           onClick={() => setShowHint((v) => !v)}
@@ -162,12 +164,12 @@ function TaskPanel({
             cursor: 'pointer',
           }}
         >
-          HINT
+          {t('story.hint')}
         </button>
         <span
           style={{ marginLeft: 'auto', color: alpha(0.3), fontSize: 9, fontFamily: fonts.mono }}
         >
-          CTRL+ENTER TO RUN
+          {t('story.ctrlEnter')}
         </span>
       </div>
 
@@ -201,7 +203,7 @@ function TaskPanel({
             color: status === 'pass' ? '#4fe3c1' : '#ff7a7a',
           }}
         >
-          {status === 'pass' ? '> TASK CLEARED — ' : '> '}
+          {status === 'pass' ? '> ' : '> '}
           {output}
         </div>
       )}
@@ -288,6 +290,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   const handleSolved = useCallback(() => {
     if (taskState !== 'idle') return
     setTaskState('solved')
+    playSuccess()
     const gained = SCORE_PER_TASK * (hudRef.current?.multiplier ?? 1)
     canvasRef.current?.applyAnswer(true)
     if (nodeRef.current.boss) canvasRef.current?.applyBossDamage(1)
@@ -300,6 +303,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
     const id = queueRef.current[taskIndex]?.id
     if (id && !failedOnce.current.has(id)) {
       failedOnce.current.add(id)
+      playError()
       canvasRef.current?.applyDamage(1)
     }
   }, [taskIndex])
@@ -314,12 +318,15 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
         setPhase('gameover')
       }
       if (event.type === 'bossDefeated') {
+        playLevelComplete()
         if (feedbackTimer.current) {
           clearTimeout(feedbackTimer.current)
           feedbackTimer.current = null
         }
         finishCleared()
       }
+      if (event.type === 'coin') playInteract()
+      if (event.type === 'damage') playError()
     },
     [finishCleared],
   )
@@ -404,7 +411,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
             </span>
             <span style={{ color: node.accent }}>{node.title}</span>
             <span style={{ color: alpha(0.5) }}>
-              TASK{' '}
+              {t('story.task')}{' '}
               {Math.min(
                 taskIndex + (phase === 'question' || phase === 'feedback' ? 1 : 0),
                 queue.length,
@@ -446,7 +453,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                   borderRadius: 4,
                 }}
               >
-                ⚠ CONTINUOUS — KEEP MOVING · HOLD CANVAS TO RUN · TAP TO JUMP
+                {t('story.continuous')}
               </span>
             </div>
           )}
@@ -472,21 +479,21 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                   color: phase === 'complete' ? '#4fe3c1' : '#ff2d78',
                 }}
               >
-                {phase === 'complete' ? 'NODE CLEARED' : 'SIGNAL LOST'}
+                {phase === 'complete' ? t('story.cleared') : t('story.signalLost')}
               </div>
               <div style={{ color: node.accent, fontSize: 18, letterSpacing: 3 }}>
                 {'\u2605'.repeat(stars)}
                 {'\u2606'.repeat(3 - stars)}
               </div>
               <div style={{ color: colors.fg, fontFamily: fonts.mono, fontSize: 14 }}>
-                SCORE {score.toLocaleString()}
+                {t('story.score', { score: score.toLocaleString() })}
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={retry} style={overlayBtn(node.accent)}>
-                  RETRY
+                  {t('story.retry')}
                 </button>
                 <button onClick={onExit} style={overlayBtn(node.accent)}>
-                  MAP
+                  {t('story.map')}
                 </button>
               </div>
             </div>
@@ -517,7 +524,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 cursor: 'pointer',
               }}
             >
-              ← MAP
+              ← {t('story.map')}
             </button>
             <div
               style={{
@@ -527,7 +534,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 color: colors.fg,
               }}
             >
-              SCORE <b style={{ color: node.accent }}>{score.toLocaleString()}</b>
+              {t('game.score')} <b style={{ color: node.accent }}>{score.toLocaleString()}</b>
             </div>
           </div>
 
@@ -543,11 +550,9 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              {node.boss
-                ? 'The Warden is in front of you. Solve his algorithms to break his core.'
-                : 'Run the pipe. The next terminal activates as you progress.'}
+              {node.boss ? t('story.warden') : t('story.pipe')}
               <div style={{ marginTop: 6, color: node.accent, fontSize: 10, letterSpacing: 2 }}>
-                [A/D or ←/→ move — SPACE jump]
+                {t('story.moves')}
               </div>
             </div>
           )}
@@ -572,7 +577,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 textAlign: 'center',
               }}
             >
-              Task cleared. Moving on...
+              {t('story.taskCleared')}
             </div>
           )}
         </div>

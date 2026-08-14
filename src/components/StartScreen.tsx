@@ -12,7 +12,7 @@ import {
 } from '../lib/leaderboard'
 import { Topic, Difficulty } from '../game/types'
 import type { RunSession } from '../lib/storage'
-import { setLocale, getLocale, getSupportedLocales, type Locale } from '../lib/i18n'
+import { setLocale, getLocale, getSupportedLocales, t, type Locale } from '../lib/i18n'
 import { colors, fonts, alpha, radius, glassPanel, transition, shadows } from '../lib/theme'
 
 interface Props {
@@ -442,7 +442,7 @@ export default function StartScreen({
 
               <ModeCard
                 id="story"
-                title="STORY MODE"
+                title={t('story.enter')}
                 subtitle="Campaign of four nodes — The Cell, The Vents, The Core... and the Warden himself."
                 onPlay={onStory}
               />
