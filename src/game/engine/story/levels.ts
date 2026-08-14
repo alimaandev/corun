@@ -53,7 +53,7 @@ export const STORY_NODES: StoryLevelNode[] = [
     title: 'THE VENTS',
     subtitle: 'Arrays & Loops',
     accent: STORY_ACCENTS.vents,
-    topic: 'python',
+    topic: 'javascript',
     difficulty: 'medium',
     questions: 8,
     intro: [

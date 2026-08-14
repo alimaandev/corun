@@ -5,10 +5,11 @@ import {
   SideHudSnapshot,
 } from '../game/sideView/SideViewCanvas'
 import DialogueOverlay from './DialogueOverlay'
-import { getChallengePool } from '../game/engine/data/challenges'
-import { Challenge } from '../game/types'
+import CodeEditor from './CodeEditor'
 import { StoryLevelNode } from '../game/engine/story/levels'
-import { colors, fonts, alpha, glassPanel, radius, transition } from '../lib/theme'
+import { getStoryTasks, StoryTask } from '../game/engine/story/tasks'
+import { evaluateCode } from '../game/engine/codeEvaluator'
+import { colors, fonts, alpha, glassPanel, radius } from '../lib/theme'
 
 interface Props {
   node: StoryLevelNode
@@ -19,8 +20,8 @@ interface Props {
 type Phase = 'dialogue' | 'play' | 'question' | 'feedback' | 'complete' | 'gameover'
 
 const QUESTION_DISTANCE = 380
-const SCORE_PER_ANSWER = 100
-const FEEDBACK_MS = 1600
+const SCORE_PER_TASK = 100
+const FEEDBACK_MS = 2200
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -31,36 +32,49 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-function buildQueue(node: StoryLevelNode): Challenge[] {
-  const pool = getChallengePool().filter((c) => c.topic === node.topic)
-  const fallback = getChallengePool().filter((c) => c.difficulty === node.difficulty)
-  const source = pool.length > 0 ? pool : fallback
-  return shuffle(source).slice(0, node.questions)
-}
-
-const typeLabels: Record<string, string> = {
-  multiple: 'MULTIPLE CHOICE',
-  'fill-blank': 'FILL IN THE BLANK',
-  output: 'OUTPUT PREDICTION',
-  'spot-bug': 'SPOT THE BUG',
-}
-
-function QuestionCard({
-  challenge,
-  onSelect,
-  answered,
-  onNext,
+function TaskPanel({
+  task,
   accent,
+  onSolved,
+  onFailed,
+  failedBefore,
 }: {
-  challenge: Challenge
-  onSelect: (index: number) => void
-  answered: number | null
-  onNext: () => void
+  task: StoryTask
   accent: string
+  onSolved: () => void
+  onFailed: (output: string) => void
+  failedBefore: boolean
 }) {
-  const handleNext = useCallback(() => {
-    onNext()
-  }, [onNext])
+  const [code, setCode] = useState(task.template)
+  const [status, setStatus] = useState<'idle' | 'running' | 'pass' | 'fail'>('idle')
+  const [output, setOutput] = useState('')
+  const [showHint, setShowHint] = useState(false)
+  const taskIdRef = useRef(task.id)
+
+  useEffect(() => {
+    taskIdRef.current = task.id
+    setCode(task.template)
+    setStatus('idle')
+    setOutput('')
+    setShowHint(false)
+  }, [task])
+
+  const run = useCallback(async () => {
+    if (status === 'running') return
+    setStatus('running')
+    setOutput('')
+    const result = await evaluateCode(code, task.test)
+    if (result.success) {
+      setStatus('pass')
+      setOutput(result.output || task.successMessage)
+      onSolved()
+    } else {
+      setStatus('fail')
+      setOutput(result.output || 'Test failed')
+      onFailed(result.output || 'Test failed')
+    }
+  }, [code, task, status, onSolved, onFailed])
+
   return (
     <div style={{ ...glassPanel, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -76,137 +90,118 @@ function QuestionCard({
             fontWeight: 600,
           }}
         >
-          {challenge.difficulty.toUpperCase()}
+          TASK
         </span>
-        <span style={{ color: alpha(0.5), fontSize: 9, letterSpacing: 2, fontFamily: fonts.body }}>
-          {typeLabels[challenge.type] || 'CHALLENGE'}
+        <span
+          style={{ color: colors.fg, fontSize: 11, fontFamily: fonts.heading, fontWeight: 700 }}
+        >
+          {task.title}
         </span>
-        {answered === challenge.correct && (
-          <span
-            style={{ marginLeft: 'auto', color: '#4fe3c1', fontSize: 10, fontFamily: fonts.mono }}
-          >
-            +{SCORE_PER_ANSWER} PTS
-          </span>
-        )}
-      </div>
-      <div style={{ color: colors.fg, fontSize: 12, lineHeight: 1.5, fontFamily: fonts.body }}>
-        {challenge.question}
-      </div>
-      {challenge.code && (
-        <pre
+        <span
           style={{
-            background: 'rgba(0,0,0,0.45)',
-            border: `1px solid ${alpha(0.1)}`,
-            borderRadius: 6,
-            padding: '8px 10px',
-            fontFamily: fonts.mono,
-            fontSize: 11,
-            color: colors.fg,
-            lineHeight: 1.5,
-            overflowX: 'auto',
-            whiteSpace: 'pre-wrap',
-            margin: 0,
+            marginLeft: 'auto',
+            color: alpha(0.4),
+            fontSize: 9,
+            fontFamily: fonts.body,
+            letterSpacing: 1,
           }}
         >
-          {challenge.code}
-        </pre>
-      )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {challenge.options.map((opt, i) => {
-          let bg = 'transparent'
-          let border = alpha(0.15)
-          let color = colors.fg
-          let disabled = false
-          if (answered !== null) {
-            disabled = true
-            if (i === challenge.correct) {
-              bg = 'rgba(79,227,193,0.1)'
-              border = '#4fe3c1'
-            } else if (i === answered) {
-              bg = 'rgba(255,45,120,0.08)'
-              border = '#ff2d78'
-              color = alpha(0.7)
-            } else {
-              color = alpha(0.4)
-            }
-          }
-          return (
-            <button
-              key={i}
-              disabled={disabled}
-              onClick={() => onSelect(i)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '7px 10px',
-                background: bg,
-                border: `1px solid ${border}`,
-                borderRadius: 6,
-                color,
-                cursor: disabled ? 'default' : 'pointer',
-                fontFamily: fonts.body,
-                fontSize: 11,
-                textAlign: 'left',
-                transition,
-              }}
-            >
-              <span
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: 4,
-                  background: alpha(0.08),
-                  color: colors.fg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  fontFamily: fonts.heading,
-                  flexShrink: 0,
-                }}
-              >
-                {String.fromCharCode(65 + i)}
-              </span>
-              {opt}
-            </button>
-          )
-        })}
+          {failedBefore ? '-1 HP IF THIS FAILS' : 'FIRST FAILURE COSTS 1 HP'}
+        </span>
       </div>
-      {answered !== null && (
+
+      <div style={{ color: alpha(0.75), fontSize: 11, lineHeight: 1.5, fontFamily: fonts.body }}>
+        {task.description}
+      </div>
+
+      <CodeEditor
+        value={code}
+        onChange={(v) => {
+          setCode(v)
+          setStatus('idle')
+        }}
+        onRun={run}
+        accent={accent}
+        disabled={status === 'running'}
+        minHeight={130}
+        autoFocus
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <button
-          onClick={handleNext}
+          onClick={run}
+          disabled={status === 'running'}
           style={{
-            padding: '7px 0',
             background: accent,
             color: '#05030f',
             border: 'none',
             borderRadius: 6,
+            padding: '8px 18px',
             fontFamily: fonts.heading,
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: 2,
+            cursor: status === 'running' ? 'default' : 'pointer',
+            opacity: status === 'running' ? 0.5 : 1,
+          }}
+        >
+          {status === 'running' ? 'RUNNING...' : 'RUN TEST'}
+        </button>
+        <button
+          onClick={() => setShowHint((v) => !v)}
+          style={{
+            background: 'transparent',
+            color: alpha(0.6),
+            border: `1px solid ${alpha(0.2)}`,
+            borderRadius: 6,
+            padding: '8px 14px',
+            fontFamily: fonts.heading,
+            fontSize: 10,
+            letterSpacing: 1,
             cursor: 'pointer',
           }}
         >
-          {answered === challenge.correct ? 'NEXT →' : 'CONTINUE →'}
+          HINT
         </button>
-      )}
-      {answered !== null && answered !== challenge.correct && (
+        <span
+          style={{ marginLeft: 'auto', color: alpha(0.3), fontSize: 9, fontFamily: fonts.mono }}
+        >
+          CTRL+ENTER TO RUN
+        </span>
+      </div>
+
+      {showHint && (
         <div
           style={{
-            color: '#ff2d78',
-            fontFamily: fonts.mono,
+            color: alpha(0.6),
             fontSize: 10,
-            lineHeight: 1.4,
-            border: `1px solid rgba(255,45,120,0.3)`,
-            borderRadius: 6,
-            padding: '5px 8px',
+            fontStyle: 'italic',
+            fontFamily: fonts.body,
+            lineHeight: 1.5,
+            borderLeft: `2px solid ${accent}`,
+            paddingLeft: 8,
           }}
         >
-          {'> '}
-          {challenge.explanation}
+          {task.hint}
+        </div>
+      )}
+
+      {status !== 'idle' && output && (
+        <div
+          style={{
+            padding: '8px 10px',
+            borderRadius: 6,
+            fontSize: 11,
+            fontFamily: fonts.mono,
+            lineHeight: 1.5,
+            whiteSpace: 'pre-wrap',
+            background: status === 'pass' ? 'rgba(79,227,193,0.08)' : 'rgba(255,45,120,0.08)',
+            border: `1px solid ${status === 'pass' ? 'rgba(79,227,193,0.3)' : 'rgba(255,45,120,0.3)'}`,
+            color: status === 'pass' ? '#4fe3c1' : '#ff7a7a',
+          }}
+        >
+          {status === 'pass' ? '> TASK CLEARED — ' : '> '}
+          {output}
         </div>
       )}
     </div>
@@ -216,9 +211,9 @@ function QuestionCard({
 export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   const canvasRef = useRef<SideViewCanvasHandle>(null)
   const [phase, setPhase] = useState<Phase>('dialogue')
-  const [queue, setQueue] = useState<Challenge[]>(() => buildQueue(node))
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const [answered, setAnswered] = useState<number | null>(null)
+  const [queue, setQueue] = useState<StoryTask[]>(() => shuffle(getStoryTasks(node.id)))
+  const [taskIndex, setTaskIndex] = useState(0)
+  const [taskState, setTaskState] = useState<'idle' | 'solved'>('idle')
   const [score, setScore] = useState(0)
   const [hud, setHud] = useState<SideHudSnapshot | null>(null)
   const lastTriggerX = useRef(0)
@@ -229,6 +224,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   const hpRef = useRef(3)
   const hudRef = useRef<SideHudSnapshot | null>(null)
   const queueRef = useRef(queue)
+  const failedOnce = useRef(new Set<string>())
 
   useEffect(() => {
     onCompleteRef.current = onComplete
@@ -248,7 +244,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
     queueRef.current = queue
   }, [queue])
 
-  const challenge = queue[questionIndex]
+  const task = queue[taskIndex]
 
   const startQuestion = useCallback(() => {
     setPhase('question')
@@ -267,45 +263,44 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   const finishCleared = useCallback(() => {
     const hp = hpRef.current
     const stars = hp === 3 ? 3 : hp === 2 ? 2 : 1
-    const finalScore = scoreRef.current
-    setScore(finalScore)
+    setScore(scoreRef.current)
     setPhase('complete')
-    onCompleteRef.current(stars, finalScore)
+    onCompleteRef.current(stars, scoreRef.current)
   }, [])
 
-  const advanceAfterAnswer = useCallback(() => {
+  const advance = useCallback(() => {
     if (feedbackTimer.current) {
       clearTimeout(feedbackTimer.current)
       feedbackTimer.current = null
     }
-    const next = questionIndex + 1
-    setAnswered(null)
+    const next = taskIndex + 1
+    setTaskState('idle')
     if (next >= queueRef.current.length) {
       finishCleared()
     } else {
-      setQuestionIndex(next)
+      setTaskIndex(next)
       canvasRef.current?.pause(false)
       setPhase('play')
     }
-  }, [questionIndex, finishCleared])
+  }, [taskIndex, finishCleared])
 
-  const handleAnswer = useCallback(
-    (i: number) => {
-      if (answered !== null) return
-      setAnswered(i)
-      const correct = i === challenge.correct
-      canvasRef.current?.applyAnswer(correct)
-      if (correct) {
-        const gained = SCORE_PER_ANSWER * (hudRef.current?.multiplier ?? 1)
-        setScore((s) => s + gained)
-      } else {
-        canvasRef.current?.applyDamage(1)
-      }
-      setPhase('feedback')
-      feedbackTimer.current = window.setTimeout(advanceAfterAnswer, FEEDBACK_MS)
-    },
-    [answered, challenge, advanceAfterAnswer],
-  )
+  const handleSolved = useCallback(() => {
+    if (taskState !== 'idle') return
+    setTaskState('solved')
+    const gained = SCORE_PER_TASK * (hudRef.current?.multiplier ?? 1)
+    canvasRef.current?.applyAnswer(true)
+    setScore((s) => s + gained)
+    setPhase('feedback')
+    feedbackTimer.current = window.setTimeout(advance, FEEDBACK_MS)
+  }, [taskState, advance])
+
+  const handleFailed = useCallback(() => {
+    const id = queueRef.current[taskIndex]?.id
+    if (id && !failedOnce.current.has(id)) {
+      failedOnce.current.add(id)
+      canvasRef.current?.applyDamage(1)
+    }
+  }, [taskIndex])
 
   const handleCanvasEvent = useCallback((event: { type: string }) => {
     if (event.type === 'die') {
@@ -327,10 +322,11 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   const stars = hp === 3 ? 3 : hp === 2 ? 2 : 1
 
   const retry = useCallback(() => {
-    setQueue(buildQueue(nodeRef.current))
-    setQuestionIndex(0)
-    setAnswered(null)
+    setQueue(shuffle(getStoryTasks(nodeRef.current.id)))
+    setTaskIndex(0)
+    setTaskState('idle')
     setScore(0)
+    failedOnce.current = new Set()
     lastTriggerX.current = 0
     canvasRef.current?.restart()
     setPhase('dialogue')
@@ -391,9 +387,9 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
             </span>
             <span style={{ color: node.accent }}>{node.title}</span>
             <span style={{ color: alpha(0.5) }}>
-              Q{' '}
+              TASK{' '}
               {Math.min(
-                questionIndex + (phase === 'question' || phase === 'feedback' ? 1 : 0),
+                taskIndex + (phase === 'question' || phase === 'feedback' ? 1 : 0),
                 queue.length,
               )}
               /{queue.length}
@@ -454,8 +450,8 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
 
         <div
           style={{
-            flex: '0 1 340px',
-            minWidth: 280,
+            flex: '0 1 380px',
+            minWidth: 300,
             display: 'flex',
             flexDirection: 'column',
             gap: 10,
@@ -502,20 +498,21 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              Run the pipe. The next junction query activates as you progress.
+              Run the pipe. The next terminal activates as you progress.
               <div style={{ marginTop: 6, color: node.accent, fontSize: 10, letterSpacing: 2 }}>
                 [A/D or \u2190/\u2192 move — SPACE jump]
               </div>
             </div>
           )}
 
-          {(phase === 'question' || phase === 'feedback') && challenge && (
-            <QuestionCard
-              challenge={challenge}
+          {(phase === 'question' || phase === 'feedback') && task && (
+            <TaskPanel
+              key={task.id}
+              task={task}
               accent={node.accent}
-              onSelect={handleAnswer}
-              answered={answered}
-              onNext={advanceAfterAnswer}
+              onSolved={handleSolved}
+              onFailed={handleFailed}
+              failedBefore={failedOnce.current.has(task.id)}
             />
           )}
 
@@ -528,7 +525,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 textAlign: 'center',
               }}
             >
-              {answered === challenge?.correct ? 'Nice one.' : 'Keep moving — hearts are limited.'}
+              Task cleared. Moving on...
             </div>
           )}
         </div>
