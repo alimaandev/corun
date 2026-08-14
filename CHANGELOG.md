@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/alimaandev/corun/compare/v1.11.0...v1.12.0) (2026-08-14)
+
+
+### Features
+
+* add story mode code editor with 36 verified tasks ([bc55e7f](https://github.com/alimaandev/corun/commit/bc55e7fc604119012c9375e1de535c0fdf1ed9cd))
+
 # [1.11.0](https://github.com/alimaandev/corun/compare/v1.10.1...v1.11.0) (2026-08-14)
 
 
