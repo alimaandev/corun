@@ -110,15 +110,15 @@ Push your branch and open a [pull request](https://github.com/alimaandev/corun/c
 
 ```
 src/
-├── game/          Core game logic — runner, puzzles, audio
+├── game/          Core game logic — side engine, story tasks, challenges, audio
 ├── components/
-│   ├── three/     3D React components (terminal scene, chamber, particles)
-│   └── *.tsx      UI components (HUD, modals, screens)
-├── lib/           Storage (Dexie), outbox, leaderboard, profile, i18n, focus trap
+│   ├── *.tsx      UI components (HUD, modals, screens)
+├── ui/            Design system (Glass primitives, Backdrop)
+├── lib/           Storage (Dexie), i18n, theme, focus trap
 ├── pages/         Route-level pages (landing)
 ├── main.tsx       App entry point
 ├── App.tsx        Router + global components
-└── index.css      Global styles
+└── index.css      Global styles + design tokens
 ```
 
 Key files to know:
@@ -126,10 +126,15 @@ Key files to know:
 | File | What it does |
 |------|-------------|
 | `src/app/GamePage.tsx` | Screen state machine — routes between start, playing, game-over |
-| `src/game/PixelRunner.tsx` | Endless runner game loop (3 lanes, monster, challenges) |
-| `src/game/engine/data/codePuzzles.ts` | Puzzle bank + sandbox evaluator (`evaluateCode()`) |
+| `src/app/GameRunView.tsx` | Run screen composition (SideRunScreen + HUD + modals) |
+| `src/game/SideRunScreen.tsx` | Canvas run loop (side view, hazards, tasks) |
+| `src/game/engine/side/` | Framework-free side engine — physics, sim, boss, renderer, parallax |
+| `src/game/engine/story/tasks.ts` | 36 story-mode tasks with hidden test cases |
+| `src/game/engine/data/challenges.ts` | 176 quick-fire runner challenges (`POOL`) |
+| `src/lib/store.ts` | Persistence layer — direct Dexie access, no sync queue |
 | `src/game/audio.ts` | Procedural soundtrack engine (Web Audio API) |
 | `src/lib/i18n.ts` | Translation system (EN, ES, FR) |
+| `src/ui/primitives.tsx` | Design system — GlassButton, GlassPanel, Modal, StatBox |
 | `src/components/PuzzleEditor.tsx` | User-generated content creation form |
 | `src/game/puzzleShare.ts` | UGC base64 encode/decode + localStorage CRUD |
 
@@ -160,7 +165,7 @@ No cyan, red, or gold in the UI chrome.
 ### Style Rules
 
 - **Inline styles** — All styling via React `style={}` objects. No CSS modules, no styled-components.
-- **Three.js** — Use `@react-three/fiber` `<Canvas>`. No `@react-three/postprocessing` — glow is canvas-texture based.
+- **Design system** — Use the primitives in `src/ui/primitives.tsx` (GlassButton, GlassPanel, Modal). Sizes map to the 13–56px token scale in `src/index.css` / `src/lib/theme.ts`.
 - **i18n** — Add new strings to `src/lib/i18n.ts` in all 3 locales (EN → ES → FR).
 - **Components** — One component per file. Default export. Props interface above the function.
 
@@ -207,7 +212,7 @@ type(scope): description
 feat(editor): add syntax highlighting for numbers
 fix(runner): prevent crash on 0-score game-over
 docs(readme): add quick-start section
-chore(deps): bump three.js to 0.185
+chore(deps): bump dexie to 4.0.8
 ```
 
 **Types:** `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`

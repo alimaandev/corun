@@ -30,23 +30,18 @@ Corun is different.
 ### **Real JavaScript. Real Pressure. Real Feedback.**
 
 ```
-You wake up in a Tokyo cell.
-A monster is breaking through the wall.
-The only way out is to code.
+You wake up in a cell. The facility is dark, the lights dead.
+The Warden is coming. The only way out is to code.
 ```
 
 Write actual JavaScript in a live editor while:
 - ✅ **Dodge attack patterns** in a pixel-art side-view platformer
-- ✅ **Solve 52 real coding challenges** (strings, arrays, objects, regex, algorithms)  
+- ✅ **Solve 36 story-mode coding tasks** (strings, arrays, objects, regex, algorithms)  
 - ✅ **Fight The Warden** — a boss who doesn't pause while you type
 - ✅ **Chase a 4× combo multiplier** in endless procedural arenas
 - ✅ **Compete on the daily leaderboard** (one shot, global ranking)
 
 **No tutorials. No hand-holding. Just you, your code, and the clock.**
-
-<p align="center">
-  <img src="public/demo.gif" alt="Corun — dodge, code, survive" width="100%" style="max-width:720px; border-radius:16px; border:2px solid #7C3AED; margin:40px 0;" />
-</p>
 
 ---
 
@@ -59,7 +54,7 @@ Write actual JavaScript in a live editor while:
 | **⚡ Speed Run & Survival** | 60-second countdown or 3-life hardcore mode. Pick your pressure. |
 | **🗓️ Daily Challenge** | One fixed pool per day. Global leaderboard. Your name at the top. |
 | **📱 Offline-First PWA** | Works anywhere. Precached assets. Plays offline. Install it. Own it. |
-| **💾 Local-First Persistence** | Your scores, badges, progress live in IndexedDB. Outbox queue = no data loss. |
+| **💾 Local-First Persistence** | Your scores, badges, progress live in IndexedDB. No cloud, no account, no data loss. |
 | **🌐 i18n** | English, Spanish, French. Auto-detected. Persist choice. |
 | **🎵 Procedural Soundtrack** | Web Audio synthesis. Zero audio files. Music scales with your progress. |
 | **🛠️ User-Generated Puzzles** | Built-in editor. Share via URL. Browse community challenges. |
@@ -68,14 +63,13 @@ Write actual JavaScript in a live editor while:
 
 ## 📊 The Numbers
 
-- **52** real code puzzles (ES6+, regex, algorithms)
 - **36** story-mode coding tasks with hidden test cases
 - **176** quick-fire runner challenges across modes
-- **4** game modes (story, freeplay, speedrun, survival, daily)
+- **5** game modes (story, freeplay, speedrun, survival, daily)
 - **3** languages (EN, ES, FR)
 - **0** backend servers
-- **148** unit tests / **21** test suites
-- **97.4%** TypeScript (type-safe from day one)
+- **125** unit tests / **18** test suites
+- **100%** TypeScript (type-safe from day one)
 
 ---
 
@@ -117,10 +111,10 @@ Compete against players worldwide. Top scores appear on the leaderboard. Come ba
 |-------|-----------|
 | Frontend | React 18 + TypeScript + Vite 6 |
 | Game Engine | Canvas 2D + custom physics (coyote time, jump buffer, parallax) |
-| Rendering | Three.js + @react-three/fiber (menu ambiance) |
-| Storage | Dexie 4 (IndexedDB v3) + outbox queue + localStorage migration |
+| UI System | CSS/DOM design system (Glass primitives, animated backdrop, 56px display type) |
+| Storage | Dexie 4 (IndexedDB v4) — direct, offline-first, no sync queue |
 | Audio | Web Audio API (procedural synthesis, zero .mp3/.wav files) |
-| Testing | Vitest + React Testing Library + jsdom (148 tests) |
+| Testing | Vitest + React Testing Library + jsdom (125 tests) |
 | PWA | vite-plugin-pwa + Workbox + build.json stale detection |
 | Monitoring | Sentry (opt-in) |
 | CI/CD | GitHub Actions (semantic-release automation) |
@@ -130,9 +124,9 @@ Compete against players worldwide. Top scores appear on the leaderboard. Come ba
 
 **Local-First by Design**
 - No backend. No auth vendor. No external database.
-- IndexedDB (Dexie v3) stores profiles, scores, badges, story progress, settings.
-- Outbox queue handles offline writes with exponential backoff retry.
-- Migrations auto-upgrade legacy localStorage → v3 schema.
+- IndexedDB (Dexie v4) stores profiles, scores, badges, story progress, settings.
+- Writes go straight to IndexedDB — synchronous, offline-first, no sync queue.
+- Migrations auto-upgrade legacy localStorage → v2/v3/v4 schemas.
 - Nothing is ever lost, even offline.
 
 **Smart Deployment**
@@ -161,7 +155,7 @@ npm run dev           # → http://localhost:3000
 # Quality gates
 npm run typecheck     # strict TypeScript (tsc -b)
 npm run lint          # ESLint + Prettier
-npm run test          # vitest run (148 tests)
+npm run test          # vitest run (125 tests)
 
 # Production build
 npm run build         # → dist/ (Vite optimized)
@@ -188,13 +182,13 @@ Play guest mode immediately. All progress syncs to your browser's IndexedDB. Ref
          │                                  │
     ┌────▼────────────────┐        ┌───────▼────────────┐
     │  Game Engine        │        │ Storage Layer      │
-    │  (framework-free)   │        │  (Dexie + Outbox)  │
+    │  (framework-free)   │        │  (Dexie · direct)  │
     │                     │        │                    │
     │ • Physics           │        └───────┬────────────┘
     │ • Parallax          │                │
     │ • Particles         │         ┌──────▼──────┐
     │ • Boss AI           │         │  IndexedDB  │
-    │ • Puzzle Engine     │         └─────────────┘
+    │ • Side Sim     │         └─────────────┘
     │ • Score/Combos      │
     └────┬────────────────┘
          │
