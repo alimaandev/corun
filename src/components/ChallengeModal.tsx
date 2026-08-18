@@ -151,7 +151,7 @@ export default function ChallengeModal({
             <span
               style={{
                 color: 'rgba(240,235,227,0.6)',
-                fontSize: 11,
+                fontSize: 15,
                 fontFamily: "'JetBrains Mono', monospace",
                 minWidth: 30,
                 textAlign: 'right' as const,
@@ -271,10 +271,10 @@ export default function ChallengeModal({
                   </span>
                   <span style={styles.optText}>{opt}</span>
                   {answered && i === challenge.correct && (
-                    <span style={{ color: '#769826', fontSize: 14 }}>●</span>
+                    <span style={{ color: '#769826', fontSize: 16 }}>●</span>
                   )}
                   {answered && i === selected && i !== challenge.correct && (
-                    <span style={{ color: 'rgba(240,235,227,0.4)', fontSize: 14 }}>●</span>
+                    <span style={{ color: 'rgba(240,235,227,0.4)', fontSize: 16 }}>●</span>
                   )}
                 </button>
               )
@@ -330,7 +330,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 8px',
     border: '1px solid',
     borderRadius: 4,
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: 500,
     letterSpacing: 2,
     lineHeight: '16px',
@@ -338,7 +338,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   typeLabel: {
     color: 'rgba(240,235,227,0.5)',
-    fontSize: 11,
+    fontSize: 15,
     fontFamily: "'Roboto', sans-serif",
     fontWeight: 300,
     letterSpacing: 1,
@@ -354,7 +354,7 @@ const styles: Record<string, React.CSSProperties> = {
   tFill: { height: '100%', transition: 'width 0.1s linear' },
   q: {
     color: '#F0EBE3',
-    fontSize: 13,
+    fontSize: 15,
     lineHeight: 1.5,
     marginBottom: 10,
     textAlign: 'center' as const,
@@ -368,7 +368,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '10px 12px',
     marginBottom: 12,
     fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 12,
+    fontSize: 16,
     color: '#F0EBE3',
     lineHeight: 1.5,
     overflowX: 'auto' as const,
@@ -390,7 +390,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     background: '#0d0d0d',
     color: '#F0EBE3',
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "'JetBrains Mono', monospace",
     outline: 'none',
     transition: 'border-color 0.1s',
@@ -401,7 +401,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     background: '#F0EBE3',
     color: '#0a0a0a',
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: 500,
     fontFamily: "'Roboto', sans-serif",
     cursor: 'pointer',
@@ -417,7 +417,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(240,235,227,0.1)',
     borderRadius: 8,
     cursor: 'pointer',
-    fontSize: 12,
+    fontSize: 16,
     color: '#F0EBE3',
     textAlign: 'left' as const,
     width: '100%',
@@ -432,7 +432,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 500,
-    fontSize: 11,
+    fontSize: 15,
     flexShrink: 0,
     borderRadius: 4,
     fontFamily: "'Roboto', sans-serif",
@@ -443,7 +443,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '6px 10px',
     border: '1px solid',
     borderRadius: 6,
-    fontSize: 10,
+    fontSize: 15,
     lineHeight: 1.4,
     textAlign: 'center' as const,
     fontFamily: "'JetBrains Mono', monospace",

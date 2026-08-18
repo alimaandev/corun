@@ -19,7 +19,7 @@ function Loader() {
         justifyContent: 'center',
         fontFamily: "'Roboto', sans-serif",
         color: '#F0EBE3',
-        fontSize: 11,
+        fontSize: 14,
         fontWeight: 300,
         letterSpacing: 4,
       }}

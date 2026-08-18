@@ -50,7 +50,7 @@ export default function LandingNav({ sections, currentSection, onNavigate }: Pro
               background: 'none',
               border: 'none',
               color: currentSection === i ? '#F0EBE3' : 'rgba(255,255,255,0.7)',
-              fontSize: 10,
+              fontSize: 13,
               fontWeight: 500,
               letterSpacing: 2,
               cursor: 'pointer',

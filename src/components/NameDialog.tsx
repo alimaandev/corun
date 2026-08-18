@@ -52,7 +52,7 @@ export default function NameDialog({ onSubmit }: Props) {
         <div
           style={{
             color: 'rgba(240,235,227,0.5)',
-            fontSize: 11,
+            fontSize: 13,
             marginBottom: 20,
             lineHeight: 1.6,
             fontFamily: "'Roboto', sans-serif",
@@ -94,7 +94,7 @@ export default function NameDialog({ onSubmit }: Props) {
             borderRadius: 10,
             color: '#0a0a0a',
             padding: '10px 24px',
-            fontSize: 11,
+            fontSize: 13,
             cursor: 'pointer',
             letterSpacing: 2,
             fontFamily: "'Roboto', sans-serif",

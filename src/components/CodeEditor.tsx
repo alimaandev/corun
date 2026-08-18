@@ -88,7 +88,7 @@ export default function CodeEditor({
         borderRadius: 6,
         overflow: 'hidden',
         fontFamily: fonts.mono,
-        fontSize: 11,
+        fontSize: 13,
         lineHeight: 1.55,
       }}
     >
@@ -129,7 +129,7 @@ export default function CodeEditor({
           outline: 'none',
           padding: '8px 10px',
           fontFamily: fonts.mono,
-          fontSize: 11,
+          fontSize: 13,
           lineHeight: 1.55,
           resize: 'vertical',
           whiteSpace: 'pre',

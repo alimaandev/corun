@@ -35,7 +35,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
           <div
             style={{
               color: alpha(0.5),
-              fontSize: 11,
+              fontSize: 13,
               fontFamily: fonts.body,
               fontWeight: 300,
               letterSpacing: 1,
@@ -46,7 +46,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
           <div
             style={{
               color: colors.fg,
-              fontSize: 15,
+              fontSize: 17,
               fontWeight: 700,
               lineHeight: 1.1,
               fontFamily: fonts.mono,
@@ -70,8 +70,8 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               gap: 2,
             }}
           >
-            <span style={{ color: colors.accent, fontSize: 9 }}>★</span>
-            <span style={{ color: colors.fg, fontSize: 10, fontFamily: fonts.mono }}>
+            <span style={{ color: colors.accent, fontSize: 13 }}>★</span>
+            <span style={{ color: colors.fg, fontSize: 14, fontFamily: fonts.mono }}>
               {streak}x
             </span>
           </div>
@@ -90,7 +90,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
           <div
             style={{
               color: alpha(0.5),
-              fontSize: 11,
+              fontSize: 13,
               fontFamily: fonts.body,
               fontWeight: 300,
               letterSpacing: 1,
@@ -101,7 +101,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
           <div
             style={{
               color: multiplier > 1 ? colors.accent : alpha(0.5),
-              fontSize: 15,
+              fontSize: 17,
               fontWeight: 700,
               lineHeight: 1.1,
               fontFamily: fonts.mono,
@@ -118,7 +118,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               <div
                 style={{
                   color: alpha(0.5),
-                  fontSize: 11,
+                  fontSize: 13,
                   fontFamily: fonts.body,
                   fontWeight: 300,
                   letterSpacing: 1,
@@ -128,7 +128,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               </div>
               <div
                 style={{
-                  fontSize: 11,
+                  fontSize: 15,
                   fontWeight: 500,
                   fontFamily: fonts.mono,
                   color: speedRunTime <= 10 ? colors.danger : colors.fg,
@@ -143,7 +143,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               <div
                 style={{
                   color: alpha(0.5),
-                  fontSize: 11,
+                  fontSize: 13,
                   fontFamily: fonts.body,
                   fontWeight: 300,
                   letterSpacing: 1,
@@ -179,7 +179,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               cursor: 'pointer',
               pointerEvents: 'auto',
               color: showKeys ? colors.fg : alpha(0.35),
-              fontSize: 11,
+              fontSize: 13,
               fontFamily: fonts.mono,
               padding: '2px 5px',
               lineHeight: 1,
@@ -204,7 +204,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
             borderRadius: 8,
             padding: 16,
             fontFamily: fonts.body,
-            fontSize: 10,
+            fontSize: 13,
             color: colors.fg,
             display: 'flex',
             flexDirection: 'column',
@@ -216,7 +216,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
             style={{
               fontWeight: 700,
               fontFamily: fonts.heading,
-              fontSize: 11,
+              fontSize: 13,
               marginBottom: 4,
               letterSpacing: 1,
             }}
@@ -233,7 +233,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               <span>{d}</span>
             </div>
           ))}
-          <div style={{ fontSize: 9, color: alpha(0.2), marginTop: 4, textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: alpha(0.2), marginTop: 4, textAlign: 'center' }}>
             Click ? again to close
           </div>
         </div>

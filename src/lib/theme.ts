@@ -23,12 +23,13 @@ export const fonts = {
 }
 
 export const fontSizes = {
-  xs: 10,
-  sm: 11,
-  md: 13,
-  lg: 16,
-  xl: 22,
-  xxl: 32,
+  xs: 13,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 24,
+  xxl: 40,
+  display: 56,
 }
 
 export const radius = {

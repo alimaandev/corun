@@ -61,7 +61,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <div
             style={{
               color: colors.fgDim,
-              fontSize: 11,
+              fontSize: 13,
               marginBottom: 24,
               textAlign: 'center',
               maxWidth: 400,
@@ -83,7 +83,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               border: 'none',
               color: colors.bg,
               padding: '12px 24px',
-              fontSize: 10,
+              fontSize: 13,
               cursor: 'pointer',
               fontWeight: 500,
               letterSpacing: 2,

@@ -59,7 +59,7 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
       border: '1px solid rgba(240,235,227,0.1)',
       color: '#F0EBE3',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: 11,
+      fontSize: 13,
       padding: '8px 10px',
       borderRadius: 6,
       marginBottom: 12,
@@ -73,10 +73,10 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
       cursor: 'pointer',
       background: 'rgba(240,235,227,0.02)',
     },
-    title: { color: '#F0EBE3', fontSize: 12, fontFamily: "'Poppins', sans-serif", fontWeight: 500 },
+    title: { color: '#F0EBE3', fontSize: 14, fontFamily: "'Poppins', sans-serif", fontWeight: 500 },
     desc: {
       color: 'rgba(240,235,227,0.5)',
-      fontSize: 10,
+      fontSize: 13,
       fontFamily: "'Roboto', sans-serif",
       marginTop: 4,
     },
@@ -87,7 +87,7 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
       color: '#0a0a0a',
       cursor: 'pointer',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: 10,
+      fontSize: 13,
       fontWeight: 500,
       padding: '8px 20px',
       borderRadius: 8,
@@ -99,13 +99,13 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
       color: 'rgba(240,235,227,0.5)',
       cursor: 'pointer',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: 9,
+      fontSize: 13,
       padding: '4px 10px',
       borderRadius: 6,
     },
     empty: {
       color: 'rgba(240,235,227,0.3)',
-      fontSize: 11,
+      fontSize: 13,
       fontFamily: "'Roboto', sans-serif",
       textAlign: 'center',
       padding: 20,
@@ -150,7 +150,7 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
               <span
                 style={{
                   color: 'rgba(240,235,227,0.3)',
-                  fontSize: 9,
+                  fontSize: 13,
                   fontFamily: "'Roboto', sans-serif",
                 }}
               >

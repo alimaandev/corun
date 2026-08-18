@@ -5,7 +5,7 @@ export default function Hearts({ lives, max = 3 }: { lives: number; max?: number
   return (
     <span
       style={{
-        fontSize: 11,
+        fontSize: 13,
         fontWeight: 500,
         fontFamily: "'JetBrains Mono', monospace",
         color: safe <= 1 ? colors.danger : colors.fg,

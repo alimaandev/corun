@@ -33,7 +33,7 @@ export default function OfflineIndicator() {
         textAlign: 'center',
         padding: '4px 0',
         fontFamily: "'Roboto', sans-serif",
-        fontSize: 10,
+        fontSize: 13,
         fontWeight: 500,
         letterSpacing: 1,
       }}

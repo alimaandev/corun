@@ -99,7 +99,7 @@ export default function GameRunView({
           <div
             style={{
               color: colors.fg,
-              fontSize: 12,
+              fontSize: 14,
               fontFamily: fonts.heading,
               fontWeight: 600,
               letterSpacing: 2,
@@ -128,7 +128,7 @@ export default function GameRunView({
           <div
             style={{
               color: alpha(0.5),
-              fontSize: 10,
+              fontSize: 13,
               fontFamily: fonts.mono,
               marginTop: 3,
               letterSpacing: 1,
@@ -153,7 +153,7 @@ export default function GameRunView({
           <div
             style={{
               color: colors.accent,
-              fontSize: 10,
+              fontSize: 13,
               fontFamily: fonts.heading,
               fontWeight: 700,
               letterSpacing: 3,
@@ -164,7 +164,7 @@ export default function GameRunView({
           <div
             style={{
               color: colors.fg,
-              fontSize: 11,
+              fontSize: 13,
               fontFamily: fonts.mono,
               marginTop: 4,
               letterSpacing: 1,

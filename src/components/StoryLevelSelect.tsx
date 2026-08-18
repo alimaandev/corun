@@ -18,7 +18,7 @@ interface Props {
 
 function Stars({ filled, accent }: { filled: number; accent: string }) {
   return (
-    <span style={{ color: filled > 0 ? accent : alpha(0.15), fontSize: 12, letterSpacing: 2 }}>
+    <span style={{ color: filled > 0 ? accent : alpha(0.15), fontSize: 14, letterSpacing: 2 }}>
       {[0, 1, 2].map((i) => (i < filled ? '\u2605' : '\u2606')).join('')}
     </span>
   )
@@ -47,7 +47,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 13,
               letterSpacing: 6,
               color: colors.accentBright,
               fontFamily: fonts.heading,
@@ -70,7 +70,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
           </div>
           <div
             style={{
-              fontSize: 10,
+              fontSize: 13,
               color: alpha(0.4),
               fontFamily: fonts.body,
               letterSpacing: 2,
@@ -120,7 +120,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                       top: 10,
                       right: 10,
                       color: node.accent,
-                      fontSize: 8,
+                      fontSize: 14,
                       letterSpacing: 2,
                       fontFamily: fonts.heading,
                       fontWeight: 700,
@@ -147,7 +147,9 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                 >
                   {node.index + 1}
                 </div>
-                <div style={{ color: node.accent, fontSize: 9, letterSpacing: 3, fontWeight: 600 }}>
+                <div
+                  style={{ color: node.accent, fontSize: 13, letterSpacing: 3, fontWeight: 600 }}
+                >
                   {getStoryTopicLabel(node.topic)} · {node.difficulty.toUpperCase()}
                 </div>
                 <div
@@ -164,7 +166,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                 <div
                   style={{
                     color: alpha(0.5),
-                    fontSize: 10,
+                    fontSize: 13,
                     fontFamily: fonts.body,
                     lineHeight: 1.5,
                     flex: 1,
@@ -182,7 +184,7 @@ export default function StoryLevelSelect({ progress, onPlay, onBack }: Props) {
                   }}
                 >
                   <Stars filled={stars} accent={node.accent} />
-                  <span style={{ color: alpha(0.3), fontSize: 9, fontFamily: fonts.body }}>
+                  <span style={{ color: alpha(0.3), fontSize: 13, fontFamily: fonts.body }}>
                     {unlocked
                       ? stars > 0
                         ? 'REPLAY'

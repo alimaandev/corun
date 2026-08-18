@@ -101,7 +101,7 @@ export default function DialogueOverlay({ lines, accent, onDone }: Props) {
         <span
           style={{
             color: accent,
-            fontSize: 10,
+            fontSize: 13,
             letterSpacing: 3,
             fontFamily: fonts.heading,
             fontWeight: 700,
@@ -114,7 +114,7 @@ export default function DialogueOverlay({ lines, accent, onDone }: Props) {
             marginLeft: 'auto',
             color: colors.fg,
             fontFamily: fonts.mono,
-            fontSize: 10,
+            fontSize: 13,
             opacity: 0.6,
           }}
         >

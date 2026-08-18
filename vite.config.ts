@@ -39,9 +39,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.svg'],
       manifest: {
-        name: 'corun - Escape the Monster',
+        name: 'Corun — Coding Game',
         short_name: 'corun',
-        description: 'A pixel-art coding adventure game — solve JS puzzles to escape.',
+        description:
+          'A free open-source coding game. Story campaign, endless runner, speed run, survival, and daily challenge modes.',
         start_url: '/',
         scope: '/',
         theme_color: '#0a0a0a',
@@ -101,8 +102,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          three: ['three'],
-          fiber: ['@react-three/fiber'],
+          react: ['react', 'react-dom'],
+          dexie: ['dexie'],
         },
       },
     },

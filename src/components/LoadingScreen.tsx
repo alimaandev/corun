@@ -38,10 +38,10 @@ export default function LoadingScreen() {
           animation: 'lspin 0.8s linear infinite',
         }}
       />
-      <div style={{ fontSize: 10, letterSpacing: 3, opacity: 0.4 }}>LOADING</div>
+      <div style={{ fontSize: 13, letterSpacing: 3, opacity: 0.4 }}>LOADING</div>
       <div
         style={{
-          fontSize: 9,
+          fontSize: 13,
           color: alpha(0.25),
           maxWidth: 300,
           textAlign: 'center',

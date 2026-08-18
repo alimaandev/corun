@@ -93,7 +93,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
             >
               {puzzle.title || 'Untitled Puzzle'}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(240,235,227,0.5)', marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: 'rgba(240,235,227,0.5)', marginTop: 4 }}>
               Level {puzzle.levelId}
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
           </button>
         </div>
 
-        <div style={{ fontSize: 11, color: 'rgba(240,235,227,0.6)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 13, color: 'rgba(240,235,227,0.6)', lineHeight: 1.6 }}>
           {puzzle.description}
         </div>
 
@@ -138,7 +138,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
               border: 'none',
               borderRadius: 6,
               padding: '8px 20px',
-              fontSize: 10,
+              fontSize: 13,
               fontFamily: "'Roboto', sans-serif",
               fontWeight: 600,
               letterSpacing: 2,
@@ -150,7 +150,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
             {status === 'running' ? 'RUNNING...' : 'RUN TEST'}
           </button>
           {puzzle.hint && (
-            <div style={{ fontSize: 10, color: 'rgba(240,235,227,0.35)', fontStyle: 'italic' }}>
+            <div style={{ fontSize: 13, color: 'rgba(240,235,227,0.35)', fontStyle: 'italic' }}>
               Hint: {puzzle.hint}
             </div>
           )}
@@ -161,7 +161,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
             style={{
               padding: 12,
               borderRadius: 4,
-              fontSize: 11,
+              fontSize: 13,
               fontFamily: "'JetBrains Mono', monospace",
               lineHeight: 1.5,
               background: status === 'pass' ? 'rgba(118,152,38,0.1)' : 'rgba(170,51,51,0.1)',
@@ -173,7 +173,7 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
           </div>
         )}
 
-        <div style={{ fontSize: 10, color: 'rgba(240,235,227,0.2)', textAlign: 'center' }}>
+        <div style={{ fontSize: 13, color: 'rgba(240,235,227,0.2)', textAlign: 'center' }}>
           Ctrl+Enter to run · Esc to close
         </div>
       </div>

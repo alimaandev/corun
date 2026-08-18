@@ -7,9 +7,14 @@ import { useScrollAnimation } from '../hooks/useScrollAnimation'
 
 const MODES = [
   {
-    id: 'endless',
-    label: 'ENDLESS RUNNER',
-    desc: 'Run forever through Tokyo. Answer challenges to keep the monster at bay. How far can you go?',
+    id: 'freeplay',
+    label: 'FREE PLAY',
+    desc: 'Endless side-scrolling run. Answer coding challenges to survive hazards, trigger boss battles, and stack combo multipliers.',
+  },
+  {
+    id: 'story',
+    label: 'STORY MODE',
+    desc: 'A four-node campaign — The Cell, The Vents, The Core... and the Warden himself. Solve his algorithms to break his core.',
   },
   {
     id: 'speedrun',
@@ -41,10 +46,10 @@ const ctaStyle: React.CSSProperties = {
   background: '#F0EBE3',
   color: '#769826',
   border: 'none',
-  padding: '14px 36px',
+  padding: '16px 40px',
   borderRadius: 12,
-  fontSize: 10,
-  fontWeight: 500,
+  fontSize: 14,
+  fontWeight: 600,
   letterSpacing: 3,
   cursor: 'pointer',
   fontFamily: "'Roboto', sans-serif",
@@ -71,16 +76,17 @@ export default function LandingPage() {
         <title>Corun — Escape the Monster</title>
         <meta
           name="description"
-          content="A pixel-art coding adventure game. Solve JavaScript puzzles, escape the monster, and master programming through play."
+          content="Corun — a free open-source coding game. Story campaign, endless runner, speed run, survival, and daily challenge modes with JavaScript, Python and TypeScript puzzles."
         />
         <script type="application/ld+json">{`
           {
             "@context": "https://schema.org",
             "@type": "WebApplication",
             "name": "Corun",
-            "description": "A pixel-art coding adventure game. Solve JavaScript puzzles, escape the monster.",
+            "description": "A free open-source coding adventure game. Solve JavaScript, Python and TypeScript challenges across story, endless, speed run, survival and daily modes.",
             "applicationCategory": "GameApplication",
             "operatingSystem": "Web",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
             "author": { "@type": "Person", "name": "Ali Sher" }
           }
         `}</script>
@@ -117,7 +123,7 @@ export default function LandingPage() {
             </h1>
             <p
               style={{
-                fontSize: 10,
+                fontSize: 14,
                 color: '#F0EBE3',
                 letterSpacing: 8,
                 marginBottom: 48,
@@ -160,7 +166,7 @@ export default function LandingPage() {
           >
             <p
               style={{
-                fontSize: 11,
+                fontSize: 14,
                 color: '#F0EBE3',
                 letterSpacing: 6,
                 marginBottom: 32,
@@ -176,7 +182,7 @@ export default function LandingPage() {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
                 gap: 16,
-                maxWidth: 820,
+                maxWidth: 1000,
                 padding: 8,
               }}
             >
@@ -194,7 +200,7 @@ export default function LandingPage() {
                 >
                   <p
                     style={{
-                      fontSize: 11,
+                      fontSize: 13,
                       color: '#F0EBE3',
                       letterSpacing: 2,
                       marginBottom: 10,
@@ -207,7 +213,7 @@ export default function LandingPage() {
                   </p>
                   <h3
                     style={{
-                      fontSize: 12,
+                      fontSize: 17,
                       color: '#FFFFFF',
                       marginBottom: 12,
                       fontWeight: 600,
@@ -219,9 +225,9 @@ export default function LandingPage() {
                   </h3>
                   <p
                     style={{
-                      fontSize: 11,
+                      fontSize: 14,
                       color: 'rgba(255,255,255,0.7)',
-                      lineHeight: 2,
+                      lineHeight: 1.8,
                       fontWeight: 300,
                       fontFamily: "'Roboto', sans-serif",
                     }}
@@ -245,7 +251,7 @@ export default function LandingPage() {
           <div style={{ ...glassPanel, padding: 24, maxWidth: 400, margin: '0 auto' }}>
             <p
               style={{
-                fontSize: 10,
+                fontSize: 14,
                 color: '#FFFFFF',
                 letterSpacing: 3,
                 marginBottom: 12,
@@ -257,14 +263,14 @@ export default function LandingPage() {
               READY TO RUN?
             </p>
             <button
-              style={{ ...ctaStyle, padding: '10px 28px', fontSize: 11 }}
+              style={{ ...ctaStyle, padding: '12px 32px', fontSize: 13 }}
               onClick={() => navigate('/game')}
             >
               PLAY NOW
             </button>
             <p
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: 'rgba(255,255,255,0.3)',
                 marginTop: 16,
                 letterSpacing: 1,

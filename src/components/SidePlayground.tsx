@@ -99,7 +99,7 @@ export default function SidePlayground() {
               bottom: 8,
               left: 12,
               fontFamily: fonts.mono,
-              fontSize: 11,
+              fontSize: 13,
               color: '#888',
               pointerEvents: 'none',
             }}
@@ -162,7 +162,7 @@ export default function SidePlayground() {
           EXIT
         </button>
       </div>
-      <div style={{ fontFamily: fonts.mono, fontSize: 11, color: '#666' }}>
+      <div style={{ fontFamily: fonts.mono, fontSize: 13, color: '#666' }}>
         [A/D or Arrow keys] move [SPACE / W / Up] jump [S / Down] dodge-hold [touch] swipe halves,
         tap = jump
       </div>

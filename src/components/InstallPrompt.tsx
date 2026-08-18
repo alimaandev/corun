@@ -57,7 +57,7 @@ export default function InstallPrompt() {
       <span
         style={{
           color: '#F0EBE3',
-          fontSize: 11,
+          fontSize: 13,
           fontFamily: "'Roboto', sans-serif",
           fontWeight: 300,
         }}
@@ -71,7 +71,7 @@ export default function InstallPrompt() {
           border: 'none',
           color: '#0a0a0a',
           fontFamily: "'Roboto', sans-serif",
-          fontSize: 10,
+          fontSize: 13,
           fontWeight: 500,
           padding: '6px 14px',
           borderRadius: 8,
@@ -88,7 +88,7 @@ export default function InstallPrompt() {
           border: 'none',
           color: 'rgba(240,235,227,0.4)',
           fontFamily: "'Roboto', sans-serif",
-          fontSize: 10,
+          fontSize: 13,
           cursor: 'pointer',
           padding: '4px 8px',
         }}

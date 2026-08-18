@@ -87,7 +87,7 @@ function TaskPanel({
             border: `1px solid ${accent}`,
             color: accent,
             borderRadius: 4,
-            fontSize: 9,
+            fontSize: 13,
             letterSpacing: 2,
             fontFamily: fonts.heading,
             fontWeight: 600,
@@ -96,7 +96,7 @@ function TaskPanel({
           {t('story.task')}
         </span>
         <span
-          style={{ color: colors.fg, fontSize: 11, fontFamily: fonts.heading, fontWeight: 700 }}
+          style={{ color: colors.fg, fontSize: 13, fontFamily: fonts.heading, fontWeight: 700 }}
         >
           {task.title}
         </span>
@@ -104,7 +104,7 @@ function TaskPanel({
           style={{
             marginLeft: 'auto',
             color: alpha(0.4),
-            fontSize: 9,
+            fontSize: 13,
             fontFamily: fonts.body,
             letterSpacing: 1,
           }}
@@ -113,7 +113,7 @@ function TaskPanel({
         </span>
       </div>
 
-      <div style={{ color: alpha(0.75), fontSize: 11, lineHeight: 1.5, fontFamily: fonts.body }}>
+      <div style={{ color: alpha(0.75), fontSize: 13, lineHeight: 1.5, fontFamily: fonts.body }}>
         {task.description}
       </div>
 
@@ -141,7 +141,7 @@ function TaskPanel({
             borderRadius: 6,
             padding: '8px 18px',
             fontFamily: fonts.heading,
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 700,
             letterSpacing: 2,
             cursor: status === 'running' ? 'default' : 'pointer',
@@ -159,7 +159,7 @@ function TaskPanel({
             borderRadius: 6,
             padding: '8px 14px',
             fontFamily: fonts.heading,
-            fontSize: 10,
+            fontSize: 13,
             letterSpacing: 1,
             cursor: 'pointer',
           }}
@@ -167,7 +167,7 @@ function TaskPanel({
           {t('story.hint')}
         </button>
         <span
-          style={{ marginLeft: 'auto', color: alpha(0.3), fontSize: 9, fontFamily: fonts.mono }}
+          style={{ marginLeft: 'auto', color: alpha(0.3), fontSize: 13, fontFamily: fonts.mono }}
         >
           {t('story.ctrlEnter')}
         </span>
@@ -177,7 +177,7 @@ function TaskPanel({
         <div
           style={{
             color: alpha(0.6),
-            fontSize: 10,
+            fontSize: 13,
             fontStyle: 'italic',
             fontFamily: fonts.body,
             lineHeight: 1.5,
@@ -194,7 +194,7 @@ function TaskPanel({
           style={{
             padding: '8px 10px',
             borderRadius: 6,
-            fontSize: 11,
+            fontSize: 13,
             fontFamily: fonts.mono,
             lineHeight: 1.5,
             whiteSpace: 'pre-wrap',
@@ -404,7 +404,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
               alignItems: 'center',
               pointerEvents: 'none',
               fontFamily: fonts.mono,
-              fontSize: 11,
+              fontSize: 13,
               color: colors.fg,
             }}
           >
@@ -450,7 +450,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                   border: '1px solid rgba(255,45,120,0.5)',
                   color: '#ff7a7a',
                   fontFamily: fonts.heading,
-                  fontSize: 10,
+                  fontSize: 13,
                   letterSpacing: 2,
                   padding: '4px 14px',
                   borderRadius: 4,
@@ -523,7 +523,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 borderRadius: radius.md,
                 padding: '5px 12px',
                 fontFamily: fonts.heading,
-                fontSize: 11,
+                fontSize: 13,
                 cursor: 'pointer',
               }}
             >
@@ -533,7 +533,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
               style={{
                 marginLeft: 'auto',
                 fontFamily: fonts.mono,
-                fontSize: 12,
+                fontSize: 14,
                 color: colors.fg,
               }}
             >
@@ -549,12 +549,12 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
                 textAlign: 'center',
                 color: alpha(0.5),
                 fontFamily: fonts.body,
-                fontSize: 11,
+                fontSize: 13,
                 lineHeight: 1.6,
               }}
             >
               {node.boss ? t('story.warden') : t('story.pipe')}
-              <div style={{ marginTop: 6, color: node.accent, fontSize: 10, letterSpacing: 2 }}>
+              <div style={{ marginTop: 6, color: node.accent, fontSize: 13, letterSpacing: 2 }}>
                 {t('story.moves')}
               </div>
             </div>
@@ -576,7 +576,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
               style={{
                 color: alpha(0.5),
                 fontFamily: fonts.body,
-                fontSize: 10,
+                fontSize: 13,
                 textAlign: 'center',
               }}
             >
@@ -597,7 +597,7 @@ function overlayBtn(accent: string): React.CSSProperties {
     borderRadius: 6,
     padding: '8px 22px',
     fontFamily: fonts.heading,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 700,
     letterSpacing: 2,
     cursor: 'pointer',

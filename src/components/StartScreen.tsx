@@ -1,6 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react'
-import { Canvas } from '@react-three/fiber'
-import TerminalScene from './three/TerminalScene'
+import Backdrop from '../ui/Backdrop'
 import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
 import { TOPICS } from '../game/engine/data/challenges'
@@ -81,11 +80,11 @@ function ModeCard({
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <div style={{ color: accent, fontSize: 9, letterSpacing: 3, fontWeight: 600 }}>{title}</div>
+      <div style={{ color: accent, fontSize: 14, letterSpacing: 3, fontWeight: 600 }}>{title}</div>
       <div
         style={{
-          color: alpha(0.5),
-          fontSize: 11,
+          color: alpha(0.55),
+          fontSize: 14,
           lineHeight: 1.5,
           fontFamily: fonts.body,
           flex: 1,
@@ -115,12 +114,12 @@ function StatChip({ label, value, accent }: { label: string; value: string; acce
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: 8, letterSpacing: 3, color: alpha(0.35), fontWeight: 300 }}>
+      <div style={{ fontSize: 13, letterSpacing: 3, color: alpha(0.4), fontWeight: 300 }}>
         {label}
       </div>
       <div
         style={{
-          fontSize: 16,
+          fontSize: 18,
           fontWeight: 700,
           fontFamily: fonts.heading,
           color: accent ?? colors.fg,
@@ -182,13 +181,7 @@ export default function StartScreen({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: colors.bg, zIndex: 100 }}>
-      <Canvas
-        gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
-        camera={{ position: [0, 0, 5], fov: 50, near: 0.1, far: 30 }}
-        style={{ position: 'fixed', inset: 0, display: 'block', zIndex: 0 }}
-      >
-        <TerminalScene />
-      </Canvas>
+      <Backdrop />
 
       <div
         style={{
@@ -203,7 +196,7 @@ export default function StartScreen({
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 300,
             letterSpacing: 2,
             color: alpha(0.5),
@@ -244,7 +237,7 @@ export default function StartScreen({
             padding: '5px 10px',
             outline: 'none',
             fontFamily: fonts.body,
-            fontSize: 10,
+            fontSize: 13,
             cursor: 'pointer',
           }}
           aria-label="Language"
@@ -281,24 +274,26 @@ export default function StartScreen({
           >
             <div
               style={{
-                fontSize: 52,
+                fontSize: 64,
                 fontWeight: 800,
                 letterSpacing: 3,
                 color: colors.fg,
                 fontFamily: fonts.heading,
                 textShadow: `0 0 60px ${alpha(0.12)}`,
+                lineHeight: 1,
               }}
             >
               CORUN
             </div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: 300,
                 letterSpacing: 6,
-                color: alpha(0.45),
+                color: alpha(0.5),
                 fontFamily: fonts.body,
-                marginBottom: 22,
+                marginBottom: 24,
+                marginTop: 6,
               }}
             >
               ESCAPE THE MONSTER
@@ -316,7 +311,7 @@ export default function StartScreen({
               >
                 <div
                   style={{
-                    fontSize: 9,
+                    fontSize: 13,
                     letterSpacing: 3,
                     color: colors.accentBright,
                     fontFamily: fonts.heading,
@@ -365,7 +360,7 @@ export default function StartScreen({
               <ModeCard
                 id="freeplay"
                 title="FREE PLAY"
-                subtitle="Endless 3-lane escape. Adaptive difficulty, boss battles, combo multipliers."
+                subtitle="Endless side-scrolling run. Adaptive difficulty, boss battles, combo multipliers."
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <select
@@ -376,10 +371,10 @@ export default function StartScreen({
                       color: colors.fg,
                       border: `1px solid ${alpha(0.15)}`,
                       borderRadius: radius.md,
-                      padding: '5px 8px',
+                      padding: '7px 10px',
                       outline: 'none',
                       fontFamily: fonts.body,
-                      fontSize: 10,
+                      fontSize: 13,
                       cursor: 'pointer',
                     }}
                   >
@@ -404,10 +399,10 @@ export default function StartScreen({
                               ? `1px solid ${alpha(0.3)}`
                               : `1px solid ${alpha(0.1)}`,
                           borderRadius: radius.md,
-                          padding: '4px 0',
+                          padding: '7px 0',
                           cursor: 'pointer',
                           fontFamily: fonts.body,
-                          fontSize: 10,
+                          fontSize: 13,
                           textTransform: 'capitalize',
                           transition,
                         }}
@@ -484,7 +479,7 @@ export default function StartScreen({
           >
             <div
               style={{
-                fontSize: 10,
+                fontSize: 13,
                 letterSpacing: 3,
                 color: colors.accentBright,
                 fontFamily: fonts.heading,
@@ -506,8 +501,8 @@ export default function StartScreen({
                     color: lbTab === i ? colors.fg : alpha(0.3),
                     border: `1px solid ${alpha(0.1)}`,
                     fontFamily: fonts.body,
-                    fontSize: 11,
-                    fontWeight: 300,
+                    fontSize: 13,
+                    fontWeight: 400,
                     padding: '8px 0',
                     cursor: 'pointer',
                   }}
@@ -519,8 +514,8 @@ export default function StartScreen({
             <div
               style={{
                 display: 'flex',
-                fontSize: 11,
-                color: alpha(0.3),
+                fontSize: 13,
+                color: alpha(0.35),
                 fontFamily: fonts.body,
                 padding: '0 4px 6px',
                 borderBottom: `1px solid ${alpha(0.08)}`,
@@ -536,10 +531,10 @@ export default function StartScreen({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '5px 4px',
+                  padding: '6px 4px',
                   borderBottom: `1px solid ${alpha(0.04)}`,
-                  fontSize: 11,
-                  color: alpha(0.6),
+                  fontSize: 13,
+                  color: alpha(0.65),
                   fontFamily: fonts.body,
                   background: playerRank === entry.rank ? alpha(0.04) : 'transparent',
                 }}
@@ -575,8 +570,8 @@ export default function StartScreen({
                 style={{
                   textAlign: 'center',
                   marginTop: 12,
-                  fontSize: 11,
-                  color: alpha(0.5),
+                  fontSize: 13,
+                  color: alpha(0.55),
                   fontFamily: fonts.body,
                 }}
               >

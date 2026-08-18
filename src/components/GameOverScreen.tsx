@@ -1,9 +1,6 @@
-import { useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
-import Chamber from './three/Chamber'
-import GlassButton from './GlassButton'
-import { colors, fonts, alpha } from '../lib/theme'
+import Backdrop from '../ui/Backdrop'
+import { GlassButton } from '../ui/primitives'
+import { colors, fonts, alpha, fontSizes } from '../lib/theme'
 
 interface Props {
   score: number
@@ -13,45 +10,6 @@ interface Props {
   onRestart?: () => void
 }
 
-function Slab({ isNewHighScore }: { isNewHighScore: boolean }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  useFrame(() => {
-    if (meshRef.current)
-      meshRef.current.position.y = Math.min(0.3, meshRef.current.position.y + 0.02)
-  })
-  return (
-    <group>
-      <mesh ref={meshRef} position={[0, -2, 0]}>
-        <boxGeometry args={[2.5, 0.2, 1.2]} />
-        <meshBasicMaterial color="#141414" />
-      </mesh>
-      {isNewHighScore && (
-        <mesh position={[0, 0.7, 0]}>
-          <planeGeometry args={[1.5, 0.2]} />
-          <meshBasicMaterial color="#ffd700" transparent opacity={0.8} />
-        </mesh>
-      )}
-    </group>
-  )
-}
-
-function Badge({ position, color }: { position: [number, number, number]; color: string }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      meshRef.current.position.y =
-        position[1] + Math.sin(clock.elapsedTime * 0.8 + position[0]) * 0.15
-      meshRef.current.rotation.y += 0.01
-    }
-  })
-  return (
-    <mesh ref={meshRef} position={position}>
-      <planeGeometry args={[0.3, 0.3]} />
-      <meshBasicMaterial color={color} transparent opacity={0.6} />
-    </mesh>
-  )
-}
-
 export default function GameOverScreen({
   score,
   isNewHighScore,
@@ -59,8 +17,6 @@ export default function GameOverScreen({
   badges = [],
   onRestart,
 }: Props) {
-  const [canvasKey, setCanvasKey] = useState(0)
-
   return (
     <div
       style={{
@@ -76,60 +32,26 @@ export default function GameOverScreen({
         justifyContent: 'center',
       }}
     >
-      <Canvas
-        key={canvasKey}
-        gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
-        camera={{ position: [0, 2, 4.5], fov: 50, near: 0.1, far: 30 }}
-        style={{ position: 'fixed', inset: 0, display: 'block' }}
-        frameloop="always"
-        onCreated={(state) => {
-          state.gl.domElement.addEventListener(
-            'webglcontextlost',
-            (e) => {
-              e.preventDefault()
-              setTimeout(() => setCanvasKey((k) => k + 1), 500)
-            },
-            false,
-          )
-          state.gl.domElement.addEventListener(
-            'webglcontextrestored',
-            () => state.invalidate(),
-            false,
-          )
-        }}
-        onError={() => setCanvasKey((k) => k + 1)}
-      >
-        <Chamber />
-        <Slab isNewHighScore={isNewHighScore} />
-        {badges.slice(0, 3).map((_, i) => (
-          <Badge
-            key={i}
-            position={[
-              Math.cos((i / 3) * Math.PI * 2) * 1.2,
-              1 + Math.sin((i / 3) * Math.PI * 2) * 0.5,
-              Math.sin((i / 3) * Math.PI * 2) * 0.5,
-            ]}
-            color={[colors.fg, colors.accent, colors.fg][i]}
-          />
-        ))}
-      </Canvas>
+      <Backdrop tint="rgba(255,45,120,0.07)" />
 
       <div
         style={{
-          position: 'absolute',
+          position: 'relative',
           zIndex: 20,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 10,
+          gap: 12,
           textAlign: 'center',
+          padding: 24,
+          animation: 'fadeIn 0.4s ease-out',
         }}
       >
         <div
           style={{
-            fontSize: 11,
-            color: alpha(0.4),
-            letterSpacing: 4,
+            fontSize: fontSizes.sm,
+            color: alpha(0.5),
+            letterSpacing: 6,
             fontFamily: fonts.heading,
             fontWeight: 600,
           }}
@@ -138,8 +60,8 @@ export default function GameOverScreen({
         </div>
         <div
           style={{
-            fontSize: 12,
-            color: alpha(0.5),
+            fontSize: fontSizes.md,
+            color: alpha(0.55),
             fontFamily: fonts.body,
             fontWeight: 300,
           }}
@@ -148,11 +70,13 @@ export default function GameOverScreen({
         </div>
         <div
           style={{
-            fontSize: 36,
+            fontSize: fontSizes.display,
             color: colors.fg,
             fontFamily: fonts.mono,
             fontWeight: 700,
             lineHeight: 1,
+            marginTop: 4,
+            textShadow: `0 0 40px ${alpha(0.25)}`,
           }}
         >
           {score.toLocaleString()}
@@ -161,65 +85,88 @@ export default function GameOverScreen({
         {isNewHighScore && (
           <div
             style={{
-              fontSize: 11,
-              color: colors.fg,
-              letterSpacing: 2,
-              fontFamily: fonts.body,
-              fontWeight: 500,
+              fontSize: fontSizes.sm,
+              color: colors.gold,
+              letterSpacing: 3,
+              fontFamily: fonts.heading,
+              fontWeight: 600,
+              animation: 'pulse 1.5s ease-in-out infinite',
             }}
           >
-            NEW HIGH SCORE
+            ★ NEW HIGH SCORE ★
           </div>
         )}
-        {playerRank !== null && (
+        {playerRank !== null && playerRank > 0 && (
           <div
             style={{
-              fontSize: 11,
-              color: colors.accent,
-              letterSpacing: 1,
+              fontSize: fontSizes.sm,
+              color: colors.accentBright,
+              letterSpacing: 2,
               fontFamily: fonts.body,
-              fontWeight: 500,
+              fontWeight: 600,
             }}
           >
             RANK: #{playerRank}
           </div>
         )}
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            marginTop: 4,
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-          }}
-        >
-          <GlassButton variant="primary" onClick={onRestart}>
+        {badges.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              marginTop: 8,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            {badges.slice(0, 4).map((b) => (
+              <span
+                key={b.topic}
+                style={{
+                  padding: '6px 12px',
+                  border: `1px solid ${alpha(0.2)}`,
+                  borderRadius: 20,
+                  fontSize: fontSizes.xs,
+                  fontFamily: fonts.heading,
+                  color: alpha(0.8),
+                  letterSpacing: 1,
+                  background: 'rgba(0,0,0,0.3)',
+                }}
+              >
+                {b.topic}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+          <GlassButton variant="primary" size="lg" onClick={onRestart}>
             PLAY AGAIN
           </GlassButton>
         </div>
 
-        <div style={{ fontSize: 11, color: colors.fgFaint }}>PRESS ENTER</div>
-
-        <a
-          href="https://github.com/alimaandev/corun"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            position: 'fixed',
-            bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            color: alpha(0.2),
-            textDecoration: 'none',
-            fontFamily: fonts.body,
-            fontSize: 10,
-            letterSpacing: 1,
-          }}
-        >
-          ★ STAR ON GITHUB
-        </a>
+        <div style={{ fontSize: fontSizes.xs, color: alpha(0.4) }}>PRESS ENTER</div>
       </div>
+
+      <a
+        href="https://github.com/alimaandev/corun"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'fixed',
+          bottom: 18,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: alpha(0.25),
+          textDecoration: 'none',
+          fontFamily: fonts.body,
+          fontSize: fontSizes.xs,
+          letterSpacing: 1,
+        }}
+      >
+        ★ STAR ON GITHUB
+      </a>
     </div>
   )
 }
