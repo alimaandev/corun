@@ -1,3 +1,10 @@
+## [1.15.4](https://github.com/alimaandev/corun/compare/v1.15.3...v1.15.4) (2026-08-18)
+
+
+### Bug Fixes
+
+* prune unused i18n keys and translate start screen labels ([7ffde7c](https://github.com/alimaandev/corun/commit/7ffde7ca56f665883b7ad77ff33904391fac3735))
+
 ## [1.15.3](https://github.com/alimaandev/corun/compare/v1.15.2...v1.15.3) (2026-08-18)
 
 
