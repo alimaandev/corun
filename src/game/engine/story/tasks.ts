@@ -635,19 +635,3 @@ export const STORY_TASKS: Record<string, StoryTask[]> = {
 export function getStoryTasks(nodeId: string): StoryTask[] {
   return STORY_TASKS[nodeId] ?? []
 }
-
-export function runTaskInJs(
-  userCode: string,
-  testCode: string,
-): { success: boolean; output: string } {
-  const output: string[] = []
-  const mockConsole = { log: (...args: unknown[]) => output.push(args.map(String).join(' ')) }
-  const fullCode = userCode + '\n' + testCode
-  try {
-    const fn = new Function('console', fullCode)
-    const result = fn(mockConsole)
-    return { success: result === true, output: output.join('\n') }
-  } catch (e: unknown) {
-    return { success: false, output: e instanceof Error ? e.message : String(e) }
-  }
-}

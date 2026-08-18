@@ -5,8 +5,8 @@ export interface ShakeState {
   time: number
 }
 
-export function createShake(): ShakeState {
-  return { trauma: 0, time: 0 }
+function shakeMagnitude(s: ShakeState): number {
+  return s.trauma * s.trauma
 }
 
 export function addTrauma(s: ShakeState, amount: number): ShakeState {
@@ -16,10 +16,6 @@ export function addTrauma(s: ShakeState, amount: number): ShakeState {
 export function updateShake(s: ShakeState, dt: number): ShakeState {
   const decay = Math.min(1, dt / 0.9)
   return { trauma: Math.max(0, s.trauma - decay * 1.4 * s.trauma), time: s.time + dt }
-}
-
-export function shakeMagnitude(s: ShakeState): number {
-  return s.trauma * s.trauma
 }
 
 export function shakeOffset(s: ShakeState, amp: number): { x: number; y: number } {

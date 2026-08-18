@@ -26,7 +26,3 @@ export function updateCombo(c: SideCombo, nowMs: number): SideCombo {
   }
   return c
 }
-
-export function comboOnFire(c: SideCombo, nowMs: number): boolean {
-  return c.streak >= SIDE.comboFireAt && nowMs <= c.fireUntil
-}

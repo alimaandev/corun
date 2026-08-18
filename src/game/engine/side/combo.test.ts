@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createCombo, recordComboAnswer, updateCombo, comboOnFire } from './combo'
+import { createCombo, recordComboAnswer, updateCombo } from './combo'
 import { SIDE } from './types'
 
 describe('combo', () => {
@@ -31,16 +31,14 @@ describe('combo', () => {
     let c = createCombo()
     for (let i = 0; i < SIDE.comboFireAt; i++) c = recordComboAnswer(c, true, 1000)
     expect(c.fireUntil).toBeGreaterThan(0)
-    expect(comboOnFire(c, 1000)).toBe(true)
-    expect(comboOnFire(c, 1000 + c.windowMs + 1)).toBe(false)
   })
 
   it('expires fire window', () => {
     let c = createCombo(200)
     for (let i = 0; i < SIDE.comboFireAt; i++) c = recordComboAnswer(c, true, 0)
-    expect(comboOnFire(c, 100)).toBe(true)
+    expect(c.fireUntil).toBeGreaterThan(0)
     c = updateCombo(c, 1000)
-    expect(comboOnFire(c, 1000)).toBe(false)
+    expect(c.fireUntil).toBe(0)
   })
 
   it('tracks best streak', () => {

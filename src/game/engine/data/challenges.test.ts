@@ -1,28 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  getChallengeById,
-  getRandomChallenge,
-  getDailyChallenge,
-  getChallengePool,
-  clearAIPool,
-} from './challenges'
-
-beforeEach(() => {
-  localStorage.clear()
-  clearAIPool()
-})
-
-describe('getChallengeById', () => {
-  it('returns the correct fallback challenge by id', () => {
-    const c = getChallengeById(-1)
-    expect(c).toBeDefined()
-    expect(c!.id).toBe(-1)
-  })
-
-  it('returns undefined for unknown id', () => {
-    expect(getChallengeById(9999)).toBeUndefined()
-  })
-})
+import { describe, it, expect } from 'vitest'
+import { POOL, getRandomChallenge, getDailyChallenge } from './challenges'
 
 describe('getRandomChallenge', () => {
   it('returns a challenge', async () => {
@@ -44,17 +21,13 @@ describe('getRandomChallenge', () => {
   })
 
   it('does not return used ids', async () => {
-    const used = new Set<number>([
-      -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17,
-    ])
+    const used = new Set<number>(POOL.slice(0, 20).map((c) => c.id))
     const c = await getRandomChallenge(used)
     expect(used.has(c.id)).toBe(false)
   })
 
   it('clears used set and returns a challenge when all exhausted', async () => {
-    const allIds = new Set([
-      -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17,
-    ])
+    const allIds = new Set(POOL.map((c) => c.id))
     const c = await getRandomChallenge(allIds)
     expect(c).toBeDefined()
   })
@@ -62,21 +35,19 @@ describe('getRandomChallenge', () => {
 
 describe('challenge pool', () => {
   it('contains at least 50 challenges for each language topic', () => {
-    const pool = getChallengePool()
     for (const topic of ['javascript', 'python', 'typescript']) {
-      expect(pool.filter((c) => c.topic === topic).length).toBeGreaterThanOrEqual(50)
+      expect(POOL.filter((c) => c.topic === topic).length).toBeGreaterThanOrEqual(50)
     }
   })
 
   it('has unique ids', () => {
-    const ids = getChallengePool().map((c) => c.id)
+    const ids = POOL.map((c) => c.id)
     expect(new Set(ids).size).toBe(ids.length)
   })
 
   it('has a reasonable difficulty spread per language', () => {
-    const pool = getChallengePool()
     for (const topic of ['javascript', 'python', 'typescript']) {
-      const byDifficulty = pool.filter((c) => c.topic === topic)
+      const byDifficulty = POOL.filter((c) => c.topic === topic)
       expect(byDifficulty.filter((c) => c.difficulty === 'easy').length).toBeGreaterThanOrEqual(10)
       expect(byDifficulty.filter((c) => c.difficulty === 'medium').length).toBeGreaterThanOrEqual(
         10,
@@ -86,7 +57,7 @@ describe('challenge pool', () => {
   })
 
   it('has valid options and correct indexes everywhere', () => {
-    for (const c of getChallengePool()) {
+    for (const c of POOL) {
       expect(c.options.length).toBeGreaterThanOrEqual(2)
       expect(c.correct).toBeGreaterThanOrEqual(0)
       expect(c.correct).toBeLessThan(c.options.length)

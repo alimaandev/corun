@@ -7,7 +7,6 @@ import {
   isStoryLevelUnlocked,
   saveStoryProgress,
   starsForNode,
-  storyNodeBestScore,
   storyStarsTotal,
 } from './progress'
 import { STORY_NODES } from './levels'
@@ -43,7 +42,7 @@ describe('story progress', () => {
     const p = await getStoryProgress()
     expect(isStoryLevelUnlocked(STORY_NODES[1], p)).toBe(true)
     expect(starsForNode(STORY_NODES[0], p)).toBe(3)
-    expect(storyNodeBestScore(STORY_NODES[0], p)).toBe(1200)
+    expect(p.completed[STORY_NODES[0].id]?.best_score).toBe(1200)
   })
 
   it('keeps the best stars and score', async () => {
@@ -51,7 +50,7 @@ describe('story progress', () => {
     await completeStoryLevel(STORY_NODES[0], 3, 500)
     const p = await getStoryProgress()
     expect(starsForNode(STORY_NODES[0], p)).toBe(3)
-    expect(storyNodeBestScore(STORY_NODES[0], p)).toBe(800)
+    expect(p.completed[STORY_NODES[0].id]?.best_score).toBe(800)
   })
 
   it('boss completion does not unlock anything beyond itself', async () => {

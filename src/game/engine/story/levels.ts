@@ -103,10 +103,6 @@ export const STORY_NODES: StoryLevelNode[] = [
   },
 ]
 
-export function getStoryNode(id: string): StoryLevelNode | undefined {
-  return STORY_NODES.find((n) => n.id === id)
-}
-
 export function getStoryTopicLabel(topic: Topic): string {
   const labels: Record<Topic, string> = {
     javascript: 'JS',

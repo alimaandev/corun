@@ -6,9 +6,7 @@ import {
   setHighScore,
   isDailyCompleted,
   markDailyCompleted,
-  getSavedBadges,
   saveBadge,
-  getLeaderboard,
   addToLeaderboard,
   getRunSession,
   saveRunSession,
@@ -45,35 +43,29 @@ describe('daily completion', () => {
 })
 
 describe('badges', () => {
-  it('returns an empty list by default', async () => {
-    expect(await getSavedBadges()).toEqual([])
-  })
-
-  it('saves a badge through the outbox', async () => {
+  it('saves a badge and returns it', async () => {
     await saveBadge('javascript')
-    expect(await getSavedBadges()).toEqual(['javascript'])
+    const badges = await db.badges.toArray()
+    expect(badges.map((b) => b.topic)).toEqual(['javascript'])
   })
 
   it('does not duplicate badges', async () => {
     await saveBadge('algorithms')
     await saveBadge('algorithms')
-    expect(await getSavedBadges()).toEqual(['algorithms'])
+    const badges = await db.badges.toArray()
+    expect(badges).toHaveLength(1)
+    expect(badges[0].topic).toBe('algorithms')
   })
 })
 
 describe('local leaderboard', () => {
-  it('returns an empty list by default', async () => {
-    expect(await getLeaderboard()).toEqual([])
-  })
-
   it('keeps the top 10 entries sorted by score', async () => {
     for (let i = 1; i <= 12; i++) {
       await addToLeaderboard(i * 100)
     }
-    const lb = await getLeaderboard()
-    expect(lb).toHaveLength(10)
-    expect(lb[0].score).toBe(1200)
-    expect(lb[9].score).toBe(300)
+    const rows = await db.scores.where('profile_id').equals('local').sortBy('score')
+    const scores = rows.map((r) => r.score)
+    expect(scores.slice(-10)).toEqual([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200])
   })
 })
 
@@ -158,8 +150,10 @@ describe('v2 migration from localStorage', () => {
 
     expect(await getHighScore()).toBe(900)
     expect(await isDailyCompleted()).toBe(false)
-    expect(await getSavedBadges()).toEqual(['javascript', 'web'])
-    expect(await getLeaderboard()).toEqual([{ score: 500, date: '2026-08-01' }])
+    const badges = (await db.badges.toArray()).map((b) => b.topic)
+    expect(badges).toEqual(['javascript', 'web'])
+    const lbScores = await db.scores.where('profile_id').equals('local').toArray()
+    expect(lbScores.map((r) => r.score)).toEqual([500])
 
     expect(localStorage.getItem('coderun_highscore')).toBeNull()
     expect(localStorage.getItem('code_daily_2025-08-04')).toBeNull()

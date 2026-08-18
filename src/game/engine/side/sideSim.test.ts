@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { applySideAnswer, createSideSim, stepSideSim } from './sideSim'
 import { SIDE, SideInput } from './types'
-import { CELL_LEVEL, buildWorld } from './world'
+import { CELL_LEVEL } from './world'
+import { buildTestWorld } from './testUtils'
 import { createSidePlayer } from './testUtils'
 
 function input(over: Partial<SideInput> = {}): SideInput {
@@ -109,7 +110,7 @@ describe('stepSideSim', () => {
   })
 
   it('falling into a pit below ground ends the game', () => {
-    const pit = buildWorld(
+    const pit = buildTestWorld(
       { minX: 0, maxX: 800 },
       CELL_LEVEL.groundY,
       [

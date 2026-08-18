@@ -70,7 +70,3 @@ export function starsForNode(node: StoryLevelNode, p: StoryProgress): number {
 export function storyStarsTotal(p: StoryProgress): number {
   return Object.values(p.completed).reduce((sum, e) => sum + e.stars, 0)
 }
-
-export function storyNodeBestScore(node: StoryLevelNode, p: StoryProgress): number {
-  return p.completed[node.id]?.best_score ?? 0
-}

@@ -1,9 +1,7 @@
 import { Challenge } from '../../types'
 import { EXTRA_CHALLENGES } from './challengesExtra'
 
-const POOL: Challenge[] = []
-
-const FALLBACKS: Challenge[] = [
+export const POOL: Challenge[] = [
   {
     id: -1,
     type: 'multiple',
@@ -331,24 +329,12 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-export function clearAIPool() {
-  POOL.length = 0
-}
-
-export function getChallengeById(id: number): Challenge | undefined {
-  return POOL.find((c) => c.id === id) || FALLBACKS.find((c) => c.id === id)
-}
-
-export function getChallengePool(): Challenge[] {
-  return FALLBACKS
-}
-
 export async function getRandomChallenge(
   usedIds: Set<number>,
   topic?: string,
   preferDifficulty?: string,
 ): Promise<Challenge> {
-  const candidates = FALLBACKS.filter(
+  const candidates = POOL.filter(
     (c) =>
       !usedIds.has(c.id) &&
       (!topic || c.topic === topic) &&
@@ -357,16 +343,16 @@ export async function getRandomChallenge(
 
   if (candidates.length > 0) return pick(candidates)
 
-  const anyTopic = FALLBACKS.filter(
+  const anyTopic = POOL.filter(
     (c) => !usedIds.has(c.id) && (!preferDifficulty || c.difficulty === preferDifficulty),
   )
   if (anyTopic.length > 0) return pick(anyTopic)
 
-  const any = FALLBACKS.filter((c) => !usedIds.has(c.id))
+  const any = POOL.filter((c) => !usedIds.has(c.id))
   if (any.length > 0) return pick(any)
 
   usedIds.clear()
-  return pick(FALLBACKS)
+  return pick(POOL)
 }
 
 export const TOPICS = [
@@ -383,6 +369,5 @@ export function getDailyChallenge(): Challenge {
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
   )
-  const idx = dayOfYear % FALLBACKS.length
-  return { ...FALLBACKS[idx], id: -1 }
+  return POOL[dayOfYear % POOL.length]
 }

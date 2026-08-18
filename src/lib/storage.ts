@@ -68,13 +68,8 @@ export async function markDailyCompleted(): Promise<void> {
 
 // ── Badges ───────────────────────────────────────────────────
 
-export async function getSavedBadges(): Promise<string[]> {
-  const rows = await db.badges.toArray()
-  return rows.map((r) => r.topic)
-}
-
 export async function saveBadge(topic: string): Promise<void> {
-  if ((await getSavedBadges()).includes(topic)) return
+  if ((await db.badges.where('topic').equals(topic).count()) > 0) return
   await enqueue('badge', topic)
   await flushOutbox()
 }
@@ -83,19 +78,11 @@ registerOutboxHandler('badge', async (payload) => {
   await db.badges.add({ topic: payload as string, earned_at: new Date().toISOString() })
 })
 
-// ── Local top-10 leaderboard ─────────────────────────────────
+// ── Local leaderboard ────────────────────────────────────────
 
 export interface LeaderboardScore {
   score: number
   date: string
-}
-
-export async function getLeaderboard(): Promise<LeaderboardScore[]> {
-  const rows = await db.scores.where('profile_id').equals(LOCAL_PROFILE_ID).sortBy('score')
-  return rows
-    .slice(-10)
-    .reverse()
-    .map((r) => ({ score: r.score, date: r.created_at.slice(0, 10) }))
 }
 
 export async function addToLeaderboard(score: number): Promise<void> {

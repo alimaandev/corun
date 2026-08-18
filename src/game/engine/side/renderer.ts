@@ -1,7 +1,7 @@
 import { CYBERPUNK_TOKYO, generateSkyline, ParallaxLayer, windowPositions } from './parallax'
 import { SideEnemy, SideSimState } from './types'
 import { shakeOffset } from './shake'
-import { drawSideDroneSprite, drawSidePlayerSprite, drawSideWardenSprite } from '../../sprites'
+import { drawSideDroneSprite, drawSidePlayerSprite, drawSideWardenSprite } from './sprites'
 
 export const VIEW_W = 480
 export const VIEW_H = 270

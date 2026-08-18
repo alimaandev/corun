@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CodePuzzle } from '../game/types'
-import { evaluateCode } from '../game/engine/data/codePuzzles'
+import { evaluateCode } from '../game/engine/codeEvaluator'
 
 interface Props {
   puzzle: CodePuzzle
