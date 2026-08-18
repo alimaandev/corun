@@ -321,7 +321,7 @@ export default function StartScreen({
                   RUN SAVED
                 </div>
                 <GlassButton size="lg" variant="primary" onClick={() => onResume(resumeSession)}>
-                  CONTINUE — {resumeLabel(resumeSession)}
+                  {t('btn.resume')} — {resumeLabel(resumeSession)}
                 </GlassButton>
               </div>
             )}
@@ -335,14 +335,14 @@ export default function StartScreen({
                 marginBottom: 24,
               }}
             >
-              <StatChip label="HIGH SCORE" value={highScore.toLocaleString()} />
+              <StatChip label={t('start.highScore')} value={highScore.toLocaleString()} />
               <StatChip
-                label="WORLD RANK"
+                label={t('start.worldRank')}
                 value={playerRank !== null ? `#${playerRank}` : '—'}
                 accent={playerRank !== null && playerRank <= 3 ? colors.gold : undefined}
               />
               <StatChip
-                label="DAILY"
+                label={t('mode.daily')}
                 value={dailyDone ? 'DONE' : 'OPEN'}
                 accent={dailyDone ? colors.danger : colors.accentBright}
               />
@@ -357,11 +357,7 @@ export default function StartScreen({
                 marginBottom: 22,
               }}
             >
-              <ModeCard
-                id="freeplay"
-                title="FREE PLAY"
-                subtitle="Endless side-scrolling run. Adaptive difficulty, boss battles, combo multipliers."
-              >
+              <ModeCard id="freeplay" title={t('mode.free')} subtitle={t('start.freeplay.desc')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <select
                     value={subject}
@@ -378,7 +374,7 @@ export default function StartScreen({
                       cursor: 'pointer',
                     }}
                   >
-                    <option value="all">ALL TOPICS</option>
+                    <option value="all">{t('start.topics')}</option>
                     {TOPICS.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.label.toUpperCase()}
@@ -424,43 +420,43 @@ export default function StartScreen({
 
               <ModeCard
                 id="daily"
-                title="DAILY CHALLENGE"
-                subtitle="One shot, one score, every day. Seeded pool, daily leaderboard."
+                title={t('start.dailyTitle')}
+                subtitle={t('start.daily.desc')}
                 onPlay={dailyDone ? undefined : () => onStart(null, 'medium', true)}
                 disabled={dailyDone}
               />
 
               <ModeCard
                 id="speedrun"
-                title="SPEED RUN"
-                subtitle="60-second countdown. Wrong answers cost points. Pure clock pressure."
+                title={t('mode.speedrun')}
+                subtitle={t('start.speedrun.desc')}
                 onPlay={onSpeedRun}
               />
 
               <ModeCard
                 id="story"
                 title={t('story.enter')}
-                subtitle="Campaign of four nodes — The Cell, The Vents, The Core... and the Warden himself."
+                subtitle={t('start.story.desc')}
                 onPlay={onStory}
               />
 
               <ModeCard
                 id="survival"
-                title="SURVIVAL"
-                subtitle="3 lives. Every wrong answer loses one. Questions keep getting harder."
+                title={t('mode.survival')}
+                subtitle={t('start.survival.desc')}
                 onPlay={onSurvival}
               />
             </div>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
               <GlassButton size="sm" variant="secondary" onClick={() => setView('leaderboard')}>
-                LEADERBOARD
+                {t('start.leaderboard')}
               </GlassButton>
               <GlassButton size="sm" variant="secondary" onClick={onPuzzleEditor}>
-                PUZZLE EDITOR
+                {t('btn.puzzleEditor')}
               </GlassButton>
               <GlassButton size="sm" variant="secondary" onClick={onCustomPuzzles}>
-                COMMUNITY PUZZLES
+                {t('btn.customPuzzles')}
               </GlassButton>
             </div>
           </div>
@@ -488,10 +484,10 @@ export default function StartScreen({
                 textAlign: 'center',
               }}
             >
-              LEADERBOARD
+              {t('start.leaderboard')}
             </div>
             <div style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
-              {['ALL TIME', 'TODAY'].map((tab, i) => (
+              {[t('lb.allTime'), t('lb.today')].map((tab, i) => (
                 <button
                   key={tab}
                   onClick={() => setLbTab(i)}
@@ -522,8 +518,8 @@ export default function StartScreen({
               }}
             >
               <span style={{ width: 30 }}>#</span>
-              <span style={{ flex: 1 }}>NAME</span>
-              <span style={{ width: 60, textAlign: 'right' }}>SCORE</span>
+              <span style={{ flex: 1 }}>{t('lb.name')}</span>
+              <span style={{ width: 60, textAlign: 'right' }}>{t('lb.score')}</span>
             </div>
             {entries.slice(0, 10).map((entry) => (
               <div
@@ -557,7 +553,7 @@ export default function StartScreen({
                 >
                   {entry.player_name}
                   {playerRank === entry.rank && (
-                    <span style={{ color: alpha(0.5), marginLeft: 6 }}>(you)</span>
+                    <span style={{ color: alpha(0.5), marginLeft: 6 }}>{t('lb.you')}</span>
                   )}
                 </span>
                 <span style={{ width: 60, textAlign: 'right', color: colors.fg }}>
@@ -575,7 +571,7 @@ export default function StartScreen({
                   fontFamily: fonts.body,
                 }}
               >
-                YOUR RANK: #{playerRank}
+                {t('lb.yourRank', { rank: playerRank })}
               </div>
             )}
             <GlassButton
@@ -584,7 +580,7 @@ export default function StartScreen({
               onClick={() => setView('main')}
               style={{ display: 'block', margin: '12px auto 0' }}
             >
-              ← BACK
+              {t('btn.back')}
             </GlassButton>
           </GlassPanel>
         )}
