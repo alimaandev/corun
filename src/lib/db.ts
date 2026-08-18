@@ -45,25 +45,12 @@ export interface SettingRow {
   value: unknown
 }
 
-export type OutboxStatus = 'pending' | 'delivered' | 'failed'
-
-export interface OutboxRow {
-  id: number
-  type: string
-  payload: unknown
-  status: OutboxStatus
-  attempts: number
-  next_attempt_at: number
-  created_at: string
-}
-
 const db = new Dexie('CorunDB') as Dexie & {
   profiles: EntityTable<Profile, 'id'>
   scores: EntityTable<ScoreRow, 'id'>
   badges: EntityTable<BadgeRow, 'id'>
   daily: EntityTable<DailyRow, 'date'>
   settings: EntityTable<SettingRow, 'key'>
-  outbox: EntityTable<OutboxRow, 'id'>
   storyProgress: EntityTable<StoryProgressRow, 'id'>
 }
 
@@ -79,7 +66,6 @@ db.version(2)
     badges: '++id, &topic, earned_at',
     daily: '&date, completed_at',
     settings: '&key, value',
-    outbox: '++id, type, status, next_attempt_at, created_at',
   })
   .upgrade(async (tx) => {
     const read = (key: string): string | null => {
@@ -157,6 +143,9 @@ db.version(2)
 db.version(3).stores({
   storyProgress: '&id, unlocked_up_to, updated_at',
 })
+
+// v4: drop the outbox journal — writes are direct against the local DB now.
+db.version(4).stores({})
 
 export async function resetDatabase(): Promise<void> {
   await db.delete()

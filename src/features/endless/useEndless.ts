@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Difficulty, Topic } from '../../game/types'
-import { saveBadge } from '../../lib/storage'
+import { saveBadge } from '../../lib/store'
 import { getComboMultiplier } from '../../game/engine/scoring'
 
 export interface Badge {

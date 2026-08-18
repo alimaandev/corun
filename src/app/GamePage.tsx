@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
+import GameRunView from './GameRunView'
 import type { SideRunScreenHandle } from '../game/SideRunScreen'
-const SideRunScreen = lazy(() => import('../game/SideRunScreen'))
-const ChallengeModal = lazy(() => import('../components/ChallengeModal'))
 const PuzzleEditor = lazy(() => import('../components/PuzzleEditor'))
 const CommunityPuzzles = lazy(() => import('../components/CommunityPuzzles'))
 import { playGameOver, playSuccess, playError } from '../game/sound'
@@ -16,18 +15,15 @@ import {
   getRunSession,
   saveRunSession,
   clearRunSession,
-  RunSession,
-} from '../lib/storage'
-import {
   initSession,
   submitScore,
   updatePlayerName,
   getLocalPlayerName,
   getGlobalLeaderboard,
+  RunSession,
   PlayerProfile,
-} from '../lib/leaderboard'
+} from '../lib/store'
 import { importPuzzleFromUrl } from '../game/puzzleShare'
-import { colors, fonts, alpha } from '../lib/theme'
 import { useBossBattle } from '../features/boss/useBossBattle'
 import { useBonusRound } from '../features/bonus/useBonusRound'
 import { useEndless, Badge } from '../features/endless/useEndless'
@@ -38,7 +34,6 @@ import { BOSS_THRESHOLD, BONUS_THRESHOLD, getTimeLimit, Mode } from '../features
 import { StoryLevelNode } from '../game/engine/story/levels'
 import { completeStoryLevel, getStoryProgress, StoryProgress } from '../game/engine/story/progress'
 
-const HUD = lazy(() => import('../components/HUD'))
 const StartScreen = lazy(() => import('../components/StartScreen'))
 const GameOverScreen = lazy(() => import('../components/GameOverScreen'))
 const NameDialog = lazy(() => import('../components/NameDialog'))
@@ -551,130 +546,6 @@ export default function Game() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [screen, handleStart, handleRestart, currentChallenge, handleAnswer, showNameDialog])
 
-  function renderBossBar() {
-    const boss = bossBattle.boss
-    if (!boss) return null
-    const pct = (boss.hp / boss.maxHp) * 100
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 60,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 90,
-          textAlign: 'center',
-          width: '90%',
-          maxWidth: 400,
-        }}
-      >
-        <div
-          style={{
-            color: colors.fg,
-            fontSize: 12,
-            fontFamily: fonts.heading,
-            fontWeight: 600,
-            letterSpacing: 2,
-            marginBottom: 6,
-          }}
-        >
-          ⚔ {boss.name}
-        </div>
-        <div
-          style={{
-            height: 8,
-            background: alpha(0.05),
-            border: `1px solid ${alpha(0.2)}`,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              width: `${pct}%`,
-              height: '100%',
-              background: colors.accent,
-              transition: 'width 0.3s',
-            }}
-          />
-        </div>
-        <div
-          style={{
-            color: alpha(0.5),
-            fontSize: 10,
-            fontFamily: fonts.mono,
-            marginTop: 3,
-            letterSpacing: 1,
-          }}
-        >
-          {boss.hp}/{boss.maxHp} HP
-        </div>
-      </div>
-    )
-  }
-
-  function renderBonusTimer() {
-    if (mode !== 'bonus') return null
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 60,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 90,
-          textAlign: 'center',
-        }}
-      >
-        <div
-          style={{
-            color: colors.accent,
-            fontSize: 10,
-            fontFamily: fonts.heading,
-            fontWeight: 700,
-            letterSpacing: 3,
-          }}
-        >
-          ⚡ BONUS ROUND x2 ⚡
-        </div>
-        <div
-          style={{
-            color: colors.fg,
-            fontSize: 11,
-            fontFamily: fonts.mono,
-            marginTop: 4,
-            letterSpacing: 1,
-          }}
-        >
-          {Math.ceil(bonusRound.bonusTimeLeft)}s LEFT
-        </div>
-      </div>
-    )
-  }
-
-  function renderComboNotification() {
-    if (!endless.showCombo) return null
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: '45%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 150,
-          pointerEvents: 'none',
-          color: colors.fg,
-          fontSize: 18,
-          fontFamily: fonts.heading,
-          fontWeight: 700,
-          textShadow: `0 0 20px ${alpha(0.3)}`,
-          animation: 'fadeIn 0.3s ease-out',
-        }}
-      >
-        {endless.comboText}
-      </div>
-    )
-  }
-
   return (
     <>
       <Helmet>
@@ -686,46 +557,28 @@ export default function Game() {
       </Helmet>
       <div style={styles.root}>
         {screen === 'playing' && (
-          <Suspense fallback={<LoadingScreen />}>
-            <SideRunScreen
-              ref={gameRef}
-              topic={selectedTopic ?? undefined}
-              difficulty={selectedDifficulty}
-              challengeActive={!!currentChallenge}
-              onChallenge={handleChallenge}
-              onGameOver={handleGameOver}
-              onHUDUpdate={setHudData}
-              onReady={handleRunReady}
-            />
-          </Suspense>
+          <GameRunView
+            gameRef={gameRef}
+            topic={selectedTopic ?? undefined}
+            difficulty={selectedDifficulty}
+            currentChallenge={currentChallenge}
+            timeLimit={timeLimit}
+            mode={mode}
+            hudData={hudData}
+            onChallenge={handleChallenge}
+            onGameOver={handleGameOver}
+            onHUDUpdate={setHudData}
+            onAnswer={handleAnswer}
+            onTimeout={handleTimeout}
+            onReady={handleRunReady}
+            boss={bossBattle.boss}
+            speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
+            survivalLives={mode === 'survival' ? survival.lives : undefined}
+            showCombo={endless.showCombo}
+            comboText={endless.comboText}
+            bonusTimeLeft={mode === 'bonus' ? bonusRound.bonusTimeLeft : undefined}
+          />
         )}
-
-        {screen === 'playing' && (
-          <Suspense fallback={null}>
-            <HUD
-              {...hudData}
-              speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
-              survivalLives={mode === 'survival' ? survival.lives : undefined}
-            />
-          </Suspense>
-        )}
-
-        {screen === 'playing' && currentChallenge && (
-          <Suspense fallback={null}>
-            <ChallengeModal
-              challenge={currentChallenge}
-              timeLimit={timeLimit}
-              onAnswer={handleAnswer}
-              onTimeout={handleTimeout}
-              isBoss={mode === 'boss'}
-              isBonus={mode === 'bonus'}
-            />
-          </Suspense>
-        )}
-
-        {screen === 'playing' && renderBossBar()}
-        {screen === 'playing' && renderBonusTimer()}
-        {renderComboNotification()}
 
         {screen === 'start' && (
           <Suspense fallback={<LoadingScreen />}>

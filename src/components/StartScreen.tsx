@@ -4,14 +4,14 @@ import TerminalScene from './three/TerminalScene'
 import GlassButton from './GlassButton'
 import GlassPanel from './GlassPanel'
 import { TOPICS } from '../game/engine/data/challenges'
-import { isDailyCompleted } from '../lib/storage'
 import {
+  isDailyCompleted,
   getGlobalLeaderboard,
   getDailyLeaderboard,
   type LeaderboardEntry,
-} from '../lib/leaderboard'
+  type RunSession,
+} from '../lib/store'
 import { Topic, Difficulty } from '../game/types'
-import type { RunSession } from '../lib/storage'
 import { setLocale, getLocale, getSupportedLocales, t, type Locale } from '../lib/i18n'
 import { colors, fonts, alpha, radius, glassPanel, transition, shadows } from '../lib/theme'
 

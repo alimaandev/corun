@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HUDData } from '../game/types'
 import { isMuted, toggleMute } from '../game/audio'
 import { colors, fonts, alpha } from '../lib/theme'
+import Hearts from './Hearts'
 
 interface Props extends HUDData {
   speedRunTime?: number
@@ -150,17 +151,7 @@ export default function HUD({ score, streak, multiplier, speedRunTime, survivalL
               >
                 LIVES
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  fontFamily: fonts.mono,
-                  color: survivalLives <= 1 ? colors.danger : colors.fg,
-                }}
-              >
-                {'♥'.repeat(survivalLives)}
-                {'♡'.repeat(Math.max(0, 3 - survivalLives))}
-              </div>
+              <Hearts lives={survivalLives} />
             </div>
           )}
           <button

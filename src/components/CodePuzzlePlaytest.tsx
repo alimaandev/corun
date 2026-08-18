@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { CodePuzzle } from '../game/types'
 import { evaluateCode } from '../game/engine/codeEvaluator'
+import CodeEditor from './CodeEditor'
+import { colors } from '../lib/theme'
 
 interface Props {
   puzzle: CodePuzzle
@@ -114,29 +116,16 @@ export default function CodePuzzlePlaytest({ puzzle, onClose, onSolved }: Props)
           {puzzle.description}
         </div>
 
-        <textarea
+        <CodeEditor
           value={code}
-          onChange={(e) => {
-            setCode(e.target.value)
+          onChange={(v) => {
+            setCode(v)
             setStatus('idle')
           }}
-          onTouchStart={(e) => e.stopPropagation()}
-          spellCheck={false}
-          style={{
-            width: '100%',
-            minHeight: 200,
-            background: '#111',
-            color: '#F0EBE3',
-            border: `1px solid ${status === 'pass' ? '#769826' : status === 'fail' ? '#aa3333' : 'rgba(240,235,227,0.1)'}`,
-            borderRadius: 4,
-            padding: 12,
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            lineHeight: 1.5,
-            resize: 'vertical',
-            outline: 'none',
-            touchAction: 'manipulation',
-          }}
+          onRun={handleRun}
+          disabled={status === 'running'}
+          minHeight={200}
+          accent={status === 'pass' ? '#769826' : status === 'fail' ? '#aa3333' : colors.accent}
         />
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

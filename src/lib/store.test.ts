@@ -12,7 +12,7 @@ import {
   saveRunSession,
   clearRunSession,
   SESSION_TTL_MS,
-} from './storage'
+} from './store'
 
 beforeEach(async () => {
   localStorage.clear()
