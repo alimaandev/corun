@@ -1,3 +1,10 @@
+## [1.15.3](https://github.com/alimaandev/corun/compare/v1.15.2...v1.15.3) (2026-08-18)
+
+
+### Bug Fixes
+
+* resolve gameplay, HUD, persistence, i18n and modal bugs ([35784cc](https://github.com/alimaandev/corun/commit/35784ccb7542a3563dd1bae653e1b11951079b96))
+
 ## [1.15.2](https://github.com/alimaandev/corun/compare/v1.15.1...v1.15.2) (2026-08-14)
 
 
