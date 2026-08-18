@@ -7,24 +7,15 @@ import { colors, fonts, alpha } from '../lib/theme'
 
 interface Props {
   score: number
-  highScore: number
+  isNewHighScore: boolean
   playerRank: number | null
-  playerName?: string
   badges?: { topic: string; label: string; count: number }[]
   onRestart?: () => void
 }
 
-function Slab({
-  score,
-  highScore,
-  isNewHighScore,
-}: {
-  score: number
-  highScore: number
-  isNewHighScore: boolean
-}) {
+function Slab({ isNewHighScore }: { isNewHighScore: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (meshRef.current)
       meshRef.current.position.y = Math.min(0.3, meshRef.current.position.y + 0.02)
   })
@@ -63,13 +54,12 @@ function Badge({ position, color }: { position: [number, number, number]; color:
 
 export default function GameOverScreen({
   score,
-  highScore,
+  isNewHighScore,
   playerRank,
   badges = [],
   onRestart,
 }: Props) {
   const [canvasKey, setCanvasKey] = useState(0)
-  const isNewHighScore = score > 0 && score >= highScore
 
   return (
     <div
@@ -91,7 +81,7 @@ export default function GameOverScreen({
         gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 2, 4.5], fov: 50, near: 0.1, far: 30 }}
         style={{ position: 'fixed', inset: 0, display: 'block' }}
-        frameloop="demand"
+        frameloop="always"
         onCreated={(state) => {
           state.gl.domElement.addEventListener(
             'webglcontextlost',
@@ -110,7 +100,7 @@ export default function GameOverScreen({
         onError={() => setCanvasKey((k) => k + 1)}
       >
         <Chamber />
-        <Slab score={score} highScore={highScore} isNewHighScore={isNewHighScore} />
+        <Slab isNewHighScore={isNewHighScore} />
         {badges.slice(0, 3).map((_, i) => (
           <Badge
             key={i}
@@ -154,7 +144,7 @@ export default function GameOverScreen({
             fontWeight: 300,
           }}
         >
-          THE MONSTER CAUGHT YOU
+          YOUR RUN ENDED HERE
         </div>
         <div
           style={{

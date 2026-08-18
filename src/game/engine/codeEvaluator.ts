@@ -43,22 +43,26 @@ export class CodeEvaluator {
     this.factory = factory
   }
 
-  private ensureWorker(): EvalWorkerLike {
+  private ensureWorker(): EvalWorkerLike | null {
     if (this.worker) return this.worker
-    const worker = this.factory()
-    worker.onmessage = (e: MessageEvent<{ id: string; success: boolean; output: string }>) => {
-      const req = this.pending.get(e.data.id)
-      if (!req) return
-      clearTimeout(req.timer)
-      this.pending.delete(e.data.id)
-      this.timeoutsInARow = 0
-      req.resolve({ success: e.data.success, output: e.data.output })
+    try {
+      const worker = this.factory()
+      worker.onmessage = (e: MessageEvent<{ id: string; success: boolean; output: string }>) => {
+        const req = this.pending.get(e.data.id)
+        if (!req) return
+        clearTimeout(req.timer)
+        this.pending.delete(e.data.id)
+        this.timeoutsInARow = 0
+        req.resolve({ success: e.data.success, output: e.data.output })
+      }
+      worker.onerror = () => {
+        this.rejectAll({ success: false, output: 'Worker error' })
+      }
+      this.worker = worker
+      return worker
+    } catch {
+      return null
     }
-    worker.onerror = () => {
-      this.rejectAll({ success: false, output: 'Worker error' })
-    }
-    this.worker = worker
-    return worker
   }
 
   private rejectAll(result: EvalResult) {
@@ -86,16 +90,22 @@ export class CodeEvaluator {
         this.pending.delete(id)
         this.timeoutsInARow++
         if (this.timeoutsInARow >= MAX_TIMEOUTS_BEFORE_RECREATE) {
-          this.rejectAll({ success: false, output: 'Execution timed out (2s limit)' })
+          this.rejectAll({ success: false, output: `Execution timed out (${timeoutMs}ms limit)` })
           this.timeoutsInARow = 0
         } else {
           this.dispose()
         }
-        resolve({ success: false, output: 'Execution timed out (2s limit)' })
+        resolve({ success: false, output: `Execution timed out (${timeoutMs}ms limit)` })
       }, timeoutMs)
 
       this.pending.set(id, { id, resolve, timer })
       const worker = this.ensureWorker()
+      if (!worker) {
+        clearTimeout(timer)
+        this.pending.delete(id)
+        resolve({ success: false, output: 'Could not start sandbox worker' })
+        return
+      }
       worker.postMessage({ id, userCode, testCode })
     })
   }

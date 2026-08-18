@@ -239,7 +239,6 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
   }, [score])
 
   useEffect(() => {
-    hpRef.current = hud?.hp ?? 3
     hudRef.current = hud
   }, [hud])
 
@@ -326,7 +325,10 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
         finishCleared()
       }
       if (event.type === 'coin') playInteract()
-      if (event.type === 'damage') playError()
+      if (event.type === 'damage') {
+        hpRef.current = Math.max(0, hpRef.current - 1)
+        playError()
+      }
     },
     [finishCleared],
   )
@@ -345,6 +347,7 @@ export default function StoryRunScreen({ node, onComplete, onExit }: Props) {
     setTaskIndex(0)
     setTaskState('idle')
     setScore(0)
+    hpRef.current = 3
     failedOnce.current = new Set()
     lastTriggerX.current = 0
     canvasRef.current?.restart()

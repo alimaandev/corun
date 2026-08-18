@@ -28,7 +28,6 @@ const COMBO_TEXTS = [
   '',
   '🔥🔥🔥🔥 COMBO x4',
 ]
-
 function getAdaptiveDifficulty(base: Difficulty, recent: boolean[]): Difficulty | undefined {
   if (recent.length >= 3) {
     const last3 = recent.slice(-3)
@@ -56,7 +55,7 @@ export function useEndless() {
 
   const showComboNotification = useCallback((level: number) => {
     clearTimeout(comboTimeoutRef.current)
-    setComboText(COMBO_TEXTS[level] || '')
+    setComboText(COMBO_TEXTS[level] || `🔥 COMBO x${getComboMultiplier(level)}`)
     setShowCombo(true)
     comboTimeoutRef.current = window.setTimeout(() => setShowCombo(false), 1200)
   }, [])

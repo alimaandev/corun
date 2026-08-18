@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { glassPanel as gp, alpha } from '../lib/theme'
+import { glassPanel as gp } from '../lib/theme'
 
 interface Props {
   children: ReactNode

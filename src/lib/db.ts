@@ -106,16 +106,19 @@ db.version(2)
       remove('coderun_highscore')
     }
 
-    // Daily completion markers (keyed by date)
+    // Daily completion markers (keyed by date).
+    // Snapshot the keys first: removing entries while iterating skips items.
+    const dailyKeys: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
-      if (key && key.startsWith('code_daily_')) {
-        const date = key.slice('code_daily_'.length)
-        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-          await tx.table('daily').put({ date, completed_at: now })
-        }
-        remove(key)
+      if (key && key.startsWith('code_daily_')) dailyKeys.push(key)
+    }
+    for (const key of dailyKeys) {
+      const date = key.slice('code_daily_'.length)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        await tx.table('daily').put({ date, completed_at: now })
       }
+      remove(key)
     }
 
     // Badges

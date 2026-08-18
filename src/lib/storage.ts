@@ -83,12 +83,17 @@ registerOutboxHandler('badge', async (payload) => {
 export interface LeaderboardScore {
   score: number
   date: string
+  mode: 'freeplay' | 'daily'
 }
 
-export async function addToLeaderboard(score: number): Promise<void> {
+export async function addToLeaderboard(
+  score: number,
+  mode: 'freeplay' | 'daily' = 'freeplay',
+): Promise<void> {
   await enqueue('leaderboard', {
     score,
     date: new Date().toISOString().slice(0, 10),
+    mode,
   })
   await flushOutbox()
 }
@@ -99,7 +104,7 @@ registerOutboxHandler('leaderboard', async (payload) => {
     profile_id: LOCAL_PROFILE_ID,
     player_name: 'Runner',
     score: p.score,
-    mode: 'freeplay',
+    mode: p.mode,
     level_id: 0,
     created_at: p.date,
   })

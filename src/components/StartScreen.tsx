@@ -147,6 +147,7 @@ export default function StartScreen({
   onResume,
 }: Props) {
   const [view, setView] = useState<'main' | 'leaderboard'>('main')
+  const [locale, setLocaleState] = useState<Locale>(() => getLocale())
   const [subject, setSubject] = useState<Topic | 'all'>('all')
   const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [dailyDone, setDailyDone] = useState(false)
@@ -229,10 +230,11 @@ export default function StartScreen({
         }}
       >
         <select
-          value={getLocale()}
+          value={locale}
           onChange={(e) => {
-            setLocale(e.target.value as Locale)
-            window.location.reload()
+            const next = e.target.value as Locale
+            setLocale(next)
+            setLocaleState(next)
           }}
           style={{
             background: 'rgba(0,0,0,0.35)',

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { CodePuzzle } from '../game/types'
 import { generatePuzzleId, saveCustomPuzzle, shareUrl } from '../game/puzzleShare'
 import { useFocusTrap } from '../lib/useFocusTrap'
@@ -10,6 +10,7 @@ interface Props {
 
 export default function PuzzleEditor({ onClose, onSave }: Props) {
   const trapRef = useFocusTrap(true)
+  const puzzleIdRef = useRef(generatePuzzleId())
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [template, setTemplate] = useState('function solve() {\n  // YOUR CODE HERE\n}')
@@ -22,7 +23,7 @@ export default function PuzzleEditor({ onClose, onSave }: Props) {
   function handleSave() {
     if (!title.trim() || !template.trim() || !test.trim()) return
     const puzzle: CodePuzzle = {
-      id: generatePuzzleId(),
+      id: puzzleIdRef.current,
       title: title.trim(),
       description: description.trim(),
       template: template.trim(),
@@ -39,7 +40,7 @@ export default function PuzzleEditor({ onClose, onSave }: Props) {
   function handleShare() {
     if (!title.trim() || !template.trim() || !test.trim()) return
     const puzzle: CodePuzzle = {
-      id: generatePuzzleId(),
+      id: puzzleIdRef.current,
       title: title.trim(),
       description: description.trim(),
       template: template.trim(),

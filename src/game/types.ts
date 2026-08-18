@@ -23,9 +23,8 @@ export interface TopicOption {
 
 export interface HUDData {
   score: number
-  gap: number
-  speed: number
   streak: number
+  multiplier: number
 }
 
 export interface CodePuzzle {

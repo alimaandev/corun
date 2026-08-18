@@ -54,8 +54,7 @@ const ctaStyle: React.CSSProperties = {
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const { lenis, progressRef, sectionRef, sectionProgressRef, section, sections } =
-    useScrollProgress()
+  const { lenis, sectionProgressRef, section, sections } = useScrollProgress()
   const { sectionStyle } = useScrollAnimation()
 
   const handleNavClick = useCallback(

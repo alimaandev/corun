@@ -28,10 +28,19 @@ interface Props {
   onChallenge: (challenge: Challenge) => void
   onGameOver: (score: number) => void
   onHUDUpdate: (data: HUDData) => void
+  onReady?: () => void
 }
 
 export const SideRunScreen = forwardRef<SideRunScreenHandle, Props>(function SideRunScreen(
-  { topic, difficulty = 'medium', challengeActive = false, onChallenge, onGameOver, onHUDUpdate },
+  {
+    topic,
+    difficulty = 'medium',
+    challengeActive = false,
+    onChallenge,
+    onGameOver,
+    onHUDUpdate,
+    onReady,
+  },
   ref,
 ) {
   const canvasRef = useRef<SideViewCanvasHandle>(null)
@@ -39,6 +48,13 @@ export const SideRunScreen = forwardRef<SideRunScreenHandle, Props>(function Sid
     () => generateFreeplayWorld({ difficulty, segment: 0 }),
     [difficulty],
   )
+  const onReadyRef = useRef(onReady)
+  useEffect(() => {
+    onReadyRef.current = onReady
+  }, [onReady])
+  useEffect(() => {
+    onReadyRef.current?.()
+  }, [])
   const segmentRef = useRef(0)
   const usedIdsRef = useRef(new Set<number>())
   const lastChallengeX = useRef(0)
@@ -91,13 +107,10 @@ export const SideRunScreen = forwardRef<SideRunScreenHandle, Props>(function Sid
 
   const handleHud = useCallback(
     (hud: SideHudSnapshot) => {
-      const danger =
-        difficultyRef.current === 'easy' ? 1 : difficultyRef.current === 'medium' ? 2 : 3
       onHUDUpdateRef.current({
         score: hud.score,
-        gap: 70,
-        speed: danger,
         streak: hud.streak,
+        multiplier: hud.multiplier,
       })
       if (!ownChallengeRef.current && !challengeActiveRef.current && runningRef.current) {
         const since = hud.x - lastChallengeX.current

@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function CommunityPuzzles({ onSelect, onClose }: Props) {
-  const [customPuzzles] = useState<Record<string, CodePuzzle>>(getCustomPuzzles)
+  const [customPuzzles, setCustomPuzzles] = useState<Record<string, CodePuzzle>>(getCustomPuzzles)
   const [filter, setFilter] = useState('')
 
   const customList = Object.values(customPuzzles)
@@ -19,7 +19,11 @@ export default function CommunityPuzzles({ onSelect, onClose }: Props) {
 
   const handleDelete = useCallback((id: string) => {
     deleteCustomPuzzle(id)
-    window.location.reload()
+    setCustomPuzzles((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
   }, [])
 
   const s: Record<string, React.CSSProperties> = {

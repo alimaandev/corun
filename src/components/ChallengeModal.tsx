@@ -43,6 +43,7 @@ export default function ChallengeModal({
 
   useEffect(() => {
     start.current = Date.now()
+    timeoutFired.current = false
     setTimer(timeLimit)
     setSelected(null)
     setAnswered(false)

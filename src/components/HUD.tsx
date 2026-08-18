@@ -4,16 +4,13 @@ import { isMuted, toggleMute } from '../game/audio'
 import { colors, fonts, alpha } from '../lib/theme'
 
 interface Props extends HUDData {
-  isBoss?: boolean
-  isBonus?: boolean
   speedRunTime?: number
   survivalLives?: number
 }
 
-export default function HUD({ score, gap, streak, isBoss, speedRunTime, survivalLives }: Props) {
+export default function HUD({ score, streak, multiplier, speedRunTime, survivalLives }: Props) {
   const [muted, setMuted] = useState(isMuted())
   const [showKeys, setShowKeys] = useState(false)
-  const barColor = gap > 40 ? colors.accent : gap > 20 ? colors.fg : alpha(0.4)
 
   return (
     <>
@@ -83,12 +80,10 @@ export default function HUD({ score, gap, streak, isBoss, speedRunTime, survival
           style={{
             flex: 1,
             minWidth: 0,
-            maxWidth: 160,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: 1,
-            padding: '0 4px',
           }}
         >
           <div
@@ -100,29 +95,19 @@ export default function HUD({ score, gap, streak, isBoss, speedRunTime, survival
               letterSpacing: 1,
             }}
           >
-            GAP
+            MULTIPLIER
           </div>
           <div
             style={{
-              width: '100%',
-              height: 5,
-              background: alpha(0.08),
-              overflow: 'hidden',
-              borderRadius: 2,
+              color: multiplier > 1 ? colors.accent : alpha(0.5),
+              fontSize: 15,
+              fontWeight: 700,
+              lineHeight: 1.1,
+              fontFamily: fonts.mono,
+              letterSpacing: 1,
             }}
           >
-            <div
-              style={{
-                height: '100%',
-                width: `${Math.max(2, gap)}%`,
-                background: barColor,
-                boxShadow: gap < 20 ? `0 0 8px ${barColor}` : 'none',
-                transition: 'width 0.3s ease, background 0.3s ease',
-              }}
-            />
-          </div>
-          <div style={{ color: alpha(0.5), fontSize: 11, fontFamily: fonts.mono }}>
-            {Math.round(gap)}m
+            x{multiplier.toFixed(1)}
           </div>
         </div>
 
@@ -175,31 +160,6 @@ export default function HUD({ score, gap, streak, isBoss, speedRunTime, survival
               >
                 {'♥'.repeat(survivalLives)}
                 {'♡'.repeat(Math.max(0, 3 - survivalLives))}
-              </div>
-            </div>
-          )}
-          {!speedRunTime && survivalLives === undefined && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <div
-                style={{
-                  color: alpha(0.5),
-                  fontSize: 11,
-                  fontFamily: fonts.body,
-                  fontWeight: 300,
-                  letterSpacing: 1,
-                }}
-              >
-                STREAK
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  fontFamily: fonts.mono,
-                  color: streak >= 3 ? colors.accent : alpha(0.4),
-                }}
-              >
-                {streak >= 3 ? `${1 + Math.floor(streak / 2) * 0.5}x` : `${streak}`}
               </div>
             </div>
           )}

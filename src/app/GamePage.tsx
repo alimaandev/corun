@@ -52,7 +52,7 @@ type Screen = 'start' | 'storyselect' | 'story' | 'playing' | 'gameover'
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>('start')
-  const [hudData, setHudData] = useState<HUDData>({ score: 0, gap: 70, speed: 1, streak: 0 })
+  const [hudData, setHudData] = useState<HUDData>({ score: 0, streak: 0, multiplier: 1 })
   const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null)
   const [timeLimit, setTimeLimit] = useState(5)
   const [mode, setMode] = useState<Mode>('normal')
@@ -62,6 +62,7 @@ export default function Game() {
   }, [])
   const [finalScore, setFinalScore] = useState(0)
   const [finalBadges, setFinalBadges] = useState<Badge[]>([])
+  const [isNewHighScore, setIsNewHighScore] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium')
 
@@ -213,7 +214,7 @@ export default function Game() {
 
   const resetGameState = useCallback(
     (overrides?: Partial<GameStateOverrides>) => {
-      setHudData({ score: 0, gap: 70, speed: 1, streak: 0, ...overrides?.hudData })
+      setHudData({ score: 0, streak: 0, multiplier: 1, ...overrides?.hudData })
       setCurrentChallenge(null)
       setMode(overrides?.mode ?? 'normal')
       setFinalScore(0)
@@ -318,15 +319,15 @@ export default function Game() {
     [resetGameState],
   )
 
-  // Applies the restored score once PixelRunner has mounted.
-  useEffect(() => {
-    if (screen !== 'playing') return
+  // Applies the restored score once SideRunScreen has mounted (lazy-loaded, so
+  // the ref is only valid after mount — the screen reports readiness via onReady).
+  const handleRunReady = useCallback(() => {
     const session = pendingResumeRef.current
-    if (!session || !gameRef.current) return
+    if (!session) return
     pendingResumeRef.current = null
-    gameRef.current.restoreScore(session.score)
+    gameRef.current?.restoreScore(session.score)
     if (session.mode === 'speedrun') speedRun.start()
-  }, [screen, speedRun])
+  }, [speedRun])
 
   const handleAnswer = useCallback(
     (answerIndex: number) => {
@@ -421,6 +422,8 @@ export default function Game() {
       playGameOver()
       setFinalScore(score)
       setFinalBadges(endless.getBadges())
+      const prevHigh = isNaN(highScore) ? 0 : highScore
+      setIsNewHighScore(score > prevHigh && score > 0)
       setScreen('gameover')
       challengeRef.current = false
       setCurrentChallenge(null)
@@ -434,7 +437,12 @@ export default function Game() {
         }
         return nh
       })
-      if (score > 0) void addToLeaderboard(Math.floor(score))
+      if (score > 0) {
+        void addToLeaderboard(
+          Math.floor(score),
+          daily.isDailyRef.current ? ('daily' as const) : ('freeplay' as const),
+        )
+      }
       daily.complete(score)
       if (profileRef.current && score > 0) {
         const mode = daily.isDailyRef.current ? ('daily' as const) : ('freeplay' as const)
@@ -444,7 +452,7 @@ export default function Game() {
           .catch(() => console.debug('[Game] leaderboard submit failed'))
       }
     },
-    [endless, daily],
+    [endless, daily, highScore],
   )
 
   const handleRestart = useCallback(() => {
@@ -511,6 +519,13 @@ export default function Game() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
       if (e.key === 'Enter') {
         if (screen === 'start') handleStart(null, 'medium')
         else if (screen === 'gameover') handleRestart()
@@ -680,6 +695,7 @@ export default function Game() {
               onChallenge={handleChallenge}
               onGameOver={handleGameOver}
               onHUDUpdate={setHudData}
+              onReady={handleRunReady}
             />
           </Suspense>
         )}
@@ -688,8 +704,6 @@ export default function Game() {
           <Suspense fallback={null}>
             <HUD
               {...hudData}
-              isBoss={mode === 'boss'}
-              isBonus={mode === 'bonus'}
               speedRunTime={mode === 'speedrun' ? speedRun.timeLeft : undefined}
               survivalLives={mode === 'survival' ? survival.lives : undefined}
             />
@@ -755,11 +769,10 @@ export default function Game() {
           <Suspense fallback={<LoadingScreen />}>
             <GameOverScreen
               score={finalScore}
-              highScore={highScore}
+              isNewHighScore={isNewHighScore}
               onRestart={handleRestart}
               badges={finalBadges}
               playerRank={playerRank}
-              playerName={profile?.player_name}
             />
           </Suspense>
         )}
